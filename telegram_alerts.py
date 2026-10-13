@@ -16,7 +16,7 @@ TORONTO = ZoneInfo('America/Toronto')
 
 def main():
     now = datetime.now(TORONTO)
-    # Workflow runs at 13:00 and 14:00 UTC to cover daylight-saving changes.
+    if os.getenv('GITHUB_EVENT_NAME') != 'workflow_dispatch' and not (9 <= now.hour < 12):
     # Permit some scheduler delay; one-per-date state prevents a second digest.
     if not (9 <= now.hour < 12):
         print(f'Outside Toronto morning delivery window: {now.isoformat()}')
