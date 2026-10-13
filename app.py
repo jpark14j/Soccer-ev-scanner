@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import math
 from datetime import datetime, timezone
 
 st.set_page_config(page_title="BetMGM Ontario Soccer EV Scanner", page_icon="⚽", layout="wide")
@@ -125,6 +126,61 @@ if "scan_data" in st.session_state:
             st.dataframe(pd.DataFrame(quotes), hide_index=True, use_container_width=True)
     else:
         st.info("No usable Ontario soccer odds returned. Check API coverage, selected leagues, and any errors above.")
+
+st.divider()
+st.subheader("🧪 Independent match prediction — Poisson prototype")
+st.caption("This model uses expected goals (xG) inputs to estimate home win/draw/away win probabilities independently of sportsbook odds. It is an experimental statistical model, NOT a trained or backtested AI. Enter credible pre-match xG estimates yourself; the app does not yet fetch historical xG or injury data.")
+
+
+def poisson_three_way(home_xg, away_xg, max_goals=15):
+    """Independent Poisson goal model, normalized for truncated tails."""
+    home_p = [math.exp(-home_xg) * home_xg ** i / math.factorial(i) for i in range(max_goals + 1)]
+    away_p = [math.exp(-away_xg) * away_xg ** i / math.factorial(i) for i in range(max_goals + 1)]
+    win = draw = loss = 0.0
+    for h, ph in enumerate(home_p):
+        for a, pa in enumerate(away_p):
+            weight = ph * pa
+            if h > a:
+                win += weight
+            elif h == a:
+                draw += weight
+            else:
+                loss += weight
+    total = win + draw + loss
+    return {"Home win": win / total, "Draw": draw / total, "Away win": loss / total}
+
+
+if "scan_data" in st.session_state and st.session_state.scan_data[0]:
+    model_df = pd.DataFrame(st.session_state.scan_data[0])
+    fixtures = model_df[["League", "Match", "Kickoff (UTC)"]].drop_duplicates().copy()
+    fixtures["Fixture"] = fixtures["League"] + " | " + fixtures["Match"] + " | " + fixtures["Kickoff (UTC)"]
+    selected_fixture = st.selectbox("Select a live BetMGM match to analyze", fixtures["Fixture"].tolist())
+    fixture = fixtures.loc[fixtures["Fixture"] == selected_fixture].iloc[0]
+    home, away = fixture["Match"].split(" vs ", 1)
+    c1, c2 = st.columns(2)
+    with c1:
+        home_xg = st.number_input(f"{home} — expected goals (xG)", min_value=0.05, max_value=6.0, value=1.40, step=0.05, help="Illustrative default only. Replace with a credible pre-match expected-goals estimate.")
+    with c2:
+        away_xg = st.number_input(f"{away} — expected goals (xG)", min_value=0.05, max_value=6.0, value=1.10, step=0.05, help="Illustrative default only. Replace with a credible pre-match expected-goals estimate.")
+    st.warning("The default xG inputs (1.40 and 1.10) are placeholders, NOT forecasts for this match. Do not interpret results as betting advice until inputs are sourced and the model is backtested.")
+    if st.button("Analyze selected match with xG model"):
+        probabilities = poisson_three_way(home_xg, away_xg)
+        match_rows = model_df[(model_df["Match"] == fixture["Match"]) & (model_df["Kickoff (UTC)"] == fixture["Kickoff (UTC)"])]
+        output = []
+        mapping = {home: "Home win", away: "Away win", "Draw": "Draw"}
+        for _, row in match_rows.iterrows():
+            selection = row["Selection"]
+            if selection not in mapping:
+                continue
+            p = probabilities[mapping[selection]]
+            odds = float(row["BetMGM Ontario odds"])
+            output.append({"Selection": selection, "BetMGM decimal odds": odds, "Model probability (%)": round(100*p, 2), "Model estimated EV (%)": round(100*(p*odds-1), 2)})
+        if output:
+            out = pd.DataFrame(output).sort_values("Model estimated EV (%)", ascending=False)
+            st.dataframe(out, hide_index=True, use_container_width=True)
+            st.caption("Poisson assumes independent team goal counts and does not account for lineups, injuries, game state, or correlations. The results change when you change the xG inputs. No validated model confidence is available.")
+else:
+    st.info("Press Find +EV Bets above to load matches before using the independent xG model.")
 
 st.divider()
 st.subheader("Manual BetMGM bet checker")
