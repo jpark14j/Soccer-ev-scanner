@@ -16,10 +16,8 @@ TORONTO = ZoneInfo('America/Toronto')
 
 def main():
     now = datetime.now(TORONTO)
-    if os.getenv('GITHUB_EVENT_NAME') != 'workflow_dispatch' and not (9 <= now.hour < 12):
-    # Permit some scheduler delay; one-per-date state prevents a second digest.
-    if not (9 <= now.hour < 12):
-        print(f'Outside Toronto morning delivery window: {now.isoformat()}')
+    if os.getenv("GITHUB_EVENT_NAME") != "workflow_dispatch" and not (9 <= now.hour < 12):
+        print(f"Outside Toronto morning delivery window: {now.isoformat()}")
         return
     today = now.date().isoformat()
     try:
