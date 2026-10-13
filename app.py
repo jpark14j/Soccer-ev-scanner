@@ -1,191 +1,178 @@
-import streamlit as st
-import pandas as pd
-import requests
-import math
+"""Soccer Picks — mobile-first, explainable market-consensus research prototype."""
+import itertools
 from datetime import datetime, timezone
+import requests
+import streamlit as st
 
-st.set_page_config(page_title="BetMGM Ontario Soccer EV Scanner", page_icon="⚽", layout="wide")
-st.title("⚽ BetMGM Ontario Soccer EV Scanner")
-st.caption("Live sportsbook quotes on demand. Estimates are not guarantees; no bets are placed.")
+st.set_page_config(page_title="Soccer Picks | Ontario", page_icon="⚽", layout="centered")
 SPORTS = {"Premier League":"soccer_epl", "La Liga":"soccer_spain_la_liga", "Bundesliga":"soccer_germany_bundesliga", "Serie A":"soccer_italy_serie_a", "Ligue 1":"soccer_france_ligue_one", "MLS":"soccer_usa_mls", "Champions League":"soccer_uefa_champs_league"}
 TARGET = "betmgm_ca_on"
+MIN_PEERS = 3
+MIN_EDGE = 0.01  # conservative display threshold, not a validated model edge
+
+st.markdown("""<style>
+.block-container {padding-top: 1.5rem; max-width: 760px;}
+[data-testid="stMetricValue"] {font-size: 1.6rem;}
+</style>""", unsafe_allow_html=True)
+st.title("⚽ Soccer Picks")
+st.caption("One tap. A few picks to review. No forced bets.")
+st.info("**Research prototype:** probabilities come from other sportsbooks, not a tested team model. Estimates are not guaranteed winning chances.")
 
 try:
-    api_key = st.secrets.get("ODDS_API_KEY", "")
+    KEY = st.secrets.get("ODDS_API_KEY", "")
 except Exception:
-    api_key = ""
-if not api_key:
-    st.error("Missing ODDS_API_KEY. Add it in your Streamlit app Settings → Secrets, then reload.")
+    KEY = ""
+if not KEY:
+    st.error("Add ODDS_API_KEY to Streamlit Settings → Secrets. Never publish your key in GitHub.")
     st.stop()
 
-leagues = st.multiselect("Choose soccer leagues", list(SPORTS), default=["Premier League", "La Liga", "Bundesliga", "Serie A"])
-threshold = st.slider("Highlight estimated EV at or above (%)", 0.0, 20.0, 0.0, 0.5)
-st.info("BetMGM Ontario is the target bookmaker. Estimates use other Canadian bookmakers’ complete 1X2 markets after removing margin. The analysis explains market-based estimates; it is NOT a trained AI match prediction model.")
+with st.expander("⚙️ Leagues", expanded=False):
+    leagues = st.multiselect("Scan these leagues", list(SPORTS), default=["Premier League", "La Liga", "Bundesliga", "Serie A"])
 
-def scan():
-    results, quotes, errors = [], [], []
+
+def read_market(event, league):
+    home, away = event.get("home_team"), event.get("away_team")
+    if not home or not away:
+        return []
+    names = (home, "Draw", away)
+    books = {}
+    for book in event.get("bookmakers", []):
+        for market in book.get("markets", []):
+            if market.get("key") != "h2h":
+                continue
+            prices = {x.get("name"): x.get("price") for x in market.get("outcomes", [])}
+            if all(isinstance(prices.get(n), (float, int)) and prices[n] > 1 for n in names):
+                books[book.get("key")] = prices
+            break
+    if TARGET not in books:
+        return []
+    peers = [p for k, p in books.items() if k != TARGET]
+    if len(peers) < MIN_PEERS:
+        return []
+    probabilities = []
+    for prices in peers:
+        implied = {n: 1 / prices[n] for n in names}
+        total = sum(implied.values())
+        probabilities.append({n: implied[n] / total for n in names})
+    rows = []
+    for selection in names:
+        p = sum(x[selection] for x in probabilities) / len(probabilities)
+        odds = books[TARGET][selection]
+        rows.append({"event_id": event.get("id", f"{home}-{away}-{event.get('commence_time')}"),
+                     "league": league, "match": f"{home} vs {away}", "kickoff": event.get("commence_time", ""),
+                     "selection": selection, "odds": odds, "prob": p, "edge": p * odds - 1,
+                     "peers": len(peers)})
+    return rows
+
+
+def scan(leagues):
+    rows, errors = [], []
+    now = datetime.now(timezone.utc)
     for league in leagues:
         try:
-            response = requests.get(f"https://api.the-odds-api.com/v4/sports/{SPORTS[league]}/odds/", params={"apiKey":api_key,"regions":"ca","markets":"h2h","oddsFormat":"decimal"}, timeout=25)
+            response = requests.get(f"https://api.the-odds-api.com/v4/sports/{SPORTS[league]}/odds/",
+                                    params={"apiKey": KEY, "regions": "ca", "markets": "h2h", "oddsFormat": "decimal"}, timeout=25)
             response.raise_for_status()
             for event in response.json():
-                if event.get("commence_time", "") <= datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"):
-                    continue
-                home, away = event.get("home_team"), event.get("away_team")
-                if not home or not away:
-                    continue
-                outcome_names = [home, "Draw", away]
-                books = {}
-                for book in event.get("bookmakers", []):
-                    markets = [m for m in book.get("markets", []) if m.get("key") == "h2h"]
-                    if not markets:
+                try:
+                    kickoff = datetime.fromisoformat(event.get("commence_time", "").replace("Z", "+00:00"))
+                    if kickoff <= now:
                         continue
-                    prices = {o.get("name"): o.get("price") for o in markets[0].get("outcomes", [])}
-                    if not all(isinstance(prices.get(n), (int, float)) and prices[n] > 1 for n in outcome_names):
-                        continue
-                    books[book["key"]] = (book.get("title", book["key"]), prices)
-                    for name in outcome_names:
-                        quotes.append({"League":league,"Match":f"{home} vs {away}","Kickoff (UTC)":event.get("commence_time"),"Sportsbook":book.get("title",book["key"]),"Selection":name,"Decimal odds":prices[name]})
-                if TARGET not in books:
+                    rows.extend(read_market(event, league))
+                except (ValueError, TypeError):
                     continue
-                peers = [prices for key, (_, prices) in books.items() if key != TARGET]
-                if not peers:
-                    for name in outcome_names:
-                        results.append({"League":league,"Match":f"{home} vs {away}","Kickoff (UTC)":event.get("commence_time"),"Selection":name,"BetMGM Ontario odds":books[TARGET][1][name],"Estimated fair probability (%)":None,"Estimated EV (%)":None,"Reference books":0})
-                    continue
-                fair_per_peer = []
-                for prices in peers:
-                    raw = {n:1/prices[n] for n in outcome_names}
-                    total = sum(raw.values())
-                    fair_per_peer.append({n:raw[n]/total for n in outcome_names})
-                for name in outcome_names:
-                    fair = sum(p[name] for p in fair_per_peer)/len(fair_per_peer)
-                    odds = books[TARGET][1][name]
-                    ev = (fair*odds-1)*100
-                    results.append({"League":league,"Match":f"{home} vs {away}","Kickoff (UTC)":event.get("commence_time"),"Selection":name,"BetMGM Ontario odds":odds,"Estimated fair probability (%)":round(fair*100,2),"Estimated EV (%)":round(ev,2),"Reference books":len(peers)})
-        except requests.HTTPError as e:
-            errors.append(f"{league}: API HTTP {e.response.status_code} — {e.response.text[:180]}")
-        except requests.RequestException as e:
-            errors.append(f"{league}: connection issue — {e}")
-        except (ValueError, KeyError, TypeError) as e:
-            errors.append(f"{league}: unexpected data — {e}")
-    return results, quotes, errors
+        except (requests.RequestException, ValueError, TypeError) as exc:
+            errors.append(f"{league}: {str(exc)[:130]}")
+    return rows, errors, datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-if st.button("🔎 Find +EV Bets", type="primary"):
+
+def shortlist(rows):
+    """Rank singles and two-leg parlays together; never force either bet type."""
+    qualified = [r for r in rows if r["edge"] >= MIN_EDGE and r["peers"] >= MIN_PEERS]
+    # One selection per event for parlay construction; avoid duplicate/opposing legs.
+    singles = sorted(qualified, key=lambda r: (r["edge"] * (r["prob"] ** 0.5), r["prob"]), reverse=True)
+    choices = []
+    for row in singles[:35]:
+        choices.append({"kind": "Single", "legs": [row], "prob": row["prob"],
+                        "odds": row["odds"], "edge": row["edge"],
+                        "score": row["edge"] * (row["prob"] ** 0.5)})
+    # Construct parlays from different matches only. Avoid very low-probability combinations.
+    for a, b in itertools.combinations(singles[:35], 2):
+        if a["event_id"] == b["event_id"]:
+            continue
+        prob = a["prob"] * b["prob"]
+        if prob < 0.25:
+            continue
+        odds = a["odds"] * b["odds"]
+        edge = prob * odds - 1
+        if edge < MIN_EDGE:
+            continue
+        choices.append({"kind": "2-leg parlay", "legs": [a, b], "prob": prob,
+                        "odds": odds, "edge": edge,
+                        # Small complexity discount: estimated parlay probabilities are less robust.
+                        "score": 0.75 * edge * (prob ** 0.5)})
+    choices.sort(key=lambda c: (c["score"], c["prob"]), reverse=True)
+    # Limit repetition of the same match across recommendations.
+    output, seen_events = [], set()
+    for choice in choices:
+        event_ids = {leg["event_id"] for leg in choice["legs"]}
+        if event_ids & seen_events:
+            continue
+        output.append(choice)
+        seen_events.update(event_ids)
+        if len(output) == 3:
+            break
+    return output
+
+
+def show_pick(choice, number):
+    with st.container(border=True):
+        st.markdown(f"### #{number} · {choice['kind']}")
+        for i, leg in enumerate(choice["legs"], 1):
+            prefix = f"Leg {i}: " if len(choice["legs"]) > 1 else ""
+            st.markdown(f"{prefix}**{leg['selection']}** · {leg['match']} ({leg['league']})")
+            st.caption(f"Kickoff: {leg['kickoff']}")
+        left, right = st.columns(2)
+        left.metric("BetMGM odds", f"{choice['odds']:.2f}")
+        right.metric("Est. chance", f"{choice['prob']:.0%}")
+        if len(choice["legs"]) == 1:
+            st.write(f"**Why shown:** {choice['legs'][0]['peers']} comparison sportsbooks imply a slightly better chance than BetMGM's price suggests.")
+        else:
+            st.write("**Why shown:** Both legs passed the same market-price checks individually. Different matches only; combined chance assumes independence.")
+        st.caption(f"Indicative market-based edge: {choice['edge']:+.1%}. Not a verified advantage or validated prediction.")
+
+if st.button("🔎 Find My Best Picks", type="primary", use_container_width=True):
     if not leagues:
-        st.warning("Select at least one league.")
+        st.warning("Choose at least one league in Settings.")
     else:
-        with st.spinner("Checking live Ontario soccer markets..."):
-            st.session_state.scan_data = scan()
+        with st.spinner("Checking BetMGM Ontario and comparison prices…"):
+            st.session_state.latest = scan(leagues)
 
-if "scan_data" in st.session_state:
-    results, quotes, errors = st.session_state.scan_data
+if "latest" in st.session_state:
+    rows, errors, timestamp = st.session_state.latest
+    st.caption(f"Last checked: {timestamp} · {len(set(r['event_id'] for r in rows))} comparable matches")
     for error in errors:
         st.warning(error)
-    if quotes:
-        st.success(f"Fetched {len(quotes)} live Canadian sportsbook quotes. BetMGM opportunities are shown only where reference books have comparable odds.")
-        if results:
-            df = pd.DataFrame(results).sort_values("Estimated EV (%)", ascending=False, na_position="last")
-            st.subheader("All BetMGM Ontario selections — highest estimated EV first")
-            positive = int((df["Estimated EV (%)"] >= threshold).sum())
-            unavailable = int(df["Estimated EV (%)"].isna().sum())
-            st.caption(f"{len(df)} BetMGM selections • {positive} at or above +{threshold:.1f}% estimated EV • {unavailable} without enough reference data. Green means the *estimate* meets your threshold, not a guaranteed edge.")
-            def highlight_ev(row):
-                value = row["Estimated EV (%)"]
-                color = "background-color: #d9f4df; color: #165c2c" if pd.notna(value) and value >= threshold else ""
-                return [color if col == "Estimated EV (%)" else "" for col in row.index]
-            st.subheader("🧠 Opportunity analysis")
-            st.caption("These rankings and explanations are generated from sportsbook comparisons, not independent team statistics or a validated AI forecast. A positive estimate is not proof of an edge.")
-            valid = df.dropna(subset=["Estimated EV (%)", "Estimated fair probability (%)"]).copy()
-            candidates = valid[(valid["Estimated EV (%)"] > 0) & (valid["Reference books"] >= 3)].head(5)
-            if candidates.empty:
-                st.info("No qualifying opportunities to highlight right now. The app will not force a pick when the market-based estimates are negative or there are fewer than three comparison sportsbooks.")
-            else:
-                st.warning("For research only: verify these prices in BetMGM before relying on them. Market-derived probabilities may be inaccurate.")
-                for _, pick in candidates.iterrows():
-                    ev = float(pick["Estimated EV (%)"])
-                    prob = float(pick["Estimated fair probability (%)"])
-                    odds = float(pick["BetMGM Ontario odds"])
-                    peers = int(pick["Reference books"])
-                    implied = 100 / odds
-                    with st.container(border=True):
-                        st.markdown(f"**{pick['Match']}** · {pick['League']}")
-                        st.markdown(f"**Selection to review:** {pick['Selection']}")
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("BetMGM odds", f"{odds:.2f}")
-                        c2.metric("Market fair %", f"{prob:.1f}%")
-                        c3.metric("Estimated EV", f"{ev:+.2f}%")
-                        st.write(f"**Why flagged:** Other books imply about {prob:.1f}% after removing margin, compared with {implied:.1f}% implied by BetMGM’s price. Estimated difference: {prob-implied:+.1f} percentage points, based on {peers} comparison books.")
-                        st.caption("Data-quality signal: " + ("More comparison quotes available" if peers >= 5 else "Limited comparison quotes") + ". This is not a prediction confidence score. Confirm the match, market, and current price before any decision.")
-            st.subheader("Full BetMGM market rankings")
-            st.dataframe(df.style.apply(highlight_ev, axis=1).format({"Estimated fair probability (%)":"{:.2f}","Estimated EV (%)":"{:+.2f}"}, na_rep="N/A"), hide_index=True, use_container_width=True)
-            st.download_button("Download all BetMGM estimates (CSV)", df.to_csv(index=False), "betmgm_all_estimates.csv", "text/csv")
-        else:
-            st.info("No BetMGM Ontario selections were returned for the chosen leagues. Try another league or scan later.")
-        with st.expander("View all returned Canadian sportsbook odds"):
-            st.dataframe(pd.DataFrame(quotes), hide_index=True, use_container_width=True)
+    picks = shortlist(rows)
+    st.subheader("🏆 Best picks")
+    if picks:
+        st.caption("Singles and parlays compete in one ranking. Only opportunities passing price checks appear; up to three are shown.")
+        for index, pick in enumerate(picks, 1):
+            show_pick(pick, index)
     else:
-        st.info("No usable Ontario soccer odds returned. Check API coverage, selected leagues, and any errors above.")
-
-st.divider()
-st.subheader("🧪 Independent match prediction — Poisson prototype")
-st.caption("This model uses expected goals (xG) inputs to estimate home win/draw/away win probabilities independently of sportsbook odds. It is an experimental statistical model, NOT a trained or backtested AI. Enter credible pre-match xG estimates yourself; the app does not yet fetch historical xG or injury data.")
-
-
-def poisson_three_way(home_xg, away_xg, max_goals=15):
-    """Independent Poisson goal model, normalized for truncated tails."""
-    home_p = [math.exp(-home_xg) * home_xg ** i / math.factorial(i) for i in range(max_goals + 1)]
-    away_p = [math.exp(-away_xg) * away_xg ** i / math.factorial(i) for i in range(max_goals + 1)]
-    win = draw = loss = 0.0
-    for h, ph in enumerate(home_p):
-        for a, pa in enumerate(away_p):
-            weight = ph * pa
-            if h > a:
-                win += weight
-            elif h == a:
-                draw += weight
-            else:
-                loss += weight
-    total = win + draw + loss
-    return {"Home win": win / total, "Draw": draw / total, "Away win": loss / total}
-
-
-if "scan_data" in st.session_state and st.session_state.scan_data[0]:
-    model_df = pd.DataFrame(st.session_state.scan_data[0])
-    fixtures = model_df[["League", "Match", "Kickoff (UTC)"]].drop_duplicates().copy()
-    fixtures["Fixture"] = fixtures["League"] + " | " + fixtures["Match"] + " | " + fixtures["Kickoff (UTC)"]
-    selected_fixture = st.selectbox("Select a live BetMGM match to analyze", fixtures["Fixture"].tolist())
-    fixture = fixtures.loc[fixtures["Fixture"] == selected_fixture].iloc[0]
-    home, away = fixture["Match"].split(" vs ", 1)
-    c1, c2 = st.columns(2)
-    with c1:
-        home_xg = st.number_input(f"{home} — expected goals (xG)", min_value=0.05, max_value=6.0, value=1.40, step=0.05, help="Illustrative default only. Replace with a credible pre-match expected-goals estimate.")
-    with c2:
-        away_xg = st.number_input(f"{away} — expected goals (xG)", min_value=0.05, max_value=6.0, value=1.10, step=0.05, help="Illustrative default only. Replace with a credible pre-match expected-goals estimate.")
-    st.warning("The default xG inputs (1.40 and 1.10) are placeholders, NOT forecasts for this match. Do not interpret results as betting advice until inputs are sourced and the model is backtested.")
-    if st.button("Analyze selected match with xG model"):
-        probabilities = poisson_three_way(home_xg, away_xg)
-        match_rows = model_df[(model_df["Match"] == fixture["Match"]) & (model_df["Kickoff (UTC)"] == fixture["Kickoff (UTC)"])]
-        output = []
-        mapping = {home: "Home win", away: "Away win", "Draw": "Draw"}
-        for _, row in match_rows.iterrows():
-            selection = row["Selection"]
-            if selection not in mapping:
-                continue
-            p = probabilities[mapping[selection]]
-            odds = float(row["BetMGM Ontario odds"])
-            output.append({"Selection": selection, "BetMGM decimal odds": odds, "Model probability (%)": round(100*p, 2), "Model estimated EV (%)": round(100*(p*odds-1), 2)})
-        if output:
-            out = pd.DataFrame(output).sort_values("Model estimated EV (%)", ascending=False)
-            st.dataframe(out, hide_index=True, use_container_width=True)
-            st.caption("Poisson assumes independent team goal counts and does not account for lineups, injuries, game state, or correlations. The results change when you change the xG inputs. No validated model confidence is available.")
+        st.success("**No strong picks right now.** Nothing passed the minimum price checks. Check again later.")
+    with st.expander("How this works · important limitations"):
+        st.write("This prototype estimates outcome probabilities using other Canadian sportsbooks' complete 1X2 markets after removing their margin. It requires at least three comparison books and a 1% indicative price difference. It then ranks singles and eligible two-leg parlays together, showing up to three without repeating matches. Parlay chances multiply individual estimates and assume different-match outcomes are independent. These estimates are **not validated win probabilities**, and the ranking is not a trained AI model. It does not yet use team statistics, injury news, xG, or backtesting. A high chance does not necessarily mean good value. Prices can change. The app does not place bets.")
+    import csv
+    import io
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=["league", "match", "kickoff", "selection", "odds", "market_probability", "indicative_edge", "reference_books"])
+    writer.writeheader()
+    for r in rows:
+        writer.writerow({"league": r["league"], "match": r["match"], "kickoff": r["kickoff"], "selection": r["selection"], "odds": r["odds"], "market_probability": round(r["prob"], 5), "indicative_edge": round(r["edge"], 5), "reference_books": r["peers"]})
+    st.download_button("Export analysis (CSV)", data=buffer.getvalue(), file_name="soccer_research.csv", mime="text/csv")
 else:
-    st.info("Press Find +EV Bets above to load matches before using the independent xG model.")
+    st.write("Tap the button to scan live soccer odds and see up to three simple recommendations.")
 
 st.divider()
-st.subheader("Manual BetMGM bet checker")
-manual_odds = st.number_input("BetMGM decimal odds", min_value=1.01, value=2.10, step=0.01)
-manual_prob = st.number_input("Your independently estimated win probability (%)", min_value=0.01, max_value=99.99, value=50.0, step=0.5)
-if st.button("Calculate manual EV"):
-    st.metric("Estimated EV", f"{(manual_prob/100*manual_odds-1)*100:+.2f}%")
-st.caption("All BetMGM 1X2 selections are displayed, including negative estimated EV; N/A means insufficient comparison data. Only 1X2 soccer singles are automatically evaluated. Player props and parlays are not automatically scanned; same-game parlay legs may be correlated. API availability and quote freshness vary. Betting involves risk.")
+st.caption("18+ only where legal. This is a research tool, not financial advice or a promise of winnings. No bets are placed. Check local rules and sportsbook terms.")
