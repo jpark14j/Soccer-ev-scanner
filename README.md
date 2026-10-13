@@ -1,5 +1,7 @@
-BetMGM Ontario Soccer EV Scanner — Option B
+# BetMGM Ontario Soccer Scanner — Opportunity Analysis Update
 
-Replace app.py and requirements.txt in the root of your existing GitHub repository. Keep ODDS_API_KEY in Streamlit Secrets, not in GitHub.
+Replace the repository-root `app.py` with the included `app.py`. `requirements.txt` is unchanged but included for convenience. Do not upload API keys to GitHub. Keep `ODDS_API_KEY` in Streamlit Community Cloud Secrets.
 
-The scanner shows all BetMGM Ontario 1X2 selections sorted by estimated EV, highlighting estimates above the selected threshold. Estimated fair probabilities come from other Canadian bookmakers with complete 1X2 markets and are not independently validated predictions. Missing comparison data displays N/A.
+After Streamlit redeploys, press **Find +EV Bets** and scroll to **Opportunity analysis**. This section highlights up to five market-based positive-EV estimates supported by at least three other sportsbooks and explains each ranking. If none qualify, it explicitly says so. The full table remains available.
+
+**Important:** This is a rule-based, sportsbook-consensus explanation feature, NOT an AI model trained on team results, xG, injuries, or lineups. The estimates are uncertain, and no bet is guaranteed to be profitable. The next development stage would require licensed soccer stats, historical backtesting, and calibrated probability modeling.

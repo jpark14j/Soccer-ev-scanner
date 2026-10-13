@@ -19,7 +19,7 @@ if not api_key:
 
 leagues = st.multiselect("Choose soccer leagues", list(SPORTS), default=["Premier League", "La Liga", "Bundesliga", "Serie A"])
 threshold = st.slider("Highlight estimated EV at or above (%)", 0.0, 20.0, 0.0, 0.5)
-st.info("BetMGM Ontario is the target bookmaker. Fair probabilities are approximated from other Canadian bookmakers' complete 1X2 markets after removing margin. This is not an independent predictive model.")
+st.info("BetMGM Ontario is the target bookmaker. Estimates use other Canadian bookmakers’ complete 1X2 markets after removing margin. The analysis explains market-based estimates; it is NOT a trained AI match prediction model.")
 
 def scan():
     results, quotes, errors = [], [], []
@@ -93,6 +93,30 @@ if "scan_data" in st.session_state:
                 value = row["Estimated EV (%)"]
                 color = "background-color: #d9f4df; color: #165c2c" if pd.notna(value) and value >= threshold else ""
                 return [color if col == "Estimated EV (%)" else "" for col in row.index]
+            st.subheader("🧠 Opportunity analysis")
+            st.caption("These rankings and explanations are generated from sportsbook comparisons, not independent team statistics or a validated AI forecast. A positive estimate is not proof of an edge.")
+            valid = df.dropna(subset=["Estimated EV (%)", "Estimated fair probability (%)"]).copy()
+            candidates = valid[(valid["Estimated EV (%)"] > 0) & (valid["Reference books"] >= 3)].head(5)
+            if candidates.empty:
+                st.info("No qualifying opportunities to highlight right now. The app will not force a pick when the market-based estimates are negative or there are fewer than three comparison sportsbooks.")
+            else:
+                st.warning("For research only: verify these prices in BetMGM before relying on them. Market-derived probabilities may be inaccurate.")
+                for _, pick in candidates.iterrows():
+                    ev = float(pick["Estimated EV (%)"])
+                    prob = float(pick["Estimated fair probability (%)"])
+                    odds = float(pick["BetMGM Ontario odds"])
+                    peers = int(pick["Reference books"])
+                    implied = 100 / odds
+                    with st.container(border=True):
+                        st.markdown(f"**{pick['Match']}** · {pick['League']}")
+                        st.markdown(f"**Selection to review:** {pick['Selection']}")
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("BetMGM odds", f"{odds:.2f}")
+                        c2.metric("Market fair %", f"{prob:.1f}%")
+                        c3.metric("Estimated EV", f"{ev:+.2f}%")
+                        st.write(f"**Why flagged:** Other books imply about {prob:.1f}% after removing margin, compared with {implied:.1f}% implied by BetMGM’s price. Estimated difference: {prob-implied:+.1f} percentage points, based on {peers} comparison books.")
+                        st.caption("Data-quality signal: " + ("More comparison quotes available" if peers >= 5 else "Limited comparison quotes") + ". This is not a prediction confidence score. Confirm the match, market, and current price before any decision.")
+            st.subheader("Full BetMGM market rankings")
             st.dataframe(df.style.apply(highlight_ev, axis=1).format({"Estimated fair probability (%)":"{:.2f}","Estimated EV (%)":"{:+.2f}"}, na_rep="N/A"), hide_index=True, use_container_width=True)
             st.download_button("Download all BetMGM estimates (CSV)", df.to_csv(index=False), "betmgm_all_estimates.csv", "text/csv")
         else:
