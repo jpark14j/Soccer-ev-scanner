@@ -28,7 +28,7 @@ def main():
         print(f'Digest already sent for {today}')
         return
 
-    token = os.environ['TELEGRAM_BOT_TOKEN']
+    token = os.environ['TELEGRAM_BOT_TOKEN'].strip()
     chat_id = os.environ['TELEGRAM_CHAT_ID']
     core.KEY = os.environ['ODDS_API_KEY']
     rows, errors, timestamp = core.scan(LEAGUES)
