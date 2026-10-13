@@ -18,7 +18,7 @@ if not api_key:
     st.stop()
 
 leagues = st.multiselect("Choose soccer leagues", list(SPORTS), default=["Premier League", "La Liga", "Bundesliga", "Serie A"])
-threshold = st.slider("Minimum estimated EV (%)", 0.0, 20.0, 0.0, 0.5)
+threshold = st.slider("Highlight estimated EV at or above (%)", 0.0, 20.0, 0.0, 0.5)
 st.info("BetMGM Ontario is the target bookmaker. Fair probabilities are approximated from other Canadian bookmakers' complete 1X2 markets after removing margin. This is not an independent predictive model.")
 
 def scan():
@@ -49,6 +49,8 @@ def scan():
                     continue
                 peers = [prices for key, (_, prices) in books.items() if key != TARGET]
                 if not peers:
+                    for name in outcome_names:
+                        results.append({"League":league,"Match":f"{home} vs {away}","Kickoff (UTC)":event.get("commence_time"),"Selection":name,"BetMGM Ontario odds":books[TARGET][1][name],"Estimated fair probability (%)":None,"Estimated EV (%)":None,"Reference books":0})
                     continue
                 fair_per_peer = []
                 for prices in peers:
@@ -82,16 +84,19 @@ if "scan_data" in st.session_state:
     if quotes:
         st.success(f"Fetched {len(quotes)} live Canadian sportsbook quotes. BetMGM opportunities are shown only where reference books have comparable odds.")
         if results:
-            df = pd.DataFrame(results).sort_values("Estimated EV (%)", ascending=False)
-            matches = df[df["Estimated EV (%)"] >= threshold]
-            st.subheader("BetMGM Ontario — estimated +EV opportunities")
-            if matches.empty:
-                st.info("No BetMGM Ontario selections met your threshold in the returned data.")
-            else:
-                st.dataframe(matches, hide_index=True, use_container_width=True)
-            st.download_button("Download BetMGM estimates (CSV)", df.to_csv(index=False), "betmgm_estimates.csv", "text/csv")
+            df = pd.DataFrame(results).sort_values("Estimated EV (%)", ascending=False, na_position="last")
+            st.subheader("All BetMGM Ontario selections — highest estimated EV first")
+            positive = int((df["Estimated EV (%)"] >= threshold).sum())
+            unavailable = int(df["Estimated EV (%)"].isna().sum())
+            st.caption(f"{len(df)} BetMGM selections • {positive} at or above +{threshold:.1f}% estimated EV • {unavailable} without enough reference data. Green means the *estimate* meets your threshold, not a guaranteed edge.")
+            def highlight_ev(row):
+                value = row["Estimated EV (%)"]
+                color = "background-color: #d9f4df; color: #165c2c" if pd.notna(value) and value >= threshold else ""
+                return [color if col == "Estimated EV (%)" else "" for col in row.index]
+            st.dataframe(df.style.apply(highlight_ev, axis=1).format({"Estimated fair probability (%)":"{:.2f}","Estimated EV (%)":"{:+.2f}"}, na_rep="N/A"), hide_index=True, use_container_width=True)
+            st.download_button("Download all BetMGM estimates (CSV)", df.to_csv(index=False), "betmgm_all_estimates.csv", "text/csv")
         else:
-            st.info("No matches had both BetMGM Ontario prices and at least one complete reference 1X2 market. Try another league or date.")
+            st.info("No BetMGM Ontario selections were returned for the chosen leagues. Try another league or scan later.")
         with st.expander("View all returned Canadian sportsbook odds"):
             st.dataframe(pd.DataFrame(quotes), hide_index=True, use_container_width=True)
     else:
@@ -103,4 +108,4 @@ manual_odds = st.number_input("BetMGM decimal odds", min_value=1.01, value=2.10,
 manual_prob = st.number_input("Your independently estimated win probability (%)", min_value=0.01, max_value=99.99, value=50.0, step=0.5)
 if st.button("Calculate manual EV"):
     st.metric("Estimated EV", f"{(manual_prob/100*manual_odds-1)*100:+.2f}%")
-st.caption("Only 1X2 soccer singles are automatically evaluated. Player props and parlays are not automatically scanned; same-game parlay legs may be correlated. API availability and quote freshness vary. Betting involves risk.")
+st.caption("All BetMGM 1X2 selections are displayed, including negative estimated EV; N/A means insufficient comparison data. Only 1X2 soccer singles are automatically evaluated. Player props and parlays are not automatically scanned; same-game parlay legs may be correlated. API availability and quote freshness vary. Betting involves risk.")
