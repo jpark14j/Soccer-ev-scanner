@@ -81,7 +81,7 @@ def render_rankings(analysis,books,secret_getter=None,widget_key='dashboard_rank
 
 
 def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
-    from intelligence.book_optimizer import best_by_game,optimize_by_book,scoped_quotes
+    from intelligence.book_optimizer import best_by_game,scoped_quotes
     from intelligence.epl_forecasts import high_probability_research
     now=utcnow();quotes=[q for q in scoped_quotes(analysis,now) if q.bookmaker in books]
     current=[q for q in quotes if q.status(now)=='current' and q.jurisdiction=='CA-ON']
@@ -104,10 +104,10 @@ def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
         for state,leg in display:
             render_single(state,leg,secret_getter)
     st.write('**Parlays**')
-    choices=optimize_by_book(analysis,books,(2,3),now)
-    if not any(row['qualified'] for row in choices):
-        st.info('No qualifying parlay opportunities identified today.')
-    candidates=sorted((r['research'] for r in choices if r['research']),key=lambda c:c.rank_key)
+    from intelligence.parlay_intelligence import generate
+    intelligence=generate(analysis,books,now,max_per_size=1)
+    st.info('No qualifying parlay opportunities identified today. Model-backed candidates remain experimental.')
+    candidates=[item.research for item in intelligence.two_leg+intelligence.three_leg]
     if candidates:
         candidate=candidates[0];safe=lambda s:redact(str(s),load_config(secret_getter).sensitive_values)
         st.caption('Exploratory research only. No validated joint probability, accepted combined price or parlay EV is available.')
@@ -121,7 +121,8 @@ def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
                 st.write(candidate.rank_explanation)
                 for text in (*candidate.blockers,*candidate.warnings):st.text(safe(text))
     else:
-        st.info('No qualifying parlay opportunities identified today. No compatible current research candidate is available either.')
+        st.info('No compatible current model-backed parlay is available. Price-only combinations remain in Best Picks & Parlays → Unsupported and price-only research.')
+    st.caption('Open Best Picks & Parlays for the model-first research dashboard, opposing outcomes and complete explanations.')
     st.caption('High-probability shortlist: '+('research evidence available; review Best Picks & Parlays' if high_probability_research(analysis,now) else 'No credible high-probability selections qualify. Independent model evidence is missing.'))
     render_health(analysis,store,secret_getter)
     with st.expander('Scan audit and processing details'):

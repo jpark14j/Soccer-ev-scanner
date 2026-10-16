@@ -22,6 +22,8 @@ class Workspace:
 
 
 def render_picks(w):
+    from intelligence.parlay_intelligence_ui import render_intelligence
+    render_intelligence(w.analysis,w.store,w.book_keys,w.secret)
     singles,parlays=st.tabs(['Singles','Parlays'])
     with singles:
         from intelligence.research_views import render_singles
@@ -29,7 +31,8 @@ def render_picks(w):
         w.markets()
     with parlays:
         from intelligence.parlay_ui import render_research
-        render_research(w.analysis,w.store,w.book_keys,w.leagues,bool(w.key),w.refresh,w.secret,w.settings.daily_limit)
+        with st.expander('Unsupported and price-only research · full existing generator',expanded=False):
+            render_research(w.analysis,w.store,w.book_keys,w.leagues,bool(w.key),w.refresh,w.secret,w.settings.daily_limit)
         with st.expander('Sportsbook shortlist and whole-slate search'):
             from intelligence.slate_views import render_books
             render_books(w.analysis,w.book_keys,w.secret,'parlay_book_preference')

@@ -1,5 +1,38 @@
 # Verification matrix
 
+## Phase 4 model-first parlay intelligence — 2026-10-16
+
+**417 offline tests pass** (34 new), including model-favored binary grouping,
+equivalent and opposing consistency, missing/tied/weak evidence, correct price
+and line handling, stale/provenance rejection, physical alias/ID deduplication,
+bounded per-book 2/3-leg construction, contradictory favorite rejection, explicit
+dependency alternatives, ranking without payout maximization, actual frozen
+soccer model functions with synthetic inputs, unchanged four-page navigation,
+no-scan filters, local disabled-paid mode and new-card secret redaction. Provider
+responses and unsupported NBA/MLB model estimates in tests are synthetic, not
+genuine current predictions. A test-only 23:50 UTC fixture scheduling defect was
+fixed without weakening existing assertions or production freshness gates.
+
+Compilation, dependency consistency, whitespace, configured-secret and frozen
+model checks pass. Isolated Streamlit startup returns HTTP 200 `ok` on port 8512
+with credentials removed, cap zero, paid AI and data refresh disabled. All frozen
+source/model/policy/artifact/alias, navigation, dependencies and workflow files
+remain unchanged. Conditional EPL BTTS/totals-2.5, Bundesliga BTTS and Ligue 1
+totals-2.5 are still experimental; no model was approved. NBA/MLB/other-competition
+current model readiness remains blocked, with source gaps documented.
+
+No joint point probability is multiplied or validated. All combined prices are
+theoretical/unverified; parlay EV and an approved ticket remain unavailable.
+Additional real odds, authenticated results and paid AI requests: zero. Actual
+local October 16 odds reservations remain 9/9; genuine local paper forecasts and
+labels remain zero. Hosted current output/rebuild and ledger persistence have
+not been independently verified. This phase updates only the existing development
+branch and Draft PR #1; main, production and all service settings are untouched.
+
+[Features, ranking, source review, changed files and preview steps](PHASE4_PARLAY_INTELLIGENCE.md)
+· [Evidence](evidence/phase4-verification.json). GitHub CI uses the existing Python
+3.11 tests/compilation workflow; its actual commit-linked result is on Draft PR #1.
+
 ## Phase 3B diagnostic consistency and research quality — 2026-10-16
 
 **383 offline tests pass** (30 new). Regression coverage traces optional-source

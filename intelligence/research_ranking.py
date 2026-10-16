@@ -70,9 +70,12 @@ def comparison(leg):
 def rank_research(analysis, bookmakers=None, now=None):
     from intelligence.research_state import singles,EXPERIMENTAL,APPROVED
     now = now or utcnow()
-    rows = singles(analysis,bookmakers,statuses=[EXPERIMENTAL,APPROVED],now=now)
+    from intelligence.parlay_intelligence import selection_groups
+    groups,group_exclusions=selection_groups(analysis,bookmakers,now)
+    favored_ids={g.preferred.quote.id for g in groups if g.preferred and g.model_favored and g.research_eligible and not g.problem}
+    rows = [row for row in singles(analysis,bookmakers,statuses=[EXPERIMENTAL,APPROVED],now=now) if row[1].quote.id in favored_ids]
     supported = []
-    excluded = {}
+    excluded = dict(group_exclusions)
     for state, leg in rows:
         problem = evidence_problem(leg,now)
         if problem:

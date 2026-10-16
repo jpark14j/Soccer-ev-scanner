@@ -5,6 +5,15 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [Phase 4 parlay intelligence guide](docs/PHASE4_PARLAY_INTELLIGENCE.md) is the
+latest feature and preview guide. Open **Best Picks & Parlays** for model-favored
+binary selections and automatic evidence-ranked 2/3-leg research. Opposing outcomes
+stay in details; price-only combinations remain separate. Individual estimates,
+uncertainty and observed Ontario prices are distinct. No validated joint win
+probability, executable combined ticket, parlay EV or approved model is claimed.
+Explanations are local and rule-based. The cards reuse saved analysis; paid AI
+remains disabled and existing data-request budgets are unchanged.
+
 The [Phase 3B readiness guide](docs/PHASE3B_READINESS.md) documents consistent
 current-source/inference diagnostics, results-only session updates, three separate
 research rankings and a stale-price inventory. Your configured preview can use
@@ -89,10 +98,12 @@ from predictions and from executable sportsbook offers.
 ## Daily Parlay Research
 
 Open [your development preview](https://soccer-ev-scanner-preview-jp.streamlit.app/)
-and choose **Daily Parlay Research** (also available through **AI Parlay Builder**).
-The default experience is now sportsbook-specific cards with a 2/3-leg preference,
-**No Qualifying Parlay** when evidence is missing, and optional unvalidated research.
-The existing selector described below remains in its collapsed advanced section.
+and choose **Best Picks & Parlays**. The central **AI Parlay Intelligence** section
+shows model-backed research first, with favored binary sides, 2/3-leg controls,
+opposing outcomes in details and clear dependency/uncertainty warnings. It does
+not force a candidate when evidence or current prices are missing. For the earlier
+price-only/same-game selector, choose **Parlays → Unsupported and price-only
+research · full existing generator**.
 Filter NBA/soccer/MLB, market types, sportsbook, 2/3 legs and price-based risk category.
 Choose **One selected event** for same-game research. Up to three
 compatible current-price research candidates can appear without validated models.

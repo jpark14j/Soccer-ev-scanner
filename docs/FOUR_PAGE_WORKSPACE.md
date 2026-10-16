@@ -6,10 +6,17 @@ The same `app.py` now has four top-level destinations. Analytics, quotas, secret
 model gates and immutable ledgers remain in their existing modules. No model was
 retuned, approved or promoted; paid AI remains disabled.
 
+The [Phase 4 guide](PHASE4_PARLAY_INTELLIGENCE.md) updates the parlay experience:
+**AI Parlay Intelligence** sits above the Singles/Parlays tabs on Best Picks &
+Parlays. It shows model-favored outcomes and evidence-ranked 2/3-leg research;
+opposing outcomes stay in details. The earlier price-only selector is now under
+**Parlays → Unsupported and price-only research · full existing generator**.
+The four destinations and all advanced tools are preserved.
+
 | Destination | What to use it for |
 | --- | --- |
 | AI Dashboard | Today's concise singles/parlay research, current-price coverage, source timestamps and Data & Model Health |
-| Best Picks & Parlays | Singles / Parlays tabs, sport/book/market/evidence filters, 2/3-leg research and optional diagnostics |
+| Best Picks & Parlays | Central model-first AI Parlay Intelligence, followed by the preserved Singles / Parlays tabs and advanced research tools |
 | Performance Tracker | Prospective paper results, published hypothetical records and held-out evaluations in separate tabs |
 | Settings & Research Tools | A secondary Research tool selector containing all advanced modules |
 
@@ -118,9 +125,12 @@ predictive advantage.
 4. Open **Best Picks & Parlays → Singles**. Change **Sports**, **Sportsbooks**,
    **Market** and **Evidence status**. Check that price-only cards do not claim a
    model probability. Select Approved opportunity alone; an empty result is valid.
-5. Open the **Parlays** tab. Select 2 or 3 legs; open **Market, event and evidence
-   filters** for advanced filters. All combined products remain theoretical.
-   A lack of current compatible prices must produce an empty selector.
+5. On Best Picks & Parlays first inspect **AI Parlay Intelligence** and its
+   **Parlay research controls**. Select 2 or 3 legs; open evidence details for
+   opposing outcomes and missing dependencies. The older **Market, event and
+   evidence filters** remain inside **Parlays → Unsupported and price-only
+   research · full existing generator**. All combined products remain theoretical.
+   Missing compatible current prices/evidence must produce an empty shortlist.
 6. Open **Performance Tracker**. Inspect the three tabs, then **Held-out model
    evaluations → Premier League calibrated BTTS / goals 2.5**. The test count is
    368 and the model is research-only. Historical matches do not inflate paper counts.

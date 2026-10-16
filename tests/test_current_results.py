@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 from intelligence.current_results import (ResultsConfig, current, parse, status,
     CODES, cache_key, _reserve)
-from intelligence.domain import utcnow
+from intelligence.domain import utcnow, parse_time
 from intelligence.data_adapters import aliases, team_identity
 from intelligence.competitions import COMPETITIONS
 from intelligence.epl_forecasts import load_artifact
@@ -43,10 +43,17 @@ def payload(league='Bundesliga', now=None):
         h, aw, day = fields(f)
         done = day < now.date().isoformat()
         hg, ag = known.get((h,aw,day), (2,1)) if done else (None,None)
+        kickoff=day+'T23:50:00Z'
+        if not done and parse_time(kickoff)<=now:
+            # Synthetic scheduled fixtures on today's date must remain future
+            # even when tests run after 23:50 UTC. Keep their reviewed date;
+            # actual past/unresolved behavior is tested explicitly elsewhere.
+            midnight=now.replace(hour=0,minute=0,second=0,microsecond=0)+timedelta(days=1)
+            kickoff=(now+(midnight-now)/2).isoformat()
         matches.append({'id': offset+i+1, 'competition': {'code': CODES[league]},
             'season': {'startDate':'2026-08-01'}, 'stage':'REGULAR_SEASON',
             'homeTeam':{'id':ids[h],'name':named(h)}, 'awayTeam':{'id':ids[aw],'name':named(aw)},
-            'utcDate':day+'T23:50:00Z', 'lastUpdated':now.isoformat(),
+            'utcDate':kickoff, 'lastUpdated':now.isoformat(),
             'status':'FINISHED' if done else 'TIMED',
             'score':{'duration':'REGULAR','fullTime':{'home':hg,'away':ag}}})
     return {'competition':{'code':CODES[league],'type':'LEAGUE'},'filters':{'season':'2026'},
@@ -74,6 +81,13 @@ class Session:
         assert kwargs['headers']=={'X-Auth-Token':CONFIG.token}
         assert not kwargs['allow_redirects'] and kwargs['params']=={'season':2026}
         return self.response
+
+
+def test_synthetic_scheduled_fixture_remains_future_after_2350(store):
+    now=utcnow().replace(hour=23,minute=55,second=0,microsecond=0)
+    events,meta=current(store,'Bundesliga',now,CONFIG,Session(Response(payload('Bundesliga',now))))
+    assert meta['ok'] and meta['coverage']['unresolved_past']==0
+    assert all(parse_time(e.kickoff)>now for e in events if e.status=='scheduled')
 
 
 @pytest.mark.parametrize('config',[ResultsConfig(), ResultsConfig(True), ResultsConfig(True,CONFIG.token), ResultsConfig(True,'bad\nheader',True)])
