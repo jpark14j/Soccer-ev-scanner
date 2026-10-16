@@ -11,10 +11,10 @@ The live smoke evidence is separately recorded with actual response/source times
 | NBA analysis | Distinct research candidate, probability mass, missing-history and future-data tests pass. Real free archive evaluation completed on 701 test games, but data ends in 2015 and has no sportsbook baseline; model remains research. |
 | Soccer analysis | Original Poisson candidate retained/refactored, date-leakage tests pass. Genuine Premier League chronological evaluation remains research, not market-beating evidence. |
 | MLB analysis | Distinct run-count candidate and future-data tests pass. Real Retrosheet archive evaluation completed on 1,494 test games; data ends in 2025 and lacks a sportsbook baseline. Pitcher/lineup/weather inputs absent. |
-| Player props | Contract/participant/line normalization and count formula tests pass. One actual NBA points and one MLB strikeout event request returned no Ontario quotes. No validated prop recommendations. |
+| Player props | Contract/participant/line normalization and count formula tests pass. Earlier samples returned no quotes; the latest MLB strikeout sample returned six current Ontario observations, while NBA points returned none. No validated prop recommendations. |
 | Free history / scores | Published-licence NBA/MLB imports, doubleheaders, resumed-game exclusion and chronology tests pass. Real existing-provider scores request returned 0 completed NBA / 3 MLB records; no results inferred. |
 | Expected value | Numerical example 0.60 × 1.90 − 1 = 0.14, boundary/invalid-value and push-return tests pass. |
-| Parlay correlation | Frechet bounds, non-independent supplied joint estimate, mutually exclusive/duplicate-leg rejection tested. No fitted correlation model connected. |
+| Parlay correlation | Frechet bounds, non-independent supplied joint estimate, mutually exclusive/duplicate-leg rejection tested. New same-game score-model scenarios are explicitly unvalidated; no approved joint model connected. |
 | Genuine combined prices | Exact book/leg/restriction/time gate tested; missing combined quote yields theoretical status with no odds/EV. No live combined quote provider verified. |
 | Live updates | Observed in-play prices can be listed. No score/clock/state/latency feed or validated live model; live forecasts deliberately disabled, never described as verified. |
 | Stale quotes | Source/receipt/future/suspension and publication-time expiration checks pass; cache never resets source time. |
@@ -74,3 +74,41 @@ The separate Community Cloud preview URL is unreachable from this environment
 login/browser state is **unverified**. This does not establish that the app is down.
 See [preview test steps](PARLAY_RESEARCH.md) and
 [evidence/parlay-research-verification.json](evidence/parlay-research-verification.json).
+
+## Advanced markets and risk update — 2026-10-16
+
+**203 automated tests pass**, including the previous suite. Real Requests/HTTPX
+transports remain blocked in tests. Additional checks cover canonical market
+caching, concurrent fetch leases, narrow refresh and exact-identity merges,
+Streamlit Secrets/zero-cap handling, UTC/Toronto DST reset, seven-day stale
+inspection, source timestamps, English selections/scope, prop contradictions,
+score-model chronology/joints, unvalidated EV suppression, bankroll gates, actual
+loss-inclusive metrics/interval assumptions, advanced pages and grounded local chat.
+Compilation, dependency consistency and configured-secret scanning pass.
+
+The [dated genuine provider audit](evidence/advanced-market-access.json) observed
+372 NBA spread/total, 10 MLB run-line, six MLB pitcher-strikeout and four Premier
+League BTTS current Ontario quotes. NBA points returned none. Local reservations
+moved 3/9 to 9/9; no cap was raised/reset. Other props/corners/Asian markets were
+not live-verified. No historical endpoint, OpenAI request or Telegram send occurred.
+
+Real NBA/MLB archives were evaluated with chronological features/calibration and
+separate scoring periods: 701 / 1,494 test games per fixed-threshold task. Source,
+code/data hashes, baseline scores, calibration bins and conditional intervals are
+recorded in `evidence/*-advanced-research.json`. These are exploratory forecast
+diagnostics using previously researched archive periods, not historical sportsbook
+bets or independent confirmation. No model is promoted, and ROI/P&L remain absent.
+New soccer advanced-market code has unit tests only; no player model was trained.
+
+A **historical replay** of the genuine captured responses restored 394 observations
+(392 current at capture), 332 raw unvalidated score forecasts and three candidates.
+Advanced Markets, Daily Parlay Research, the same-game scenario, Performance Tracker
+and MLB-prop local chat rendered without exceptions, with no new provider requests.
+The replay does not make those old prices current now. An isolated port-8505 server
+with odds cap zero and paid AI off returned HTTP 200 `ok`.
+
+The public Community Cloud URL again failed with `ProxyError` from this environment.
+Its rebuild/browser is unverified; this is not evidence it is down. Open the preview
+and follow [ADVANCED_MARKETS.md](ADVANCED_MARKETS.md). See the consolidated
+[verification evidence](evidence/advanced-phase-verification.json). Production,
+main, production secrets and deployment configuration were not modified.

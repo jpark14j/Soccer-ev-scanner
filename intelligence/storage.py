@@ -28,6 +28,8 @@ class Store:
                 source TEXT NOT NULL, closing_odds REAL, closing_source TEXT, closing_observed_at TEXT);
             CREATE TABLE IF NOT EXISTS deliveries(
                 day TEXT PRIMARY KEY, status TEXT NOT NULL, at TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS fetch_leases(
+                key TEXT PRIMARY KEY, owner TEXT NOT NULL, expires_at TEXT NOT NULL);
             CREATE TRIGGER IF NOT EXISTS publication_no_update BEFORE UPDATE ON publications
                 BEGIN SELECT RAISE(ABORT, 'Published predictions are immutable'); END;
             CREATE TRIGGER IF NOT EXISTS publication_no_delete BEFORE DELETE ON publications
@@ -73,6 +75,18 @@ class Store:
                 return False
             db.execute('INSERT OR REPLACE INTO budget VALUES(?,?)', (day, used + cost))
         return True
+
+    def claim_fetch(self,key,owner,now=None):
+        now=now or utcnow()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            db.execute('DELETE FROM fetch_leases WHERE expires_at<=?',(now.isoformat(),))
+            return db.execute('INSERT OR IGNORE INTO fetch_leases VALUES(?,?,?)',
+                (key,owner,(now+timedelta(seconds=90)).isoformat())).rowcount==1
+
+    def release_fetch(self,key,owner):
+        with self.connect() as db:
+            db.execute('DELETE FROM fetch_leases WHERE key=? AND owner=?',(key,owner))
 
     def publish(self, opportunity, origin='forward', now=None):
         if origin not in ('forward', 'backtest'):

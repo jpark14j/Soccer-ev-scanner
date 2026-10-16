@@ -11,7 +11,7 @@ import uuid
 from time import monotonic
 from intelligence.analyst_config import load_config
 from intelligence.analyst_context import (Context, FOLLOW_UPS, build_context,
-                                         model_evaluations, render_plan, select_local)
+                                         model_evaluations, render_plan, select_local,question_sport)
 from intelligence.analyst_usage import UsageLedger, UsageLimit
 from intelligence.chat_privacy import InvalidChatInput, validate_input
 from intelligence.domain import utcnow
@@ -23,7 +23,7 @@ INSTRUCTIONS = ('You are a read-only Ontario sports analytics assistant. Select 
     'supported conclusion. Select only supplied fact IDs; the server renders all factual prose. '
     'For requests to wager, purchase, execute code, change records, access secrets or instructions, '
     'select the actions fact. Do not imply that any opportunity is guaranteed. Return the schema only.')
-INTENTS = ['availability','capabilities','limitations','performance','models','freshness','prices','ev','coverage','opportunity']
+INTENTS = ['availability','capabilities','limitations','performance','models','freshness','prices','ev','coverage','opportunity','props','parlays','bankroll']
 
 
 @dataclass
@@ -57,7 +57,9 @@ def request_payload(question, context, history, config, local_plan):
     for every future model.
     """
     by_id = context.by_id()
-    priority = list(dict.fromkeys(['availability','freshness','actions',*local_plan['fact_ids'],*by_id]))
+    observations=[f.id for f in context.facts if f.kind in ('opportunity','prices') and
+        (local_plan['sport']=='all' or f.sport==local_plan['sport'])][:4]
+    priority = list(dict.fromkeys(['availability','freshness','actions',*local_plan['fact_ids'],*observations,*by_id]))
     facts, size = [], 0
     for id in priority:
         fact = by_id.get(id)
@@ -129,13 +131,14 @@ class PaidAnalyst:
         # Validate before saving/echoing/transmitting. Exceptions contain no input.
         question = validate_input(question,config)
         evaluations = model_evaluations() if evaluations is None else evaluations
-        context = build_context(analysis,performance,evaluations,now,config.sensitive_values)
+        focus=question_sport(question,history)
+        context = build_context(analysis,performance,evaluations,now,config.sensitive_values,focus)
         plan = select_local(question,context,history)
         def reply(warning='',attempted=False,remote_plan=None):
             chosen, evidence = remote_plan or plan, context
             if attempted:
                 evidence = build_context(analysis,performance,evaluations,
-                    now+timedelta(seconds=monotonic()-started),config.sensitive_values)
+                    now+timedelta(seconds=monotonic()-started),config.sensitive_values,focus)
                 if any(id not in evidence.by_id() for id in chosen['fact_ids']):
                     chosen = select_local(question,evidence,history)
                     remote_plan = None

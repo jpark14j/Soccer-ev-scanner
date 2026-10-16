@@ -3,6 +3,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 import json
+import re
 from intelligence.chat_privacy import redact
 from intelligence.domain import utcnow, digest
 from intelligence.ev import qualify
@@ -37,6 +38,9 @@ FOLLOW_UPS = {
     'soccer': "What soccer information is available?",
     'mlb': "What MLB information is available?",
     'risks': "What are the biggest data and model risks?",
+    'parlays': "Find the best-supported two-leg and three-leg research candidates.",
+    'props': "Which observed player props have sufficient statistical evidence?",
+    'bankroll': "Why is Kelly unavailable for unvalidated parlay research?",
 }
 
 
@@ -54,7 +58,7 @@ def model_evaluations(directory='docs/evidence'):
     return result
 
 
-def build_context(analysis, performance=None, evaluations=(), now=None, sensitive=()):
+def build_context(analysis, performance=None, evaluations=(), now=None, sensitive=(),focus_sport='all'):
     now = now or utcnow()
     facts = []
     def add(id,kind,sport,text):
@@ -107,6 +111,35 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
         text += 'Publication blockers: ' + '; '.join(str(s) for s in report.get('promotion_blockers',[])) + '. '
         text += 'Historical research diagnostics are separate from live forward performance and are not current event probabilities.'
         add('model_'+sport.lower(),'models',sport,text)
+    from intelligence.market_validation import load_reports
+    for report in load_reports():
+        parts=[f"{task['market']} fixed diagnostic line {task['fixed_diagnostic_line']}: test n={task['test_n']}, two-class Brier={task['metrics']['brier']:.6f}, log loss={task['metrics']['log_loss']:.6f}, classification accuracy={task['classification_accuracy']:.1%}, simple-baseline accuracy={task['baseline_classification_accuracy']:.1%}" for task in report['tasks']]
+        add('advanced_'+report['sport'].lower(),'models',report['sport'],
+            f"{report['model_version']}: research only; genuine archive through {report['data_end']}. "+'; '.join(parts)+
+            '. These are held-out fixed-threshold forecast diagnostics, not observed betting win rates or ROI. No validated live-line or joint-market advantage is established.')
+    from intelligence.markets import CATALOG,selection_label
+    for sport in ('NBA','Soccer','MLB'):
+        props=[q for q in analysis.quotes if q.sport==sport and q.market in CATALOG and CATALOG[q.market].kind=='player' and q.jurisdiction=='CA-ON' and eligible_book(q.bookmaker,now)]
+        current=[q for q in props if q.status(now)=='current']
+        text=f'{sport}: {len(props)} observed player-prop quotes, {len(current)} current. No licensed player logs, expected minutes/innings, reliable availability, injuries or fitted/calibrated prop forecasts are connected. No prop currently has sufficient statistical evidence for a recommendation. '
+        for q in current[:2]:
+            text+=f'{selection_label(q)} at {q.bookmaker_name}, observed decimal {q.odds:.2f}; source {q.source_updated_at}, received {q.received_at}. Price research only. '
+        add('props_'+sport.lower(),'props',sport,text)
+    from intelligence.parlay_research import select_candidates
+    selected=select_candidates(analysis,sports=(focus_sport,) if focus_sport in ('NBA','Soccer','MLB') else ('NBA','Soccer','MLB'),now=now)
+    add('parlay_summary','parlays',focus_sport,
+        f'{len(selected.candidates)} current research candidates selected from {selected.eligible_quotes} eligible Ontario single quotes. No qualifying parlay opportunities identified today. '
+        'Ranking considers actual single-price freshness, model evidence, interval width and dependence warnings, not high payouts. No validated joint probability or authorized combined quote is connected; parlay EV is unavailable. Candidate-specific settled performance is not recorded, and cannot be inferred from historical model diagnostics.')
+    for index,candidate in enumerate(selected.candidates,1):
+        description='; '.join(f"{leg.quote.sport} {leg.quote.event}: {selection_label(leg.quote)}, observed decimal {leg.quote.odds:.2f}, source {leg.quote.source_updated_at}, received {leg.quote.received_at}, model status {leg.model_status}" for leg in candidate.legs)
+        add('parlay_'+candidate.id[:16],'parlays',focus_sport,
+            f'Research candidate {index}, {len(candidate.legs)} legs at {candidate.legs[0].quote.bookmaker_name}: '+description+
+            f'. Theoretical all-win price product {candidate.theoretical_odds:.2f}, not a sportsbook offer. '+
+            'Missing: validated joint calibration, actual combined pricing and sportsbook acceptance/settlement restrictions. '+candidate.rank_explanation)
+    add('bankroll','bankroll','all','Hypothetical loss tables are available in Daily Parlay Research. The 0.5% per-bet and 2% portfolio caps are chosen exposure assumptions, not profitable stake promises. Fractional Kelly is blocked for research parlays without validated probabilities, uncertainty and actual prices. Overlapping tickets can concentrate losses.')
+    quota=getattr(analysis,'quota',{})
+    if quota:
+        add('quota','freshness','all',f"Local odds quota: {quota['used']}/{quota['limit']}; next local reset {quota['next_reset_toronto']} ({quota['next_reset_utc']}). This does not establish the provider's account reset. No cap was automatically raised; stale snapshots remain inspection-only.")
     for o in eligible[:4]:
         q,e = o.quote,o.estimate
         add('opportunity_'+q.id[:16],'opportunity',q.sport,
@@ -137,16 +170,28 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
     return Context(tuple(facts),now.isoformat())
 
 
+def question_sport(question,history=()):
+    lower=question.lower()
+    explicit=next((s for s in ('NBA','Soccer','MLB') if re.search(r'\b'+s.lower()+r'\b',lower)),None)
+    return explicit or next((m.get('sport') for m in reversed(history) if m.get('sport') in ('NBA','Soccer','MLB')),'all')
+
+
 def select_local(question, context, history=()):
     lower = question.lower()
-    sport = next((s for s in ('NBA','Soccer','MLB') if s.lower() in lower),None)
-    if sport is None:
-        sport = next((m.get('sport') for m in reversed(history) if m.get('sport') in ('NBA','Soccer','MLB')), 'all')
+    sport=question_sport(question,history)
     if any(word in lower for word in ('place a bet','place bets','bet for me','execute','run code','run python',
                                       'drop table','purchase','buy credits','buy a subscription',
                                       'api key','credentials','system prompt','secrets')):
         kind = 'capabilities'
-    elif any(word in lower for word in ('prop','injur','lineup','weather','parlay','live')):
+    elif any(word in lower for word in ('perform','profit','roi','win rate','results')):
+        kind = 'performance'
+    elif any(word in lower for word in ('bankroll','kelly','stake','exposure')):
+        kind = 'bankroll'
+    elif 'prop' in lower:
+        kind = 'props'
+    elif 'parlay' in lower:
+        kind = 'parlays'
+    elif any(word in lower for word in ('injur','lineup','weather','live')):
         kind = 'limitations'
     elif any(word in lower for word in ('perform','profit','roi','win rate','results')):
         kind = 'performance'
@@ -176,6 +221,6 @@ def select_local(question, context, history=()):
 def render_plan(plan,context):
     by_id = context.by_id()
     # These notices are always added by the server, not left to model discretion.
-    ids = list(dict.fromkeys(['availability',*plan['fact_ids'],'freshness']))
+    ids = list(dict.fromkeys(['availability',*plan['fact_ids'],*(['limits'] if plan.get('intent') in ('props','parlays') else []),'freshness']))
     texts = [by_id[id].text for id in ids if id in by_id]
     return '\n\n'.join(texts), [by_id[id] for id in ids if id in by_id]

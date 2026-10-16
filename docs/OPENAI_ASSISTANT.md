@@ -7,6 +7,13 @@ No subscription, credits, API key or production deployment was changed for this
 implementation. The official `openai` Python SDK is installed as a dependency;
 installing/importing it does not make an API request.
 
+The advanced-market increment adds sport-aware, read-only evidence for actual
+player-prop observations, mixed/same-game parlay research, new historical diagnostics,
+quota resets and bankroll limitations. Try “Analyze MLB pitcher strikeout props”
+or “Explain the evidence and risk of these two-leg parlays.” Missing prices/player
+models, stale data, unvalidated scenarios and absent combined pricing stay explicit.
+The free rule-based path remains useful; none of these additions enables paid calls.
+
 ## Test the free interface now
 
 1. Keep your preview on `development/verified-sports-intelligence`, entrypoint

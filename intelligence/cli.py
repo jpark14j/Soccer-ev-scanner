@@ -15,6 +15,10 @@ def main():
     evaluate = sub.add_parser('evaluate')
     evaluate.add_argument('--league',choices=list(LEAGUES),required=True)
     evaluate.add_argument('--source',help='Provenance/licence reference for local history')
+    advanced=sub.add_parser('evaluate-markets')
+    advanced.add_argument('--league',choices=list(LEAGUES),required=True)
+    advanced.add_argument('--history-directory',default='data/research/history')
+    advanced.add_argument('--output-directory',default='data/research/advanced_models')
     sub.add_parser('scan')
     archive_import=sub.add_parser('import-free-history')
     archive_import.add_argument('--sport',choices=['NBA','MLB'],required=True)
@@ -32,6 +36,21 @@ def main():
     if args.command=='import-free-history':
         from intelligence.free_history import import_snapshot
         print(json.dumps(import_snapshot(args.sport,args.directory),indent=2))
+    elif args.command=='evaluate-markets':
+        from intelligence.history import load_licensed
+        from intelligence.market_validation import evaluate as evaluate_markets
+        from intelligence.chat_privacy import redact
+        stem=args.league.lower().replace(' ','_')
+        frame=load_licensed(args.league,args.history_directory)
+        manifest=json.loads((Path(args.history_directory)/(stem+'.source.json')).read_text())
+        source=redact(str(manifest.get('attribution','Provenance-checked local historical dataset')),
+                      tuple(os.getenv(n,'') for n in ('ODDS_API_KEY','OPENAI_API_KEY','TELEGRAM_BOT_TOKEN')))
+        report=evaluate_markets(frame,LEAGUES[args.league][0],source)
+        target=Path(args.output_directory);target.mkdir(parents=True,exist_ok=True)
+        (target/(LEAGUES[args.league][0].lower()+'-advanced-research.json')).write_text(json.dumps(report,indent=2)+'\n')
+        print(json.dumps({'status':report['status'],'tasks':len(report['tasks']),
+                          'test_sizes':[t['test_n'] for t in report['tasks']],
+                          'roi':None,'note':'Fixed-threshold diagnostics, not a sportsbook betting backtest'},indent=2))
     elif args.command=='settle':
         from intelligence.ledger import archive
         store.settle(args.prediction_id,args.outcome,args.result,args.source,args.closing_odds,

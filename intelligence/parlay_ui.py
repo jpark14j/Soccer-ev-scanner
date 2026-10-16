@@ -9,9 +9,11 @@ from intelligence.parlays import CATEGORIES,NO_PARLAYS
 from intelligence.registry import load_registry
 from intelligence.research_refresh import credit_status
 from intelligence.providers import LEAGUES,ProviderError
+from intelligence.markets import CATALOG,selection_label,scope
+from intelligence.quota import quota_details,refresh_reason
 
 
-def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,secret_getter=None):
+def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,secret_getter=None,daily_limit=None):
     sensitive=load_config(secret_getter).sensitive_values
     st.subheader('Daily Parlay Research')
     st.info('Research candidates help you inspect real selections together. They are not qualified betting recommendations. Combined prices below are theoretical, not confirmed available at a sportsbook.')
@@ -25,13 +27,26 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
     counts=a.multiselect('Number of legs',[2,3],default=[2,3],key='research_legs')
     categories=b.multiselect('Risk category · price proxy',CATEGORIES,default=list(CATEGORIES),key='research_categories')
     st.caption('Price-based labels, not measured risk: Lower-variance = 2 legs, each ≤ 1.80; Balanced = other products ≤ 6.00; Higher-variance = products > 6.00. These labels do not establish win probabilities or safety.')
+    market_types=st.multiselect('Parlay market types',list(CATALOG),default=list(CATALOG),format_func=lambda m:CATALOG[m].name,key='research_market_types')
+    event_ids=None
+    event_scope=st.radio('Research event scope',['Across available events','One selected event'],horizontal=True,key='research_event_scope')
+    if event_scope=='One selected event':
+        events={q.event_id:f'{q.sport} · {q.event} · {q.commence_time}' for q in analysis.quotes if q.sport in sports and q.bookmaker in selected_books and q.status()=='current'}
+        if events:
+            event_ids=[st.selectbox('Same-game research event',sorted(events),format_func=lambda id:redact(events[id],sensitive),key='research_single_event')]
+        else:
+            event_ids=[]
+            st.caption('No current event can be selected. Stale observations remain inspection-only in Advanced Markets.')
+    st.caption('Open Advanced Markets to retrieve spreads, totals, BTTS or documented event props. Only actually observed current Ontario selections can enter this selector; unvalidated props remain price research.')
     selected_leagues=[league for league in leagues if LEAGUES[league][0] in sports]
     with st.expander('Get current prices and inspect search coverage'):
         try:
-            used,limit=credit_status(store)
+            used,limit=credit_status(store,limit=daily_limit)
         except Exception:
             used,limit=0,0
             st.warning('Local provider quota information is unavailable or misconfigured. Refresh is disabled until it is fixed.')
+        reset=quota_details(store,limit)
+        st.caption(f'Next local reset: {reset["next_reset_toronto"]} · {reset["next_reset_utc"]}. The provider account reset may differ.')
         st.write(f'Local provider quota reserved today (UTC): {used}/{limit}. Selected competitions: {", ".join(selected_leagues) or "none"}.')
         st.write('A refresh requests match-winner (h2h) prices only for these competitions. It uses the existing provider account, skips completed-result collection and keeps the daily cap. No subscription or paid AI request is made. Retries also reserve credits.')
         last=st.session_state.get('_research_refresh_at')
@@ -57,7 +72,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
     # Recompute expiry every minute without making any data-provider request.
     @st.fragment(run_every='60s')
     def show():
-        result=select_candidates(analysis,sports=sports,bookmakers=selected_books,leg_counts=counts,categories=categories)
+        result=select_candidates(analysis,sports=sports,bookmakers=selected_books,leg_counts=counts,categories=categories,markets=market_types,event_ids=event_ids)
         st.caption(f'Checked {result.checked_at}. {result.eligible_quotes} eligible individual quotes; searched {result.searched_quotes} quotes and {result.examined_combinations} combinations. At most 24 legs per sportsbook are searched, balanced across sports/events; this is not an exhaustive optimizer.')
         if not result.candidates:
             st.info('No current parlay research candidates match these filters. At least two compatible, current Ontario selections at the same sportsbook are required. Review coverage below or refresh selected odds when quota permits.')
@@ -71,7 +86,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                 for leg in candidate.legs:
                     quote,e=leg.quote,leg.estimate
                     rows.append({'Sport':quote.sport,'Event':quote.event,'Event start (UTC)':quote.commence_time,'Market':quote.market,
-                        'Selection':quote.selection,'Line':quote.point,'Sportsbook':quote.bookmaker_name,
+                        'Selection':selection_label(quote),'Settlement scope':scope(quote),'Line':quote.point,'Sportsbook':quote.bookmaker_name,
                         'Individual decimal odds':quote.odds,'Market implied probability':f'{leg.implied_probability:.1%}',
                         'Source timestamp':quote.source_updated_at,'Received':quote.received_at,
                         'Model estimate':f'{e.probability:.1%} ({leg.model_status})' if e else 'Unavailable',
@@ -86,6 +101,10 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                     lo,hi=candidate.probability_bounds
                     lower,upper=candidate.uncertainty_bounds
                     st.write(f'Conditional dependence-free bounds using supplied model point estimates: {lo:.1%}–{hi:.1%}; allowing their supplied envelopes: {lower:.1%}–{upper:.1%}. These are mathematical bounds, not an estimated parlay probability or calibrated parlay confidence interval. Unvalidated inputs remain research only.')
+                if candidate.scenario_joint:
+                    scenario=candidate.scenario_joint
+                    st.write(f'Unvalidated same-game score-model scenario: {scenario["probability"]:.1%} conditional on {scenario["model_version"]}. This retains same-game score dependence; it is not a validated joint estimate or betting recommendation.')
+                    st.caption(scenario['method']+' · '+scenario['reason'])
                 st.write('**Why displayed:** '+candidate.rank_explanation)
                 with st.expander('What must be verified before this can qualify'):
                     for blocker in candidate.blockers:
@@ -95,7 +114,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                     for i,leg in enumerate(candidate.legs,1):
                         if leg.estimate:
                             st.write(redact(f'Leg {i} model {leg.estimate.model_version}, history through {leg.estimate.training_end}; status {leg.model_status}.',sensitive))
-                            st.json({k:redact(v,sensitive) if isinstance(v,str) else v for k,v in leg.model_details.items() if k in ('calibration_n','test_n','calibration_bin_n','calibration_gap','diagnostic_scores','interval_basis','data_source')})
+                            st.json({k:redact(v,sensitive) if isinstance(v,str) else v for k,v in leg.model_details.items() if k in ('calibration_n','test_n','calibration_bin_n','calibration_gap','diagnostic_scores','interval_basis','data_source','history_n','method')})
         st.info(NO_PARLAYS+' Research candidates above are kept separate from the published prediction/performance ledger.')
         with st.expander('Coverage and exclusion details'):
             st.json(result.exclusions)

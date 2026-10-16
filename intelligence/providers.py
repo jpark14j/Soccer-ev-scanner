@@ -1,5 +1,6 @@
 """The Odds API adapter. Requests use only licensed public endpoints, not scraping."""
 import re
+import uuid
 from typing import Protocol
 import requests
 from intelligence.domain import Quote, finite, parse_time, utcnow, digest
@@ -41,12 +42,27 @@ class OddsAPI:
         now = now or utcnow()
         # A hash isolates caches by account without storing the API credential.
         cache_key = digest(('odds-v1', digest(self.key), path, params))
-        cached = self.store.cached(cache_key, self.ttl, now)
+        # Even explicit refreshes coalesce identical requests within 60 seconds.
+        # Original source/receipt timestamps are preserved, including empty feeds.
+        effective_ttl=max(60,self.ttl)
+        cached = self.store.cached(cache_key, effective_ttl, now)
         if cached is not None:
             return cached
+        owner=uuid.uuid4().hex
+        if not self.store.claim_fetch(cache_key,owner,now):
+            raise ProviderError('This request is already refreshing in another session; reuse the cache or try again shortly')
+        try:
+            cached=self.store.cached(cache_key,effective_ttl,now)
+            if cached is not None:
+                return cached
+            return self._fetch(path,params,cost,cache_key,now)
+        finally:
+            self.store.release_fetch(cache_key,owner)
+
+    def _fetch(self,path,params,cost,cache_key,now):
         # Reserve each retry too, even on uncertain billing; fail closed on limits.
         for attempt in range(2):
-            if not self.store.reserve(cost, self.daily_limit, now):
+            if cost and not self.store.reserve(cost, self.daily_limit, now):
                 raise ProviderError('Daily API credit budget exhausted; cached data may be stale')
             try:
                 response = self.session.get('https://api.the-odds-api.com/v4/' + path,
@@ -67,6 +83,9 @@ class OddsAPI:
                       'credits_remaining': response.headers.get('x-requests-remaining'),
                       'credits_last': response.headers.get('x-requests-last')}
             self.store.cache(cache_key, result)
+            self.store.cache('provider-quota-observation',{
+                'observed_at':result['received_at'],'remaining':result['credits_remaining'],
+                'last_cost':result['credits_last']})
             return result
         raise ProviderError('Odds provider unavailable')
 
@@ -74,7 +93,18 @@ class OddsAPI:
         if league not in LEAGUES or not markets or not set(markets) <= {'h2h', 'spreads', 'totals'}:
             raise ValueError('Unsupported league or featured market')
         return self._get(f'sports/{LEAGUES[league][1]}/odds',
-                         {'regions': 'ca', 'markets': ','.join(markets), 'oddsFormat': 'decimal', 'dateFormat': 'iso'}, len(set(markets)))
+                         {'regions': 'ca', 'markets': ','.join(sorted(set(markets))), 'oddsFormat': 'decimal', 'dateFormat': 'iso'}, len(set(markets)))
+
+    def events(self,league):
+        if league not in LEAGUES:
+            raise ValueError('Unsupported league')
+        return self._get(f'sports/{LEAGUES[league][1]}/events',{'dateFormat':'iso'},0)
+
+    def event_markets(self,league,event_id):
+        if league not in LEAGUES or not re.fullmatch(r'[A-Za-z0-9_-]+',event_id):
+            raise ValueError('Invalid event identifier')
+        return self._get(f'sports/{LEAGUES[league][1]}/events/{event_id}/markets',
+            {'regions':'ca','dateFormat':'iso'},1)
 
     def scores(self, league, days_from=3):
         if league not in LEAGUES or days_from not in (1,2,3):
@@ -88,7 +118,7 @@ class OddsAPI:
         if not markets or not all(re.fullmatch(r'[a-z0-9_]+', m) for m in markets) or len(markets) > 10:
             raise ValueError('Invalid market request')
         return self._get(f'sports/{LEAGUES[league][1]}/events/{event_id}/odds',
-                         {'regions': 'ca', 'markets': ','.join(markets), 'oddsFormat': 'decimal', 'dateFormat': 'iso'}, len(set(markets)))
+                         {'regions': 'ca', 'markets': ','.join(sorted(set(markets))), 'oddsFormat': 'decimal', 'dateFormat': 'iso'}, len(set(markets)))
 
 
 def normalize(payload, league, received_at, now=None):
@@ -133,6 +163,8 @@ def normalize(payload, league, received_at, now=None):
                                 raise ValueError('Invalid number')
                             if not all(isinstance(v,str) and v.strip() for v in (outcome.get('name'),book.get('key'),market.get('key'))):
                                 raise ValueError('Missing identity')
+                            if not isinstance(outcome.get('description',''),str):
+                                raise ValueError('Invalid participant identity')
                             quotes.append(Quote('the-odds-api', LEAGUES[league][0], league, event['id'],
                                 f'{home} vs {away}', home, away, event['commence_time'], book['key'],
                                 book.get('title', book['key']), market['key'], outcome['name'], point,

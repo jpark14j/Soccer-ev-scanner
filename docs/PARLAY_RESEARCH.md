@@ -72,12 +72,18 @@ about what the preview will show later.
 
 ## Selection and ranking
 
-The selector admits current, pregame NBA/Soccer/MLB featured-market observations
-(h2h/spreads/totals) at one Ontario sportsbook. The current UI refresh retrieves
-**h2h only**, matching the existing low-cost collection path. The engine can inspect
-spreads/totals already ingested through the authorized adapter; their forecasting
-and settlement evidence is not implemented. Props, period markets and Asian lines
-need dedicated adapters and are excluded from this MVP.
+The selector now admits current, pregame NBA/Soccer/MLB reviewed featured markets,
+BTTS and actually returned supported player/corners observations at one Ontario
+sportsbook. **Advanced Markets** provides explicit narrow featured/event retrieval;
+the selector's original refresh remains h2h. Undocumented corners need exact event
+discovery. Catalog support does not establish Ontario availability. Use market-type
+filters and **Research event scope → One selected event** for same-game analysis.
+Period markets remain excluded. Quarter/integer lines have no settlement forecast.
+
+Supported full-event legs may display an **unvalidated same-game score-model
+scenario** from intersecting score outcomes. It is not an approved joint probability,
+independence assumption or EV calculation. Props lack connected player-history models.
+See [actual access, model results and limitations](ADVANCED_MARKETS.md).
 
 Search is bounded to 24 legs per sportsbook, balanced across sports/events before
 alternate sides. It enumerates 2/3-leg combinations, rejects duplicate/shared
@@ -120,13 +126,21 @@ works with missing estimates. Free source availability does not establish commer
 redistribution rights. No new historical feed, subscription or paid API was enabled.
 
 Normal loading still uses the existing provider cache and daily cap. The explicit
-research refresh bypasses only the time cache after a click, fetches selected
+research refresh shortens the time cache only after a click, fetches selected
 competitions, skips completed-score collection, has a 60-second session cooldown
-and retains daily credit reservations/retry accounting. It never increases or
+and at least 60 seconds of shared cache even for empty responses. Canonical market
+sets, current-observation reuse and database fetch leases reduce duplicate calls.
+It retains daily credit reservations/retry accounting. It never increases or
 resets a cap. A partial provider failure can retain an honestly stale fallback;
 that fallback still cannot enter the selector. Refresh cannot make an old provider
 source timestamp current. Separate deployments/databases share provider-account
 quota but not local counters; check the account's actual quota/terms.
+
+The interactive default is now 9 credits and three competitions with automatic
+score collection off; explicit environment/Streamlit Secrets values are honored.
+At 9/9, the exact next UTC reset and Toronto equivalent explain disabled searches.
+**Advanced Markets → Include stale / historical** preserves seven-day cached
+inspection; these observations cannot enter current candidates. No limit is raised.
 
 ## Verification and limits
 

@@ -1,5 +1,42 @@
 # Development stage report
 
+## Advanced-market increment — 2026-10-16
+
+This dated increment supersedes older market/test limitations where stated below.
+No commercial model, player forecast or executable parlay has been approved.
+
+1. **Implemented:** audited current market/docs coverage; narrow featured/event
+   searches; English selections/unknown scope; mixed-market and same-game 2/3-leg
+   research; source-preserving stale inspection; explicit 9/9 UTC/Toronto reset;
+   secure cap settings, canonical cache/fetch leases; sport-specific score research
+   with genuine NBA/MLB diagnostic evaluations; loss-inclusive ledger breakdowns
+   and cautious intervals; opt-in bankroll loss/Kelly gates; grounded props/parlay
+   assistant. See [the detailed guide](ADVANCED_MARKETS.md).
+2. **Files:** `app.py`; new `intelligence/{markets,market_ui,data_settings,quota,
+   advanced_models,market_validation,performance_ui,bankroll,risk_ui}.py`; updated
+   provider/storage/pipeline/refresh/parlay/analyst/performance/CLI modules; five new
+   test files including a fixture helper; README, architecture/assistant/parlay/stage/
+   verification guides; three market/model evidence JSONs and consolidated checks.
+3. **Passed:** 203 offline tests, compilation/dependency/secret checks, genuine
+   quota-bounded advanced-market retrieval, real archive evaluations, historical
+   captured-response UI replay, isolated Streamlit health 200. Actual test details
+   and external-preview limitation are in [VERIFICATION.md](VERIFICATION.md).
+4. **Incomplete:** Ontario coverage beyond observed markets; current licensed
+   player/context history, newly evaluated soccer score markets, integer/quarter
+   settlement modeling, current calibrated forecasts, joint validation, genuine
+   combined prices/book restrictions, automatic accepted-ticket outcomes and a real
+   forward record. Cloud build/browser remains independently unverified.
+5. **API/costs:** existing current-odds access used six conservative local credits
+   (3/9 to 9/9; five provider-reported credits), no new subscription or paid AI.
+   Local assistant/model evaluation/loss illustrations need no model API. Further
+   data/redistribution rights are not inferred and require supplier confirmation.
+6. **Next:** test the development preview, then obtain current permitted statistics,
+   timestamped historical prices, genuine parlay quotes/rules and fresh held-out
+   evidence before recommendations can responsibly qualify. Main/production and
+   `PAID_ANALYST_APPROVED = "0"` remain unchanged; PR #1 stays draft/unmerged.
+
+## Earlier staged implementation
+
 2026-10-15 Toronto · repository `jpark14j/Soccer-ev-scanner` · baseline `8e78990` ·
 branch `development/verified-sports-intelligence`.
 

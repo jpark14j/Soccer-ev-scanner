@@ -60,6 +60,23 @@ calibration sizes, data dates, uncertainty envelopes and publication blockers;
 evaluation datasets must match before calibration is used. See
 [PARLAY_RESEARCH.md](PARLAY_RESEARCH.md).
 
+`markets.py` defines reviewed market keys, participant/line contracts and English
+labels without inventing settlement scope. `market_ui.py` exposes explicit
+featured/event searches and stale inspection. `data_settings.py` honors secure
+environment/Streamlit Secrets settings; `quota.py` explains the local UTC-day cap
+and Toronto reset time. Shared canonical cache and transactional `fetch_leases`
+coalesce concurrent requests. Snapshot restoration preserves original timestamps;
+narrow refresh merges by exact quote identity without duplicating other markets.
+
+`advanced_models.py` adds paired NBA score scenarios, soccer goal and MLB run grids.
+`market_validation.py` provides date-blocked, fixed-threshold forecast diagnostics,
+not historical sportsbook returns or promoted models. Same-game score intersections
+remain unvalidated scenarios, outside the qualified joint-estimate path. Player
+history/context and integer/quarter-line settlement forecasts are missing.
+`performance_ui.py` separates actual ledger outcomes from these diagnostics.
+`bankroll.py`/`risk_ui.py` provide opt-in hypothetical loss calculations and guarded
+fractional Kelly for evidenced singles only. See [ADVANCED_MARKETS.md](ADVANCED_MARKETS.md).
+
 `storage.py` makes publications/settlements append-only with SQLite triggers.
 `ledger.py` archives derived records with content IDs; restoration rejects conflicting
 history. This small-store design avoids premature infrastructure. It is **not** a

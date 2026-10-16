@@ -23,6 +23,10 @@ class Analysis:
     baseline: dict = field(default_factory=dict)
     checked_at: str = ''
     estimates: dict = field(default_factory=dict)
+    advanced_estimates: dict = field(default_factory=dict)
+    advanced_details: dict = field(default_factory=dict)
+    score_contexts: dict = field(default_factory=dict)
+    quota: dict = field(default_factory=dict)
 
 
 def configured_store():
@@ -47,23 +51,71 @@ def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',),
             response = provider.odds(league, markets)
             if not isinstance(response['data'], list):
                 raise ProviderError('Odds provider event list missing')
-            store.cache('last-success-'+league, response)
+            store.cache('last-success-'+league+'-'+','.join(sorted(markets)), response)
+            if set(markets)=={'h2h'}:
+                store.cache('last-success-'+league,response)
         except (ProviderError, ValueError) as exc:
             # Only ProviderError uses safe locally generated messages.
             message = str(exc) if isinstance(exc, ProviderError) else 'Invalid provider contract'
             result.errors.append(f'{league}: {message}')
-            response = store.cached('last-success-'+league, 86400)
+            response = store.cached('last-success-'+league+'-'+','.join(sorted(markets)), 604800)
+            if response is None and set(markets)=={'h2h'}:
+                response=store.cached('last-success-'+league,604800)
             if response is None:
                 continue
         quotes, rejected = normalize(response['data'], league, response['received_at'],now=utcnow())
         result.quotes.extend(quotes)
         excluded['Invalid/ambiguous provider records'] += rejected
+    result=restore_market_snapshots(result,store,leagues)
     if (os.getenv('COLLECT_RESULTS','1')=='1' if collect_results is None else collect_results) and hasattr(provider,'scores'):
         from intelligence.results import collect
         try:
             collect(provider,store,[league for league in leagues if league in ('NBA','MLB')])
         except (ProviderError,ValueError):
             result.warnings.append('Recent completed-result collection unavailable; no outcomes inferred')
+    result.exclusions=dict(excluded)
+    return evaluate_quotes(result,store)
+
+
+def restore_market_snapshots(result,store,leagues):
+    """Restore private cached featured/event observations without resetting age."""
+    import json
+    from datetime import timedelta
+    by_id={q.id:q for q in result.quotes}
+    now=utcnow()
+    with store.connect() as db:
+        for league in leagues:
+            if league not in LEAGUES:
+                continue
+            rows=db.execute('SELECT at,payload FROM cache WHERE key LIKE ? OR key LIKE ?',
+                ('last-success-'+league+'-%','event-snapshot-'+league+'-%')).fetchall()
+            for row in rows:
+                try:
+                    age=now-parse_time(row['at'])
+                    if not timedelta(0)<=age<=timedelta(days=7):
+                        continue
+                    response=json.loads(row['payload'])
+                    quotes,_=normalize(response['data'],league,response['received_at'],now)
+                    for q in quotes:
+                        old=by_id.get(q.id)
+                        if old is None or (parse_time(q.source_updated_at),parse_time(q.received_at))>(parse_time(old.source_updated_at),parse_time(old.received_at)):
+                            by_id[q.id]=q
+                except (ValueError,KeyError,TypeError):
+                    result.warnings.append('A malformed cached market snapshot was ignored')
+    result.quotes=list(by_id.values())
+    return result
+
+
+def evaluate_quotes(result,store):
+    """Rebuild model evidence for merged featured/event quotes without fetching odds."""
+    from intelligence.advanced_models import make_context,probability,forecast_problem
+    result.opportunities=[]
+    result.research=[]
+    result.estimates={}
+    result.advanced_estimates={}
+    result.advanced_details={}
+    result.score_contexts={}
+    excluded=Counter(result.exclusions)
     now = utcnow()
     predictions, histories, reports = {}, {}, {}
     for q in result.quotes:
@@ -72,10 +124,6 @@ def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',),
             continue
         if q.jurisdiction != 'CA-ON':
             excluded['Ontario feed not established'] += 1
-            continue
-        if q.market != 'h2h':
-            excluded['No validated model for market'] += 1
-            result.research.append({'quote_id':q.id,'blockers':['No market-specific spread/total forecast or push-settlement model is connected']})
             continue
         league = q.league
         if league not in histories:
@@ -104,6 +152,31 @@ def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',),
             result.research.append({'quote_id':q.id,'blockers':['Historical statistics are unavailable or failed source/licence checks; no probability was estimated']})
             continue
         event_key = (q.league,q.event_id)
+        problem=forecast_problem(q)
+        if event_key not in result.score_contexts and not problem:
+            result.score_contexts[event_key]=make_context(history,q.sport,q.home,q.away,q.commence_time,as_of=now)
+        context=result.score_contexts.get(event_key)
+        advanced_p=probability(context,q) if context is not None and not problem else None
+        if advanced_p is not None:
+            estimate=Estimate(advanced_p,0.,1.,context.version,context.training_end,'',False,
+                ('Score-distribution research is not a calibrated live probability',context.method,
+                 'Operator settlement rules, injuries and confirmed lineups are unverified'),q.sport,q.league,q.market)
+            result.advanced_estimates[q.id]=estimate
+            result.advanced_details[q.id]={'quote_id':q.id,'probability':advanced_p,'model':context.version,
+                'validated':False,'lower':0.,'upper':1.,'training_end':context.training_end,
+                'history_n':context.history_n,'method':context.method,
+                'interval_basis':'Full 0–1 envelope: no validated event-specific uncertainty calibration',
+                'blockers':['No validated live-line probability or market-beating evidence',
+                            'Fixed-threshold historical diagnostics do not validate every live line',
+                            'Missing current injuries/lineups and verified operator settlement scope']}
+        if q.market!='h2h':
+            if advanced_p is not None:
+                result.estimates[q.id]=result.advanced_estimates[q.id]
+                result.research.append(result.advanced_details[q.id])
+            else:
+                result.research.append({'quote_id':q.id,'blockers':[problem or 'Insufficient source-backed team history for this score model']})
+            excluded['Advanced market remains research-only']+=1
+            continue
         if event_key not in predictions:
             options=set(history.HomeTeam)|set(history.AwayTeam)
             home=history_name(q.sport,q.home,options)

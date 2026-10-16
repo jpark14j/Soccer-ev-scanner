@@ -12,9 +12,11 @@ from intelligence.ev import expected_value
 from intelligence.parlays import CATEGORIES, joint_bounds
 from intelligence.registry import eligible_book
 from intelligence.soccer import canonical
+from intelligence.markets import CATALOG,market_problem,is_half_line
+from intelligence.advanced_models import research_joint
 
 SPORTS = ('NBA','Soccer','MLB')
-MARKETS = ('h2h','spreads','totals')
+MARKETS = tuple(CATALOG)
 
 
 @dataclass(frozen=True)
@@ -47,6 +49,7 @@ class ResearchCandidate:
     combined_odds: float | None = None
     joint_probability: float | None = None
     parlay_ev: float | None = None
+    scenario_joint: dict | None = None
 
 
 @dataclass
@@ -86,11 +89,14 @@ def pair_review(a,b):
         if a.market==b.market and canonical(a.participant)==canonical(b.participant):
             if canonical(a.selection)==canonical(b.selection):
                 return 'Repeated or nested outcome in the same event and market',warnings
-            if a.market=='totals':
+            kind=CATALOG[a.market].kind if a.market in CATALOG else ''
+            if kind in ('total','player','corners'):
                 over = a if a.selection.lower()=='over' else b
                 under = b if over is a else a
                 if math.floor(over.point)+1 >= under.point:
                     return 'Contradictory totals: both legs cannot win',warnings
+            elif a.market=='btts':
+                return 'Contradictory both-teams-to-score outcomes',warnings
             elif a.market=='spreads' and a.point+b.point<=0:
                 return 'Contradictory spreads: both legs cannot win',warnings
         # Winner plus opponent spread cannot both win when the opponent must win.
@@ -102,6 +108,11 @@ def pair_review(a,b):
     elif a.sport==b.sport and shared:
         warnings.append('Shared team across events: fatigue, lineups and common form may create dependence (including doubleheaders).')
     if a.participant and canonical(a.participant)==canonical(b.participant) and a.sport==b.sport:
+        if same_event(a,b) and {a.market,b.market}=={'player_threes','player_points'}:
+            threes=a if a.market=='player_threes' else b
+            points=b if threes is a else a
+            if threes.selection.lower()=='over' and points.selection.lower()=='under' and 3*(math.floor(threes.point)+1)>math.ceil(points.point)-1:
+                return 'Contradictory player threes and points constraints',warnings
         warnings.append('Shared player: selections may depend on the same player availability or performance.')
     return '',warnings
 
@@ -114,13 +125,19 @@ def contradictory_scores(quotes):
     predictive distribution or independence assumption enters this check.
     """
     for anchor in quotes:
-        group=[q for q in quotes if same_event(anchor,q)]
+        group=[q for q in quotes if q.market in ('h2h','spreads','totals','btts') and same_event(anchor,q)]
         if len(group)<2:
             continue
         low,high,tmin,tmax=-math.inf,math.inf,0,math.inf
+        btts=None
         for q in group:
             home=canonical(q.selection)==canonical(anchor.home)
-            if q.market=='h2h':
+            if q.market=='btts':
+                yes=q.selection.lower()=='yes'
+                if btts is not None and btts!=yes:
+                    return True
+                btts=yes
+            elif q.market=='h2h':
                 if q.selection=='Draw':
                     low,high=max(low,0),min(high,0)
                 elif home:
@@ -129,19 +146,26 @@ def contradictory_scores(quotes):
                     high=min(high,-1)
             elif q.market=='spreads':
                 if home:
-                    low=max(low,math.floor(-q.point)+1)
+                    full_win_line=math.floor(q.point*2)/2
+                    low=max(low,math.floor(-full_win_line)+1)
                 else:
-                    high=min(high,math.ceil(q.point)-1)
+                    full_win_line=math.floor(q.point*2)/2
+                    high=min(high,math.ceil(full_win_line)-1)
             elif q.selection.lower()=='over':
-                tmin=max(tmin,math.floor(q.point)+1)
+                tmin=max(tmin,math.floor(math.ceil(q.point*2)/2)+1)
             else:
-                tmax=min(tmax,math.ceil(q.point)-1)
+                tmax=min(tmax,math.ceil(math.floor(q.point*2)/2)-1)
+        if btts is False:
+            feasible=any(max(tmin,0,lo)<=min(tmax,hi) for lo,hi in ((low,high),(-high,-low)))
+            if not feasible:
+                return True
+            continue
         closest=0 if low<=0<=high else low if low>0 else high
         feasible=False
         for difference in (closest,closest-1,closest+1,-2,-1,0,1,2):
             if not low<=difference<=high or (anchor.sport!='Soccer' and difference==0):
                 continue
-            total=max(tmin,abs(difference))
+            total=max(tmin,abs(difference)+(2 if btts else 0))
             total += (total-difference)%2
             if total<=tmax:
                 feasible=True
@@ -158,24 +182,17 @@ def quote_problem(q,now):
         return q.status(now)
     if q.provider!='the-odds-api' or q.jurisdiction!='CA-ON' or not eligible_book(q.bookmaker,now):
         return 'Ontario provider provenance unavailable or registry expired'
-    if q.market not in MARKETS or q.participant:
-        return 'Market needs a dedicated settlement and correlation adapter'
-    if q.market=='h2h':
-        if q.point is not None or q.selection not in ([q.home,'Draw',q.away] if q.sport=='Soccer' else [q.home,q.away]):
-            return 'Unsupported match-winner selection'
-    elif not finite(q.point):
-        return 'Spread/total line is missing or invalid'
-    elif q.market=='totals' and (q.selection.lower() not in ('over','under') or q.point<0):
-        return 'Unsupported total selection'
-    elif q.market=='spreads' and q.selection not in (q.home,q.away):
-        return 'Unsupported spread selection'
-    return ''
+    return market_problem(q)
 
 
 def leg_evidence(q,analysis,now):
     rows=[r for r in analysis.research if r.get('quote_id')==q.id]
     details=rows[0] if len(rows)==1 else {}
     estimate=getattr(analysis,'estimates',{}).get(q.id)
+    advanced=getattr(analysis,'advanced_estimates',{}).get(q.id)
+    if advanced is not None and (estimate is None or not estimate.validated):
+        estimate=advanced
+        details=getattr(analysis,'advanced_details',{}).get(q.id,{})
     if estimate is None:
         estimate=next((o.estimate for o in analysis.opportunities if o.quote==q),None)
     usable=False
@@ -230,7 +247,7 @@ def balanced_pool(legs,limit):
 
 
 def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2,3),
-                      categories=CATEGORIES, max_results=3, pool_per_book=24, now=None):
+                      categories=CATEGORIES, max_results=3, pool_per_book=24, now=None,markets=None,event_ids=None):
     now=now or utcnow()
     if not set(sports)<=set(SPORTS) or not set(leg_counts)<={2,3} or not set(categories)<=set(CATEGORIES):
         raise ValueError('Unsupported parlay research filter')
@@ -248,7 +265,7 @@ def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2
             continue
     by_book=defaultdict(list)
     for q in analysis.quotes:
-        if q.sport not in sports or (bookmakers is not None and q.bookmaker not in bookmakers):
+        if q.sport not in sports or (event_ids is not None and q.event_id not in event_ids) or (markets is not None and q.market not in markets) or (bookmakers is not None and q.bookmaker not in bookmakers):
             continue
         problem=quote_problem(q,now)
         if not problem and counts[q.id]>1:
@@ -289,12 +306,16 @@ def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2
                     continue
                 if any(q.market in ('totals','spreads') and q.point%1==0 for q in quotes):
                     warnings.append('Integer line: pushes/voids can change settlement and the payout; the product assumes every leg wins.')
+                if any(q.market=='spreads' and q.point%0.5!=0 for q in quotes):
+                    warnings.append('Quarter/Asian line: partial-win/loss settlement and operator scope are unverified; the product assumes full wins only.')
                 warnings.append('Dependence is unmeasured, including across different games or sports. No independence assumption or multiplied win probability is used.')
                 blockers=[f'Leg {i+1}: {reason}' for i,leg in enumerate(combo) for reason in leg.blockers]
                 blockers.extend(['No validated joint probability model covers these exact legs.',
                     'The configured provider supplies no actual combined parlay price for these legs.',
                     'Sportsbook-specific parlay acceptance, combination restrictions and settlement rules are unverified.'])
                 estimates=[leg.estimate for leg in combo]
+                context=getattr(analysis,'score_contexts',{}).get((quotes[0].league,quotes[0].event_id))
+                scenario=research_joint(context,quotes) if context is not None and all(same_event(quotes[0],q) for q in quotes) and all(e and e.model_version==context.version for e in estimates) else None
                 bounds=joint_bounds([e.probability for e in estimates]) if all(estimates) else None
                 interval_bounds=(max(0.,sum(e.lower for e in estimates)-n+1),min(e.upper for e in estimates)) if all(estimates) else None
                 validated=sum(leg.model_status=='validated' for leg in combo)
@@ -312,7 +333,7 @@ def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2
                     'rank uses model-evidence fractions, explicit dependence flags, interval width, freshness and fewer legs, in that order. '
                     'Price availability is an entry gate; combined prices are unavailable. Ranking is research priority, not estimated profit.')
                 candidates.append(ResearchCandidate(digest((book,tuple(sorted(q.id for q in quotes)))),combo,
-                    category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation))
+                    category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation,scenario_joint=scenario))
     candidates.sort(key=lambda c:c.rank_key)
     result.candidate_count=len(candidates)
     # At most one candidate per physical event set, even across books. This

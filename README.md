@@ -13,7 +13,9 @@ claimed.** The honest current result is no qualifying recommendations.
 
 Read [the audit](docs/TECHNICAL_AUDIT.md), [provider review](docs/PROVIDERS.md),
 [stage results](docs/STAGE_REPORT.md), [free data choices](docs/FREE_DATA.md), [architecture](docs/ARCHITECTURE.md) and
-[verification matrix](docs/VERIFICATION.md) before rollout.
+[verification matrix](docs/VERIFICATION.md) before rollout. The latest
+[advanced-market guide](docs/ADVANCED_MARKETS.md) documents actual Ontario coverage,
+same-game research, model diagnostics and precise quota-reset behavior.
 
 ## Run the existing app
 
@@ -31,7 +33,7 @@ Use the existing `ODDS_API_KEY` through environment variables or Streamlit Secre
 Telegram additionally uses `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in Actions
 Secrets. Never commit credentials or put them in command-line arguments.
 
-All ten requested sections plus Daily Parlay Research are present. The analyst answers from current
+All ten requested sections plus Advanced Markets and Daily Parlay Research are present. The analyst answers from current
 application records; default local mode **does not call a language model API**.
 The official OpenAI SDK integration is implemented but disabled by default with
 `PAID_ANALYST_APPROVED = "0"`. The conversational page supports bounded history,
@@ -46,20 +48,28 @@ from predictions and from executable sportsbook offers.
 
 Open [your development preview](https://soccer-ev-scanner-preview-jp.streamlit.app/)
 and choose **Daily Parlay Research** (also available through **AI Parlay Builder**).
-Filter NBA/soccer/MLB, sportsbook, 2/3 legs and price-based risk category. Up to three
+Filter NBA/soccer/MLB, market types, sportsbook, 2/3 legs and price-based risk category.
+Choose **One selected event** for same-game research. Up to three
 compatible current-price research candidates can appear without validated models.
 Individual odds/timestamps are real observations; their combined product is always
-labeled theoretical. No joint probability, executable price or parlay EV is invented.
+labeled theoretical. Optional same-game score-model scenarios are explicitly
+unvalidated; no approved joint probability, executable price or parlay EV is invented.
 An explicit selected-competition refresh respects existing quota; filters make no
 requests. See [preview test steps, methodology and limitations](docs/PARLAY_RESEARCH.md).
+
+Open **Advanced Markets** to request one competition/market or one event's props,
+inspect current/stale observations in English and see unknown settlement rules.
+NBA spreads/totals, MLB run lines/pitcher strikeouts and soccer BTTS returned actual
+Ontario observations in the dated audit. Other catalog support is not verified
+coverage. No new model qualifies for betting recommendations.
 
 ## Configuration and cost control
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `ODDS_API_KEY` | existing secret | Authorized existing provider account |
-| `ODDS_DAILY_CREDITS` | `16` | Local UTC-day reservation cap, including retries |
-| `COLLECT_RESULTS` | `1` | Cache and accumulate completed NBA/MLB results once per 24h; `0` disables |
+| `ODDS_DAILY_CREDITS` | UI `9`; scheduled CLI `16` | Local UTC-day reservation cap, including retries; environment/Streamlit Secrets honored |
+| `COLLECT_RESULTS` | UI `0`; scheduled CLI `1` | Explicit `1` enables cached NBA/MLB completed-result collection; `0` disables |
 | `ODDS_CACHE_SECONDS` | `1800` | Shared provider response cache |
 | `INTELLIGENCE_DB` | `data/intelligence.sqlite3` | SQLite query index/cache; persistent disk recommended |
 | `PREDICTION_LEDGER_DIR` | `ledger` | Derived immutable prediction/settlement JSONL archive |
@@ -76,7 +86,11 @@ requests. See [preview test steps, methodology and limitations](docs/PARLAY_RESE
 | `DIGEST_HOUR_LOCAL` | `9` | Toronto delivery window; change Actions crons too if hour changes |
 | `STREAMLIT_APP_URL` | existing deployment | Link in daily report |
 
-Nine competitions, h2h once daily (270 credits/30 days), plus daily NBA/MLB
+The UI initially selects NBA, Premier League and MLB, skips automatic scores and
+shows the exact next local UTC reset in Toronto time too. At 9/9 it keeps stale
+inspection available while disabling chargeable searches. It never raises the cap.
+The separate scheduled CLI retains its existing settings. For that CLI,
+nine competitions, h2h once daily (270 credits/30 days), plus daily NBA/MLB
 completed results (120 credits/30 days) total about 390 before retries/props. The provider currently advertises a free 500-credit tier;
 this is **not a statement of your account's billing plan**. No subscription was
 created or upgraded. More markets, refreshes, clients or deployments need explicit
@@ -103,6 +117,8 @@ use that mode for the subscriber product or parallel deployments.
 python -m intelligence.cli evaluate --league 'Premier League'
 python -m intelligence.cli evaluate --league NBA --source 'your licensed source reference'
 python -m intelligence.cli scan
+python -m intelligence.cli evaluate-markets --league NBA
+python -m intelligence.cli evaluate-markets --league MLB
 ```
 
 Soccer uses the existing shrinkage Poisson candidate, NBA a distinct normal margin
@@ -120,6 +136,12 @@ Additional props and period market keys are supported by the provider event adap
 missing Ontario prices are not replaced with US prices. No props are forecast from
 game winner models. Integer/Asian lines need push/half-settlement handling and
 separate validation before publication.
+
+New NBA paired-score and MLB run-grid research diagnostics use genuine archive
+results for fixed spread/total thresholds, chronological calibration and held-out
+forecast scoring. They are not historical sportsbook bets and have no betting ROI.
+New soccer score-grid code lacks a genuine advanced-market evaluation. See
+[model limitations and actual results](docs/ADVANCED_MARKETS.md).
 
 ## Telegram and permanent results
 

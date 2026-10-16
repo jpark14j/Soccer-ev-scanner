@@ -12,6 +12,7 @@ from intelligence.performance import metrics, breakdown
 from intelligence.pipeline import configured_store, publish_current, run_analysis, Analysis
 from intelligence.providers import LEAGUES, PROP_MARKETS
 from intelligence.registry import load_registry
+from intelligence.markets import selection_label,scope
 
 st.set_page_config(page_title='Sports Intelligence | Ontario',page_icon='⚽',layout='wide')
 st.markdown('''<style>
@@ -19,7 +20,7 @@ st.markdown('''<style>
 [data-testid="stMetricValue"] {font-size:1.8rem;}
 [data-testid="stSidebar"] {border-right:1px solid #263545;}
 </style>''',unsafe_allow_html=True)
-PAGES = ['AI Dashboard','Daily Parlay Research','Best Opportunities','AI Parlay Builder','NBA Analytics',
+PAGES = ['AI Dashboard','Advanced Markets','Daily Parlay Research','Best Opportunities','AI Parlay Builder','NBA Analytics',
          'Soccer Analytics','MLB Analytics','Live Markets','AI Assistant','Performance Tracker','Settings']
 registry = load_registry()
 store = configured_store()
@@ -35,12 +36,14 @@ def secret(name):
         return ''
 
 
+from intelligence.data_settings import load_settings
+data_settings=load_settings(secret)
 key = secret('ODDS_API_KEY')
 with st.sidebar:
     st.title('Sports Intelligence')
     st.caption('ONTARIO · NBA / SOCCER / MLB')
     page = st.radio('Workspace',PAGES,label_visibility='collapsed')
-    leagues = st.multiselect('Competitions',list(LEAGUES),default=list(LEAGUES))
+    leagues = st.multiselect('Competitions',list(LEAGUES),default=['NBA','Premier League','MLB'])
     books = st.multiselect('Sportsbooks in view',sorted(b['name'] for b in registry['books']),
                            default=sorted(b['name'] for b in registry['books']))
     # Provider titles vary; filter using the registry key rather than display text.
@@ -50,8 +53,11 @@ with st.sidebar:
 
 
 @st.cache_data(ttl=1800,show_spinner=False)
-def load_analysis(api_key,competitions,db_path):
-    return run_analysis(api_key,list(competitions),store=configured_store())
+def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results):
+    from intelligence.providers import OddsAPI
+    data_store=configured_store()
+    provider=OddsAPI(api_key,data_store,daily_limit=cap,ttl=ttl)
+    return run_analysis(api_key,list(competitions),store=data_store,provider=provider,collect_results=collect_results)
 
 
 st.title(page)
@@ -65,7 +71,7 @@ elif not key:
     result = Analysis()
 else:
     with st.spinner('Loading available markets and checking model evidence…'):
-        result = load_analysis(key,tuple(leagues),store.path)
+        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results)
 
 if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
     st.session_state.pop('_research_snapshot',None)
@@ -74,6 +80,10 @@ if st.button('Refresh analysis',help='Uses the shared provider cache and daily c
 
 if result.checked_at:
     st.caption(f'Analysis loaded {result.checked_at}. Individual quote source times appear below. Provider cache: 30 minutes by default; recommendations expire after five minutes.')
+from intelligence.market_ui import quota_banner
+result.quota=quota_banner(store,data_settings)
+for error in data_settings.errors:
+    st.warning(error)
 for warning in result.warnings:
     st.warning(warning)
 for error in result.errors:
@@ -114,11 +124,12 @@ def show_markets(sport=None,live=False):
     for q in quotes:
         r = research.get(q.id,{})
         table.append({'Sport':q.sport,'Event':q.event,'Market':q.market,
-                      'Participant':q.participant,'Selection':q.selection,'Line':q.point,
+                      'Participant':q.participant,'Selection':selection_label(q),'Settlement scope':scope(q),'Line':q.point,
                       'Sportsbook':q.bookmaker_name,'Observed odds':q.odds,
                       'Source update':q.source_updated_at,'Received':q.received_at,
                       'Status':q.status(now),'Model estimate (research unless validated)':r.get('probability'),
-                      'Model validated':r.get('validated',False)})
+                      'Model validated':r.get('validated',False),'Model version':r.get('model'),
+                      'Model history through':r.get('training_end'),'Probability envelope':(r.get('lower'),r.get('upper')) if r.get('probability') is not None else None})
     if table:
         st.dataframe(pd.DataFrame(table),hide_index=True,use_container_width=True)
     else:
@@ -157,25 +168,33 @@ if page=='AI Dashboard':
 elif page=='Best Opportunities':
     show_opportunities(current_opportunities())
     st.caption('The best available qualifying price is selected per equivalent selection. Market-implied probabilities are comparison baselines, never treated as independently estimated truth.')
-elif page in ('Daily Parlay Research','AI Parlay Builder'):
+elif page in ('Daily Parlay Research','AI Parlay Builder','Advanced Markets'):
     from intelligence.parlay_ui import render_research
-    from intelligence.research_refresh import refresh_research
-    def refresh_selected(selected_leagues):
-        fresh=refresh_research(result,key,selected_leagues,store)
+    from intelligence.research_refresh import refresh_research,refresh_event
+    def refresh_selected(selected_leagues,markets=('h2h',),event_id=None,discovered=()):
+        fresh=(refresh_event(result,key,selected_leagues[0],event_id,markets,store,limit=data_settings.daily_limit,discovered=discovered) if event_id else
+            refresh_research(result,key,selected_leagues,store,markets=markets,limit=data_settings.daily_limit))
         st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':fresh,'stored_at':utcnow().isoformat()}
         load_analysis.clear()
-    render_research(result,store,book_keys,leagues,bool(key),refresh_selected,secret)
-    st.subheader('Qualified-leg diagnostic builder')
-    st.caption('This separate diagnostic still requires qualified singles. It never promotes a research candidate into a recommendation.')
-    eligible = current_opportunities()
-    chosen = st.multiselect('Qualifying legs to evaluate',range(len(eligible)),
-                            format_func=lambda i:f'{eligible[i].quote.sport}: {eligible[i].quote.event} / {eligible[i].quote.selection}')
-    if 2<=len(chosen)<=6:
-        analysis = analyze([eligible[i] for i in chosen])
-        lower,upper = analysis['probability_bounds']
-        st.write(f'Theoretical joint probability bounds: {lower:.1%}–{upper:.1%}.')
-        st.caption(analysis['reason']+'. No executable combined price or parlay EV is asserted.')
-    st.write('Lower-variance, balanced and higher-variance categories require a validated joint model, sportsbook restrictions, and an actual combined quote. Different games or sports do not establish independence.')
+    if page=='Advanced Markets':
+        from intelligence.market_ui import render_markets
+        render_markets(result,store,leagues,book_keys,key,data_settings,refresh_selected,secret)
+    else:
+        render_research(result,store,book_keys,leagues,bool(key),refresh_selected,secret,data_settings.daily_limit)
+    if page!='Advanced Markets':
+        from intelligence.risk_ui import render_bankroll
+        render_bankroll(current_opportunities())
+        st.subheader('Qualified-leg diagnostic builder')
+        st.caption('This separate diagnostic still requires qualified singles. It never promotes a research candidate into a recommendation.')
+        eligible = current_opportunities()
+        chosen = st.multiselect('Qualifying legs to evaluate',range(len(eligible)),
+                                format_func=lambda i:f'{eligible[i].quote.sport}: {eligible[i].quote.event} / {eligible[i].quote.selection}')
+        if 2<=len(chosen)<=6:
+            analysis = analyze([eligible[i] for i in chosen])
+            lower,upper = analysis['probability_bounds']
+            st.write(f'Theoretical joint probability bounds: {lower:.1%}–{upper:.1%}.')
+            st.caption(analysis['reason']+'. No executable combined price or parlay EV is asserted.')
+        st.write('Lower-variance, balanced and higher-variance categories require a validated joint model, sportsbook restrictions, and an actual combined quote. Different games or sports do not establish independence.')
 elif page in ('NBA Analytics','Soccer Analytics','MLB Analytics'):
     sport = page.split()[0]
     show_opportunities(current_opportunities(sport))
@@ -195,23 +214,11 @@ elif page=='AI Assistant':
     from intelligence.chat_ui import render_assistant
     render_assistant(result,store,secret)
 elif page=='Performance Tracker':
-    origin = st.radio('Record type',['forward','backtest'],horizontal=True)
-    records = store.records(origin)
-    summary = metrics(records)
-    if not records:
-        st.info('No published predictions in this ledger. Performance metrics will appear only after genuine publications and evidence-backed settlements.')
-    else:
-        st.json(summary)
-        dimension = st.selectbox('Break down by',['sport','market','model_version'])
-        st.json(breakdown(records,dimension))
-        st.dataframe(pd.DataFrame([{'Published':r['at'],'Sport':r['payload']['quote']['sport'],
-                                   'Event':r['payload']['quote']['event'],'Selection':r['payload']['quote']['selection'],
-                                   'Outcome':r['outcome'],'Result evidence':r['source']} for r in records]),hide_index=True,use_container_width=True)
-    st.warning('This Streamlit instance needs persistent storage and backups before publication to subscribers. The scheduled workflow archives derived predictions in GitHub; Streamlit local files are not automatically pushed.')
-    st.caption('One hypothetical unit per selection. Pushes return stake; voids excluded from turnover. Brier/log loss exclude pushes and voids. Closing-line value needs an evidenced closing price. Losses remain recorded.')
+    from intelligence.performance_ui import render_performance
+    render_performance(store)
 elif page=='Settings':
     st.write('Competition and sportsbook view preferences are in the sidebar and last for this browser session.')
-    st.write(f'Local daily credit cap: {os.getenv("ODDS_DAILY_CREDITS","16")}. Default retrieval cache: 30 minutes. No subscriptions are purchased by the application.')
+    st.write(f'Local daily credit cap: {data_settings.daily_limit}. Default retrieval cache: {data_settings.cache_seconds} seconds. No subscriptions are purchased by the application.')
     st.write(f'Ontario directory effective date: {registry["directory_as_of"]}. Review expires {registry["review_expires_at"]}. Expired evidence disables eligibility.')
     st.dataframe(pd.DataFrame(registry['books']),hide_index=True,use_container_width=True)
     st.link_button('Official Ontario directory',registry['source'])
@@ -222,8 +229,9 @@ elif page=='Settings':
               'Paid conversational API':'Configured; session consent required' if analyst_config.paid_ready else 'Disabled or unconfigured','NBA/MLB historical data':'Free research imports / licensed files / locally collected completed results'})
     st.caption('Scheduling and Telegram preferences use environment variables documented in README. API keys belong in Streamlit Secrets or GitHub Actions Secrets.')
     st.subheader('Additional market requests')
-    st.json(PROP_MARKETS)
-    st.caption('These are provider request keys, not claims of Ontario availability. Event-specific requests consume quota and are opt-in through the adapter.')
+    from intelligence.markets import CATALOG
+    st.dataframe(pd.DataFrame([{'Provider key':m.key,'Market':m.name,'Sports':', '.join(m.sports),'Published provider documentation':m.documented} for m in CATALOG.values()]),hide_index=True,use_container_width=True)
+    st.caption('Documented support is not account or Ontario availability. Open Advanced Markets for market-specific searches/discovery; undocumented corners need exact event discovery. Every request is subject to quota.')
 
 for manifest in Path(os.getenv('HISTORY_DIR','data/history')).glob('*.source.json'):
     try:
