@@ -94,7 +94,10 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                         'Model envelope':f'{e.lower:.1%}–{e.upper:.1%}' if e else 'Unavailable',
                         'Individual EV':f'{leg.estimated_ev:+.1%}' if leg.estimated_ev is not None else 'Not supported'})
                 rows=[{k:redact(v,sensitive) if isinstance(v,str) else v for k,v in row.items()} for row in rows]
-                st.dataframe(pd.DataFrame(rows),hide_index=True,use_container_width=True)
+                for row in rows:
+                    st.text(str(row.get('Event',''))+' · '+str(row.get('Selection',''))+' · decimal '+str(row.get('Individual decimal odds','')))
+                with st.expander('Advanced Details / Raw Market Data',expanded=False):
+                    st.dataframe(pd.DataFrame(rows),hide_index=True,use_container_width=True)
                 st.write('**Joint win probability:** unavailable. **Parlay EV:** not calculated. **Actual combined price:** unavailable. **Sportsbook acceptance/restrictions:** unverified.')
                 st.caption('Implied probabilities are 1 ÷ individual odds and contain bookmaker margin. They are not model forecasts and are never multiplied into a joint probability.')
                 if candidate.probability_bounds is not None:

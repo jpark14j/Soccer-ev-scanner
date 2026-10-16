@@ -63,6 +63,15 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
     facts = []
     def add(id,kind,sport,text):
         facts.append(Fact(id,kind,sport,redact(text,sensitive)))
+    from intelligence.book_optimizer import best_by_game,optimize_by_book
+    games=best_by_game(analysis,now=now)
+    add('slate_summary','coverage','all',f'{len(games)} upcoming games discovered or observed in the configured slate; '
+        f'{sum(g["observations_evaluated"]>0 for g in games)} have current eligible observations evaluated; '
+        'coverage is partial, not every game/market was scanned. Quota, stale prices and missing data constrain analysis. '
+        'Game cards rank at most two selections by qualified value, model evidence and freshness, not payout; ties have no demonstrated statistical superiority.')
+    for index in range(0,min(len(games),30),5):
+        text='; '.join(f"{g['event']['sport']} {g['event']['event']} starts {g['event']['start']}: {g['observations_evaluated']} current observations evaluated; {g['qualified']} shortlisted qualified singles" for g in games[index:index+5])
+        add('games_'+str(index),'coverage','all',text+'. More games, when present, are available in Best Selections by Game.')
     eligible = [o for o in analysis.opportunities if qualify(o.quote,o.estimate,now)[0]]
     add('availability','availability','all',
         f'{len(eligible)} current opportunities pass the Ontario, freshness, model-validation and uncertainty-adjusted EV gates. '
@@ -136,6 +145,16 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
             f'Research candidate {index}, {len(candidate.legs)} legs at {candidate.legs[0].quote.bookmaker_name}: '+description+
             f'. Theoretical all-win price product {candidate.theoretical_odds:.2f}, not a sportsbook offer. '+
             'Missing: validated joint calibration, actual combined pricing and sportsbook acceptance/settlement restrictions. '+candidate.rank_explanation)
+    from dataclasses import replace
+    focused=replace(analysis,quotes=[q for q in analysis.quotes if focus_sport=='all' or q.sport==focus_sport])
+    for row in optimize_by_book(focused,leg_counts=(2,3),now=now):
+        candidate=row['research']
+        text=f"{row['name']}: {row['qualification_status']}; {row['eligible_singles_scored']} eligible singles across {row['events_considered']} events. {row['search_method']}. "
+        if candidate:
+            text+='Unvalidated research candidate: '+'; '.join(f'{leg.quote.event}: {selection_label(leg.quote)}, individual decimal {leg.quote.odds:.2f}, source {leg.quote.source_updated_at}' for leg in candidate.legs)
+            text+=f'. Theoretical price product {candidate.theoretical_odds:.2f}, not an executable quote. '+candidate.rank_explanation
+        text+=' Validated joint probability, actual combined pricing, verified restrictions and candidate-specific betting performance are unavailable.'
+        add('book_'+row['bookmaker'],'parlays',focus_sport,text)
     add('bankroll','bankroll','all','Hypothetical loss tables are available in Daily Parlay Research. The 0.5% per-bet and 2% portfolio caps are chosen exposure assumptions, not profitable stake promises. Fractional Kelly is blocked for research parlays without validated probabilities, uncertainty and actual prices. Overlapping tickets can concentrate losses.')
     quota=getattr(analysis,'quota',{})
     if quota:
@@ -183,6 +202,8 @@ def select_local(question, context, history=()):
                                       'drop table','purchase','buy credits','buy a subscription',
                                       'api key','credentials','system prompt','secrets')):
         kind = 'capabilities'
+    elif any(word in lower for word in ('which games','games did','slate','games analyzed','games analysed')):
+        kind = 'coverage'
     elif any(word in lower for word in ('perform','profit','roi','win rate','results')):
         kind = 'performance'
     elif any(word in lower for word in ('bankroll','kelly','stake','exposure')):
@@ -212,6 +233,14 @@ def select_local(question, context, history=()):
     chosen = [f.id for f in context.facts if f.kind==kind and f.sport in ('all',sport)]
     if sport=='all':
         chosen = [f.id for f in context.facts if f.kind==kind]
+    if kind=='coverage' and any(word in lower for word in ('games','slate')):
+        chosen=['slate_summary',*[f.id for f in context.facts if f.id.startswith('games_')]]
+    if kind=='parlays':
+        normalized=re.sub(r'[^a-z0-9]','',lower)
+        matched=[f.id for f in context.facts if f.id.startswith('book_') and
+            re.sub(r'[^a-z0-9]','',f.id[5:].split('_ca')[0]) in normalized]
+        if matched:
+            chosen=matched+['parlay_summary']
     if not chosen:
         chosen = ['availability','coverage_'+sport.lower()] if sport!='all' else ['availability']
     followups = ['prices','models','freshness'] if kind!='performance' else ['models','risks','best']

@@ -5,6 +5,12 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The latest [automatic research guide](docs/AUTONOMOUS_RESEARCH.md) explains the
+new card-based landing page, automatic budget-aware slate discovery, best selections
+by game, one shortlist per sportsbook and guarded operational/model lifecycle.
+Raw odds are collapsed under **Advanced Details / Raw Market Data**. Background
+scheduling and Community Cloud redeployment persistence remain unconfigured.
+
 The application retrieves genuine NBA, soccer and MLB sportsbook observations,
 checks Ontario feed provenance and freshness, and publishes only selections that
 pass model evidence and uncertainty-adjusted EV requirements. **No model has been
@@ -33,7 +39,8 @@ Use the existing `ODDS_API_KEY` through environment variables or Streamlit Secre
 Telegram additionally uses `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in Actions
 Secrets. Never commit credentials or put them in command-line arguments.
 
-All ten requested sections plus Advanced Markets and Daily Parlay Research are present. The analyst answers from current
+All ten requested sections plus Advanced Markets, Daily Parlay Research, Best
+Selections by Game and Research Operations are present. The analyst answers from current
 application records; default local mode **does not call a language model API**.
 The official OpenAI SDK integration is implemented but disabled by default with
 `PAID_ANALYST_APPROVED = "0"`. The conversational page supports bounded history,
@@ -48,6 +55,9 @@ from predictions and from executable sportsbook offers.
 
 Open [your development preview](https://soccer-ev-scanner-preview-jp.streamlit.app/)
 and choose **Daily Parlay Research** (also available through **AI Parlay Builder**).
+The default experience is now sportsbook-specific cards with a 2/3-leg preference,
+**No Qualifying Parlay** when evidence is missing, and optional unvalidated research.
+The existing selector described below remains in its collapsed advanced section.
 Filter NBA/soccer/MLB, market types, sportsbook, 2/3 legs and price-based risk category.
 Choose **One selected event** for same-game research. Up to three
 compatible current-price research candidates can appear without validated models.
@@ -71,6 +81,7 @@ coverage. No new model qualifies for betting recommendations.
 | `ODDS_DAILY_CREDITS` | UI `9`; scheduled CLI `16` | Local UTC-day reservation cap, including retries; environment/Streamlit Secrets honored |
 | `COLLECT_RESULTS` | UI `0`; scheduled CLI `1` | Explicit `1` enables cached NBA/MLB completed-result collection; `0` disables |
 | `ODDS_CACHE_SECONDS` | `1800` | Shared provider response cache |
+| `SLATE_WINDOW_HOURS` | `48` | Automatic configured-competition discovery window, 1–168 hours |
 | `INTELLIGENCE_DB` | `data/intelligence.sqlite3` | SQLite query index/cache; persistent disk recommended |
 | `PREDICTION_LEDGER_DIR` | `ledger` | Derived immutable prediction/settlement JSONL archive |
 | `HISTORY_DIR` | `data/history` | Licensed historical CSVs plus source manifests |
@@ -86,9 +97,12 @@ coverage. No new model qualifies for betting recommendations.
 | `DIGEST_HOUR_LOCAL` | `9` | Toronto delivery window; change Actions crons too if hour changes |
 | `STREAMLIT_APP_URL` | existing deployment | Link in daily report |
 
-The UI initially selects NBA, Premier League and MLB, skips automatic scores and
+The UI initially selects NBA, Premier League and MLB, skips unconditional score queries and
 shows the exact next local UTC reset in Toronto time too. At 9/9 it keeps stale
 inspection available while disabling chargeable searches. It never raises the cap.
+Ended pending predictions/research forecasts can trigger capped result collection;
+without pending events no score query is needed. Discovery is zero credits;
+featured/event tasks rotate within the existing cap and explicitly report skips.
 The separate scheduled CLI retains its existing settings. For that CLI,
 nine competitions, h2h once daily (270 credits/30 days), plus daily NBA/MLB
 completed results (120 credits/30 days) total about 390 before retries/props. The provider currently advertises a free 500-credit tier;
@@ -119,6 +133,8 @@ python -m intelligence.cli evaluate --league NBA --source 'your licensed source 
 python -m intelligence.cli scan
 python -m intelligence.cli evaluate-markets --league NBA
 python -m intelligence.cli evaluate-markets --league MLB
+python -m intelligence.cli research-cycle --offline
+python -m intelligence.cli train-challenger --league NBA
 ```
 
 Soccer uses the existing shrinkage Poisson candidate, NBA a distinct normal margin

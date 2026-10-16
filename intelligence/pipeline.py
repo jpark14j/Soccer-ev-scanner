@@ -27,6 +27,8 @@ class Analysis:
     advanced_details: dict = field(default_factory=dict)
     score_contexts: dict = field(default_factory=dict)
     quota: dict = field(default_factory=dict)
+    slate: dict = field(default_factory=dict)
+    processing: dict = field(default_factory=dict)
 
 
 def configured_store():
@@ -36,11 +38,14 @@ def configured_store():
     return store
 
 
-def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',), collect_results=None):
+def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',), collect_results=None, autonomous=False, window_hours=48):
     store = store or configured_store()
     leagues = list(LEAGUES) if leagues is None else leagues
-    provider = provider or OddsAPI(key, store, daily_limit=int(os.getenv('ODDS_DAILY_CREDITS','16')),
+    provider = provider or OddsAPI(key, store, daily_limit=int(os.getenv('ODDS_DAILY_CREDITS','9' if autonomous else '16')),
                                    ttl=int(os.getenv('ODDS_CACHE_SECONDS','1800')))
+    if autonomous:
+        from intelligence.slate import run_slate
+        return run_slate(key,leagues,store,provider,window_hours=window_hours,collect_results=collect_results)
     result = Analysis(checked_at=utcnow().isoformat())
     excluded = Counter()
     for league in leagues:
@@ -117,7 +122,7 @@ def evaluate_quotes(result,store):
     result.score_contexts={}
     excluded=Counter(result.exclusions)
     now = utcnow()
-    predictions, histories, reports = {}, {}, {}
+    predictions, histories, reports, champions, history_hashes = {}, {}, {}, {}, {}
     for q in result.quotes:
         if q.status(now) != 'current':
             excluded[q.status(now)] += 1
@@ -140,18 +145,22 @@ def evaluate_quotes(result,store):
                         histories[league]=archive
                         report_directory=os.getenv('RESEARCH_MODEL_DIR','data/research/models')
                 reports[league] = load_report(league,report_directory)
+                from intelligence.lifecycle import active_champion
+                champions[league]=active_champion(store,q.sport,'h2h')
                 if reports[league] and reports[league].get('data_sha256') != digest(histories[league].to_json(orient='records',date_format='iso')):
                     reports[league] = None
                     result.warnings.append(f'{league}: evaluation dataset differs from loaded history; calibration and validation are disabled')
             except (ValueError, OSError, KeyError):
                 excluded['Invalid historical data/model evidence'] += 1
-                histories[league], reports[league] = None, None
+                histories[league], reports[league], champions[league] = None, None, None
         history, report = histories[league], reports[league]
         if history is None or history.empty:
             excluded['Historical statistics unavailable'] += 1
             result.research.append({'quote_id':q.id,'blockers':['Historical statistics are unavailable or failed source/licence checks; no probability was estimated']})
             continue
         event_key = (q.league,q.event_id)
+        if league not in history_hashes:
+            history_hashes[league]=digest(history.to_json(orient='records',date_format='iso'))
         problem=forecast_problem(q)
         if event_key not in result.score_contexts and not problem:
             result.score_contexts[event_key]=make_context(history,q.sport,q.home,q.away,q.commence_time,as_of=now)
@@ -164,6 +173,7 @@ def evaluate_quotes(result,store):
             result.advanced_estimates[q.id]=estimate
             result.advanced_details[q.id]={'quote_id':q.id,'probability':advanced_p,'model':context.version,
                 'validated':False,'lower':0.,'upper':1.,'training_end':context.training_end,
+                'data_sha256':history_hashes[league],
                 'history_n':context.history_n,'method':context.method,
                 'interval_basis':'Full 0–1 envelope: no validated event-specific uncertainty calibration',
                 'blockers':['No validated live-line probability or market-beating evidence',
@@ -202,9 +212,10 @@ def evaluate_quotes(result,store):
         # Envelope contains the forecast as well as the empirical bin interval.
         lower, upper = min(p,interval[0]), max(p,interval[1])
         prior = history[history.date < parse_time(q.commence_time).replace(tzinfo=None,hour=0,minute=0,second=0,microsecond=0)]
+        approved=bool(report and champions.get(league) and champions[league].get('evidence_id')==report.get('evidence_id'))
         estimate = Estimate(p,lower,upper,VERSIONS[q.sport],prior.date.max().isoformat()+'+00:00',
                             report['evidence_id'] if report else '',
-                            bool(report and not promotion_reasons(report) and enough),
+                            bool(report and approved and not promotion_reasons(report) and enough),
                             ('Empirical calibration interval is not a guarantee for this event',
                              'Lineups, injuries and current player availability not modeled',
                              'Provider quote may change or be suspended before execution'),
@@ -212,12 +223,15 @@ def evaluate_quotes(result,store):
         result.estimates[q.id] = estimate
         opportunity, reason = qualify(q,estimate,now)
         blockers = promotion_reasons(report) if report else ['Matching chronological calibration/test evidence unavailable']
+        if not approved:
+            blockers=blockers+['No reviewed champion activation matches this exact model artifact']
         if report and not enough:
             blockers = blockers + ['Fewer than 50 calibration outcomes in this probability bucket']
         result.research.append({'quote_id':q.id,'probability':p,'model':estimate.model_version,
                                 'validated':estimate.validated,'reason':reason,
                                 'lower':lower,'upper':upper,'training_end':estimate.training_end,
                                 'evidence_id':estimate.evidence_id,'blockers':blockers,
+                                'data_sha256':history_hashes[league],
                                 'calibration_bin_n':bin_data['n'] if report else 0,
                                 'calibration_n':report.get('calibration_n',0) if report else 0,
                                 'test_n':report.get('test_n',0) if report else 0,

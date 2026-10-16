@@ -31,9 +31,43 @@ def main():
     settle.add_argument('--closing-odds',type=float)
     settle.add_argument('--closing-source')
     settle.add_argument('--closing-observed-at')
+    cycle=sub.add_parser('research-cycle')
+    cycle.add_argument('--offline',action='store_true',help='Inspect storage/models without data requests')
+    cycle.add_argument('--leagues',default='NBA,Premier League,MLB')
+    backup=sub.add_parser('backup')
+    backup.add_argument('--output',required=True,help='New private SQLite destination, never Git')
+    challenger=sub.add_parser('train-challenger')
+    challenger.add_argument('--league',choices=list(LEAGUES),required=True)
+    challenger.add_argument('--history-directory',default='data/research/history')
+    review=sub.add_parser('review-model')
+    review.add_argument('--artifact-id',required=True)
+    review.add_argument('--evidence-file',required=True)
+    review.add_argument('--review-reference',required=True)
+    review.add_argument('--action',choices=['promote','rollback'],required=True)
     args = parser.parse_args()
     store = configured_store()
-    if args.command=='import-free-history':
+    if args.command=='research-cycle':
+        from intelligence.worker import run_cycle
+        leagues=[s.strip() for s in args.leagues.split(',') if s.strip()]
+        if not set(leagues)<=set(LEAGUES):
+            parser.error('Unsupported research competition')
+        print(json.dumps(run_cycle(store,leagues,offline=args.offline),indent=2))
+    elif args.command=='backup':
+        from intelligence.persistence import backup_store
+        print(json.dumps(backup_store(store,args.output),indent=2))
+    elif args.command=='train-challenger':
+        from intelligence.history import load_licensed
+        from intelligence.lifecycle import train_challenger
+        frame=load_licensed(args.league,args.history_directory)
+        stem=args.league.lower().replace(' ','_')
+        manifest=json.loads((Path(args.history_directory)/(stem+'.source.json')).read_text())
+        print(json.dumps(train_challenger(frame,LEAGUES[args.league][0],args.league,
+            str(manifest.get('attribution','Provenance-checked local history')),store),indent=2))
+    elif args.command=='review-model':
+        from intelligence.lifecycle import change_champion
+        change_champion(store,args.artifact_id,json.loads(Path(args.evidence_file).read_text()),args.review_reference,args.action)
+        print('Reviewed registry action recorded; matching current model/data evidence is still required by the pipeline')
+    elif args.command=='import-free-history':
         from intelligence.free_history import import_snapshot
         print(json.dumps(import_snapshot(args.sport,args.directory),indent=2))
     elif args.command=='evaluate-markets':

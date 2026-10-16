@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-10-16T18:05:52.631118+00:00",
+  "mode": "Genuine zero-credit event discovery with all chargeable endpoints blocked",
+  "window_hours": 48,
+  "discovery": [
+    {
+      "league": "NBA",
+      "events": 0,
+      "status": "provider event list",
+      "received_at": "2026-10-16T18:05:51.607674+00:00"
+    },
+    {
+      "league": "Premier League",
+      "events": 9,
+      "status": "provider event list",
+      "received_at": "2026-10-16T18:05:52.196100+00:00"
+    },
+    {
+      "league": "MLB",
+      "events": 1,
+      "status": "provider event list",
+      "received_at": "2026-10-16T18:05:52.606207+00:00"
+    }
+  ],
+  "discovered_or_cached_events": 10,
+  "market_tasks_assessed": 23,
+  "chargeable_requests": 0,
+  "local_used_before": 9,
+  "local_used_after": 9,
+  "paid_ai_requests": 0,
+  "model_promotions": 0,
+  "qualified_singles": 0,
+  "warnings": [],
+  "errors": []
+}

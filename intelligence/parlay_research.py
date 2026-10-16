@@ -282,58 +282,11 @@ def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2
         for n in sorted(set(leg_counts)):
             for combo in combinations(pool,n):
                 result.examined_combinations+=1
-                quotes=[leg.quote for leg in combo]
-                warnings=[]
-                rejected=''
-                for a,b in combinations(quotes,2):
-                    reason,notes=pair_review(a,b)
-                    warnings.extend(notes)
-                    if reason:
-                        rejected=reason
-                        break
-                if rejected:
-                    exclusions[rejected]+=1
-                    continue
-                if contradictory_scores(quotes):
-                    exclusions['Contradictory score constraints across parlay legs']+=1
-                    continue
-                product=math.prod(q.odds for q in quotes)
-                if not math.isfinite(product):
-                    exclusions['Invalid theoretical price product']+=1
-                    continue
-                category=research_category(quotes,product)
-                if category not in categories:
-                    continue
-                if any(q.market in ('totals','spreads') and q.point%1==0 for q in quotes):
-                    warnings.append('Integer line: pushes/voids can change settlement and the payout; the product assumes every leg wins.')
-                if any(q.market=='spreads' and q.point%0.5!=0 for q in quotes):
-                    warnings.append('Quarter/Asian line: partial-win/loss settlement and operator scope are unverified; the product assumes full wins only.')
-                warnings.append('Dependence is unmeasured, including across different games or sports. No independence assumption or multiplied win probability is used.')
-                blockers=[f'Leg {i+1}: {reason}' for i,leg in enumerate(combo) for reason in leg.blockers]
-                blockers.extend(['No validated joint probability model covers these exact legs.',
-                    'The configured provider supplies no actual combined parlay price for these legs.',
-                    'Sportsbook-specific parlay acceptance, combination restrictions and settlement rules are unverified.'])
-                estimates=[leg.estimate for leg in combo]
-                context=getattr(analysis,'score_contexts',{}).get((quotes[0].league,quotes[0].event_id))
-                scenario=research_joint(context,quotes) if context is not None and all(same_event(quotes[0],q) for q in quotes) and all(e and e.model_version==context.version for e in estimates) else None
-                bounds=joint_bounds([e.probability for e in estimates]) if all(estimates) else None
-                interval_bounds=(max(0.,sum(e.lower for e in estimates)-n+1),min(e.upper for e in estimates)) if all(estimates) else None
-                validated=sum(leg.model_status=='validated' for leg in combo)
-                researched=sum(leg.estimate is not None for leg in combo)
-                width=sum((e.upper-e.lower) if e else 1. for e in estimates)/n
-                age=max((now-parse_time(q.source_updated_at)).total_seconds() for q in quotes)
-                # No odds/payout/EV optimization or sportsbook preference. Leg
-                # fractions avoid rewarding three legs just for adding a model.
-                rank=(-validated/n,-researched/n,len(set(warnings))-1,width,age,n,
-                      tuple(sorted(q.id for q in quotes)))
-                explanation=(f'{n}/{n} individual prices are current at the same Ontario sportsbook; '
-                    f'{validated}/{n} validated leg models, {researched}/{n} model estimates; '
-                    f'mean supplied interval width {width:.3f} (missing models count as 1); '
-                    f'oldest source observation {age:.0f} seconds old; '
-                    'rank uses model-evidence fractions, explicit dependence flags, interval width, freshness and fewer legs, in that order. '
-                    'Price availability is an entry gate; combined prices are unavailable. Ranking is research priority, not estimated profit.')
-                candidates.append(ResearchCandidate(digest((book,tuple(sorted(q.id for q in quotes)))),combo,
-                    category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation,scenario_joint=scenario))
+                candidate,reason=build_candidate(combo,analysis,now,categories)
+                if candidate is not None:
+                    candidates.append(candidate)
+                elif reason:
+                    exclusions[reason]+=1
     candidates.sort(key=lambda c:c.rank_key)
     result.candidate_count=len(candidates)
     # At most one candidate per physical event set, even across books. This
@@ -350,3 +303,59 @@ def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2
             break
     result.exclusions=dict(exclusions)
     return result
+
+
+def build_candidate(combo,analysis,now=None,categories=CATEGORIES):
+    """Shared compatibility and evidence gates for legacy and full-slate research."""
+    now=now or utcnow()
+    n=len(combo)
+    book=combo[0].quote.bookmaker
+    quotes=[leg.quote for leg in combo]
+    warnings=[]
+    rejected=''
+    for a,b in combinations(quotes,2):
+        reason,notes=pair_review(a,b)
+        warnings.extend(notes)
+        if reason:
+            rejected=reason
+            break
+    if rejected:
+        return None,rejected
+    if contradictory_scores(quotes):
+        return None,'Contradictory score constraints across parlay legs'
+    product=math.prod(q.odds for q in quotes)
+    if not math.isfinite(product):
+        return None,'Invalid theoretical price product'
+    category=research_category(quotes,product)
+    if category not in categories:
+        return None,'Category filter'
+    if any(q.market in ('totals','spreads') and q.point%1==0 for q in quotes):
+        warnings.append('Integer line: pushes/voids can change settlement and the payout; the product assumes every leg wins.')
+    if any(q.market=='spreads' and q.point%0.5!=0 for q in quotes):
+        warnings.append('Quarter/Asian line: partial-win/loss settlement and operator scope are unverified; the product assumes full wins only.')
+    warnings.append('Dependence is unmeasured, including across different games or sports. No independence assumption or multiplied win probability is used.')
+    blockers=[f'Leg {i+1}: {reason}' for i,leg in enumerate(combo) for reason in leg.blockers]
+    blockers.extend(['No validated joint probability model covers these exact legs.',
+        'The configured provider supplies no actual combined parlay price for these legs.',
+        'Sportsbook-specific parlay acceptance, combination restrictions and settlement rules are unverified.'])
+    estimates=[leg.estimate for leg in combo]
+    context=getattr(analysis,'score_contexts',{}).get((quotes[0].league,quotes[0].event_id))
+    scenario=research_joint(context,quotes) if context is not None and all(same_event(quotes[0],q) for q in quotes) and all(e and e.model_version==context.version for e in estimates) else None
+    bounds=joint_bounds([e.probability for e in estimates]) if all(estimates) else None
+    interval_bounds=(max(0.,sum(e.lower for e in estimates)-n+1),min(e.upper for e in estimates)) if all(estimates) else None
+    validated=sum(leg.model_status=='validated' for leg in combo)
+    researched=sum(leg.estimate is not None for leg in combo)
+    width=sum((e.upper-e.lower) if e else 1. for e in estimates)/n
+    age=max((now-parse_time(q.source_updated_at)).total_seconds() for q in quotes)
+    # No odds/payout/EV optimization or sportsbook preference. Leg
+    # fractions avoid rewarding three legs just for adding a model.
+    rank=(-validated/n,-researched/n,len(set(warnings))-1,width,age,n,
+          tuple(sorted(q.id for q in quotes)))
+    explanation=(f'{n}/{n} individual prices are current at the same Ontario sportsbook; '
+        f'{validated}/{n} validated leg models, {researched}/{n} model estimates; '
+        f'mean supplied interval width {width:.3f} (missing models count as 1); '
+        f'oldest source observation {age:.0f} seconds old; '
+        'rank uses model-evidence fractions, explicit dependence flags, interval width, freshness and fewer legs, in that order. '
+        'Price availability is an entry gate; combined prices are unavailable. Ranking is research priority, not estimated profit.')
+    return ResearchCandidate(digest((book,tuple(sorted(q.id for q in quotes)))),combo,
+        category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation,scenario_joint=scenario),''

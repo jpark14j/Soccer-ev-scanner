@@ -131,9 +131,10 @@ def render_markets(analysis,store,leagues,book_keys,key,settings,refresh_callbac
                 'Source timestamp':q.source_updated_at,'Received':q.received_at,'Status':status,
                 'Use':'current research observation; execution unverified' if status=='current' else 'historical inspection only; never actionable',
                 'Settlement scope':scope(q)})
-        if rows:
-            st.dataframe(pd.DataFrame(rows),hide_index=True,use_container_width=True)
-        else:
-            st.info('No observed selections match this view. This is not evidence that every sportsbook lacks the market.')
+        with st.expander('Advanced Details / Raw Market Data',expanded=False):
+            if rows:
+                st.dataframe(pd.DataFrame(rows),hide_index=True,use_container_width=True)
+            else:
+                st.info('No observed selections match this view. This is not evidence that every sportsbook lacks the market.')
         st.caption('Old source timestamps are retained exactly; requesting or reopening a cache never makes a price current. Settlement, overtime/extra-time and player-start rules must be verified at the operator.')
     inspect()

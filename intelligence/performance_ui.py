@@ -14,7 +14,12 @@ def render_performance(store):
     if not records:
         st.info('No published predictions in this ledger. Performance metrics will appear only after genuine publications and evidence-backed settlements.')
     else:
-        st.json(summary)
+        a,b,c,d=st.columns(4)
+        a.metric('Wins',summary['wins']);b.metric('Losses',summary['losses'])
+        c.metric('Pushes',summary['pushes']);d.metric('Voids',summary['voids'])
+        st.caption(f"Decisive sample: {summary['decisive_sample']}. Win rate: "+(f"{summary['win_rate']:.1%}" if summary['win_rate'] is not None else 'unavailable')+'. One hypothetical unit per publication; no accepted-ticket or profitability claim.')
+        with st.expander('Return, drawdown and calibration details'):
+            st.json(summary)
         dimension=st.selectbox('Break down by',['sport','market','model_version','parlay_size'])
         st.json(breakdown(records,dimension))
         st.dataframe(pd.DataFrame([{'Published':r['at'],'Sport':r['payload']['quote']['sport'],
@@ -31,6 +36,9 @@ def render_performance(store):
     st.caption('Empty 2/3-leg groups have no parlay performance evidence. Win rates include decisive outcomes only; pushes return stake and voids are excluded from turnover. One hypothetical unit per publication. Recorded losses remain included.')
     st.caption('Win-rate Wilson intervals are suppressed for shared-event decisions. ROI intervals require at least 30 UTC-day blocks and use a day-block bootstrap; between-day dependence/stationarity remain unverified. Prices are publication observations, not confirmed accepted/placed tickets. Slippage, taxes and operator rules are not inferred.')
     st.subheader('Held-out forecast research — separate from betting results')
+    from intelligence.processing import shadow_statistics
+    with st.expander('Private forward research forecasts — not betting performance'):
+        st.json(shadow_statistics(store))
     reports=load_reports()
     if not reports:
         st.info('No current code-matching advanced-market evaluation reports are available.')

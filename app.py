@@ -20,7 +20,7 @@ st.markdown('''<style>
 [data-testid="stMetricValue"] {font-size:1.8rem;}
 [data-testid="stSidebar"] {border-right:1px solid #263545;}
 </style>''',unsafe_allow_html=True)
-PAGES = ['AI Dashboard','Advanced Markets','Daily Parlay Research','Best Opportunities','AI Parlay Builder','NBA Analytics',
+PAGES = ['AI Dashboard','Best Selections by Game','Research Operations','Advanced Markets','Daily Parlay Research','Best Opportunities','AI Parlay Builder','NBA Analytics',
          'Soccer Analytics','MLB Analytics','Live Markets','AI Assistant','Performance Tracker','Settings']
 registry = load_registry()
 store = configured_store()
@@ -53,11 +53,11 @@ with st.sidebar:
 
 
 @st.cache_data(ttl=1800,show_spinner=False)
-def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results):
+def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours):
     from intelligence.providers import OddsAPI
     data_store=configured_store()
     provider=OddsAPI(api_key,data_store,daily_limit=cap,ttl=ttl)
-    return run_analysis(api_key,list(competitions),store=data_store,provider=provider,collect_results=collect_results)
+    return run_analysis(api_key,list(competitions),store=data_store,provider=provider,collect_results=collect_results,autonomous=True,window_hours=window_hours)
 
 
 st.title(page)
@@ -71,7 +71,7 @@ elif not key:
     result = Analysis()
 else:
     with st.spinner('Loading available markets and checking model evidence…'):
-        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results)
+        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours)
 
 if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
     st.session_state.pop('_research_snapshot',None)
@@ -84,10 +84,10 @@ from intelligence.market_ui import quota_banner
 result.quota=quota_banner(store,data_settings)
 for error in data_settings.errors:
     st.warning(error)
-for warning in result.warnings:
-    st.warning(warning)
-for error in result.errors:
-    st.warning(error)
+if result.errors or result.warnings:
+    with st.expander('Collection warnings and coverage limitations'):
+        for warning in dict.fromkeys(result.warnings+result.errors):
+            st.text(warning)
 
 
 def current_opportunities(sport=None):
@@ -130,31 +130,19 @@ def show_markets(sport=None,live=False):
                       'Status':q.status(now),'Model estimate (research unless validated)':r.get('probability'),
                       'Model validated':r.get('validated',False),'Model version':r.get('model'),
                       'Model history through':r.get('training_end'),'Probability envelope':(r.get('lower'),r.get('upper')) if r.get('probability') is not None else None})
-    if table:
-        st.dataframe(pd.DataFrame(table),hide_index=True,use_container_width=True)
-    else:
-        st.info('No markets returned for this view. Availability depends on the provider, current events and account entitlements.')
-    st.caption('Provider-observed prices are not an execution guarantee. Confirm current price, rules and suspension status at the Ontario sportsbook.')
+    with st.expander('Advanced Details / Raw Market Data',expanded=False):
+        if table:
+            st.dataframe(pd.DataFrame(table),hide_index=True,use_container_width=True)
+        else:
+            st.info('No market observations match this view.')
+        st.caption('Historical/stale prices are inspection-only. Provider observations are not execution guarantees; settlement scope remains unverified.')
 
 
 @st.fragment(run_every='60s')
 def dashboard():
-    # Recheck quote expiry without any network calls on this timer.
-    opportunities = current_opportunities()
-    current = [q for q in result.quotes if q.bookmaker in book_keys and q.status()=='current']
-    a,b,c = st.columns(3)
-    a.metric('Qualifying singles',len(opportunities))
-    b.metric('Current Ontario quotes',len(current))
-    c.metric('Books observed',len({q.bookmaker for q in current}))
-    show_opportunities(opportunities)
-    st.subheader('Analytical readiness')
-    st.dataframe(pd.DataFrame([
-        {'Sport':'NBA','Markets':'Real provider feed','Model':'Normal margin candidate; licensed history and validation required'},
-        {'Sport':'Soccer','Markets':'Real provider feed','Model':'Historical-goals Poisson candidate; chronological evaluation available'},
-        {'Sport':'MLB','Markets':'Real provider feed','Model':'Run-count Poisson candidate; licensed history and validation required'}]),hide_index=True,use_container_width=True)
-    st.info(NO_PARLAYS+' Open Daily Parlay Research to inspect current-price research combinations, even without validated models.')
-    with st.expander('Why selections did not qualify'):
-        st.json(result.exclusions)
+    from intelligence.slate_views import render_dashboard
+    render_dashboard(result,store,data_settings,book_keys,secret)
+    show_markets()
 
 
 # A displayed recommendation gets a permanent immutable publication record. Cached
@@ -165,6 +153,14 @@ if published:
     archive(store,os.getenv('PREDICTION_LEDGER_DIR','ledger'))
 if page=='AI Dashboard':
     dashboard()
+elif page=='Best Selections by Game':
+    from intelligence.slate_views import render_games
+    count=st.selectbox('Games to display',[6,12,30,100],key='game_card_count')
+    render_games(result,book_keys,secret,count)
+    show_markets()
+elif page=='Research Operations':
+    from intelligence.operations_ui import render_operations
+    render_operations(result,store)
 elif page=='Best Opportunities':
     show_opportunities(current_opportunities())
     st.caption('The best available qualifying price is selected per equivalent selection. Market-implied probabilities are comparison baselines, never treated as independently estimated truth.')
@@ -180,7 +176,10 @@ elif page in ('Daily Parlay Research','AI Parlay Builder','Advanced Markets'):
         from intelligence.market_ui import render_markets
         render_markets(result,store,leagues,book_keys,key,data_settings,refresh_selected,secret)
     else:
-        render_research(result,store,book_keys,leagues,bool(key),refresh_selected,secret,data_settings.daily_limit)
+        from intelligence.slate_views import render_books
+        render_books(result,book_keys,secret,'parlay_book_preference')
+        with st.expander('Advanced research filters and legacy selector',expanded=False):
+            render_research(result,store,book_keys,leagues,bool(key),refresh_selected,secret,data_settings.daily_limit)
     if page!='Advanced Markets':
         from intelligence.risk_ui import render_bankroll
         render_bankroll(current_opportunities())
@@ -198,7 +197,9 @@ elif page in ('Daily Parlay Research','AI Parlay Builder','Advanced Markets'):
 elif page in ('NBA Analytics','Soccer Analytics','MLB Analytics'):
     sport = page.split()[0]
     show_opportunities(current_opportunities(sport))
-    st.subheader('Observed markets and research estimates')
+    from intelligence.slate_views import render_games
+    from dataclasses import replace
+    render_games(replace(result,quotes=[q for q in result.quotes if q.sport==sport],slate={**result.slate,'events':[e for e in result.slate.get('events',[]) if e['sport']==sport]}),book_keys,secret)
     show_markets(sport)
     evidence_file=Path('docs/evidence')/({'NBA':'nba-research.json','MLB':'mlb-research.json','Soccer':'premier-league-research.json'}[sport])
     if evidence_file.exists():

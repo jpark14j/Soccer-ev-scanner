@@ -9,6 +9,7 @@ class DataSettings:
     cache_seconds: int=1800
     collect_results: bool=False
     errors: tuple=()
+    window_hours: int=48
 
 
 def load_settings(secret_getter=None):
@@ -29,4 +30,5 @@ def load_settings(secret_getter=None):
             return default
     cap=integer('ODDS_DAILY_CREDITS',9,0,10000)
     ttl=integer('ODDS_CACHE_SECONDS',1800,60,86400)
-    return DataSettings(0 if errors else cap,ttl,str(get('COLLECT_RESULTS','0'))=='1',tuple(errors))
+    window=integer('SLATE_WINDOW_HOURS',48,1,168)
+    return DataSettings(0 if errors else cap,ttl,str(get('COLLECT_RESULTS','0'))=='1',tuple(errors),window)

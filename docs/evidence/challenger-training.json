@@ -1,0 +1,102 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "580e910cdacdc5c72376dc089db23b3689c0286446fbed4a3253e525baa82cdd",
+      "created_at": "2026-10-16T18:06:16.043383+00:00",
+      "sport": "NBA",
+      "model_version": "nba-margin-normal-1",
+      "data_source": "FiveThirtyEight, Historical NBA Elo dataset, CC BY 4.0. Game information credited by publisher to Basketball-Reference. Modified: retain home games and final scores from last three archived seasons; omit Elo forecasts.",
+      "data_sha256": "b59d921fc8f3965407f9c7751969afe2e4ee301edd832358765f53b04b8f085e",
+      "code_sha256": "7940541f7b0ed42dad087adfd98fa44a545234de46da37543d05e66f9cd80fcc",
+      "data_end": "2015-06-16T00:00:00+00:00",
+      "folds": [
+        {
+          "data_end": "2014-11-15T00:00:00+00:00",
+          "test_start": "2014-03-23 00:00:00",
+          "test_n": 412,
+          "metrics": {
+            "brier": 0.438365214627491,
+            "log_loss": 0.6280492911745655
+          },
+          "evidence_id": "6216d69f81687dcf0e19aba94cdac69cb0ca75ac5e979aa8bd8b3f172153d112"
+        },
+        {
+          "data_end": "2015-02-24T00:00:00+00:00",
+          "test_start": "2014-11-03 00:00:00",
+          "test_n": 786,
+          "metrics": {
+            "brier": 0.42510352739146745,
+            "log_loss": 0.6126464955119431
+          },
+          "evidence_id": "e6731898ea4dd3d3f178660fb9f23e83c5a2c6696bcd68a448e19883c6b50b98"
+        },
+        {
+          "data_end": "2015-06-16T00:00:00+00:00",
+          "test_start": "2015-01-19 00:00:00",
+          "test_n": 701,
+          "metrics": {
+            "brier": 0.4092272148662286,
+            "log_loss": 0.5957517547798187
+          },
+          "evidence_id": "deefce66f973ef214ac8ed4a6cbc7d4a28526b06a3319026f4ff36db26eb3113"
+        }
+      ],
+      "status": "exploratory candidate only; old/reused archive periods; no activation",
+      "promotion_blockers": [
+        "Market baseline observation timestamps unavailable/unverified",
+        "No statistically supported held-out improvement over market",
+        "Historical dataset is too old for current publication"
+      ]
+    },
+    {
+      "artifact_id": "6d09b0eb11be203d9d7088ceef564f705f0cea10a7129521442ec7a3f14c9ffa",
+      "created_at": "2026-10-16T18:07:29.844563+00:00",
+      "sport": "MLB",
+      "model_version": "mlb-runs-poisson-1",
+      "data_source": "The information used here was obtained free of charge from and is copyrighted by Retrosheet. Interested parties may contact Retrosheet at \"www.retrosheet.org\".",
+      "data_sha256": "e525f302a5cc09e37502b75dc49d691ddd2159b9b4cfce2319ac5adb210d78a6",
+      "code_sha256": "7940541f7b0ed42dad087adfd98fa44a545234de46da37543d05e66f9cd80fcc",
+      "data_end": "2025-09-28T00:00:00+00:00",
+      "folds": [
+        {
+          "data_end": "2025-04-11T00:00:00+00:00",
+          "test_start": "2024-08-03 00:00:00",
+          "test_n": 969,
+          "metrics": {
+            "brier": 0.4971039706983767,
+            "log_loss": 0.6903449950846545
+          },
+          "evidence_id": "2ba1c5c06d25e04f6f8ebd440954a8e37ed6a542f6fa7c58776221c4e292d161"
+        },
+        {
+          "data_end": "2025-07-03T00:00:00+00:00",
+          "test_start": "2025-04-01 00:00:00",
+          "test_n": 1229,
+          "metrics": {
+            "brier": 0.49083913654227845,
+            "log_loss": 0.6836350363304887
+          },
+          "evidence_id": "25eb879a6c61b81a598d262c4c91c1e4b425751cbfdc9bd12e3c20d105ca0e2f"
+        },
+        {
+          "data_end": "2025-09-28T00:00:00+00:00",
+          "test_start": "2025-06-06 00:00:00",
+          "test_n": 1494,
+          "metrics": {
+            "brier": 0.4968886259809216,
+            "log_loss": 0.6900194099576266
+          },
+          "evidence_id": "e78da43d7348af3de879ec8e722d787daed96882ebcd5d5347b097534ec50008"
+        }
+      ],
+      "status": "exploratory candidate only; old/reused archive periods; no activation",
+      "promotion_blockers": [
+        "Market baseline observation timestamps unavailable/unverified",
+        "No statistically supported held-out improvement over market",
+        "Historical dataset is too old for current publication"
+      ]
+    }
+  ],
+  "activations": 0,
+  "note": "Genuine archives; expanding folds can overlap and reuse prior research periods. No independent confirmation, new production validation or ROI."
+}

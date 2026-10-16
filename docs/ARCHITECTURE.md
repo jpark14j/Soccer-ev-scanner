@@ -3,6 +3,28 @@
 The existing repository and entrypoints are retained; no separate application,
 service cluster, subscription system or paid account was created.
 
+The automatic research increment adds `slate.py` as an opt-in orchestration path
+of the existing `run_analysis`; the UI enables it. Zero-credit event discovery,
+an age/fairness query queue, exact scope and partial-coverage audit precede the
+existing model/EV pipeline. `book_optimizer.py` scores every eligible observed
+single, uses exhaustive small-pool or disclosed beam research, and gates actual
+qualified tickets separately. `slate_views.py` provides concise game/book cards;
+raw observations stay in collapsed audit sections.
+
+`processing.py` keeps immutable private shadow forecasts separate from published
+bets, collects results for ended pending events within the same cap, scores
+NBA/MLB full-final research targets and requires reviewed rules for published
+settlement. `lifecycle.py` adds immutable candidate artifacts/actions, expanding
+folds, cautious comparisons/drift and explicit activation gates. A reviewed exact
+champion match is now required by the publication pipeline. No new champion exists.
+
+`persistence.py` checks local health and makes consistent private backups.
+`worker.py` is scheduler-neutral, offline/disabled by default; online operation
+requires explicit durable-storage/data-rights configuration. Community Cloud
+redeployment persistence and scheduled retraining are not supplied. The new
+development-only Actions audit is manual, offline and read-only. See
+[AUTONOMOUS_RESEARCH.md](AUTONOMOUS_RESEARCH.md) for exact operational boundaries.
+
 ```mermaid
 flowchart TD
     UI[Existing Streamlit app.py] --> P[Shared pipeline]

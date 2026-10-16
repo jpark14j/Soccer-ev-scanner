@@ -46,6 +46,10 @@ def normalize_results(payload,league,received_at,now=None):
 def ensure_table(store):
     with store.connect() as db:
         db.execute('CREATE TABLE IF NOT EXISTS observed_results(id TEXT PRIMARY KEY, league TEXT NOT NULL, payload TEXT NOT NULL)')
+        db.executescript('''
+        CREATE TRIGGER IF NOT EXISTS result_no_update BEFORE UPDATE ON observed_results BEGIN SELECT RAISE(ABORT,'Immutable result snapshot'); END;
+        CREATE TRIGGER IF NOT EXISTS result_no_delete BEFORE DELETE ON observed_results BEGIN SELECT RAISE(ABORT,'Immutable result snapshot'); END;
+        ''')
 
 
 def collect(provider,store,leagues=('NBA','MLB')):

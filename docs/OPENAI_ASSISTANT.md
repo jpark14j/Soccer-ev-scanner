@@ -14,6 +14,12 @@ or “Explain the evidence and risk of these two-leg parlays.” Missing prices/
 models, stale data, unvalidated scenarios and absent combined pricing stay explicit.
 The free rule-based path remains useful; none of these additions enables paid calls.
 
+Automatic slate research now supplies game-level coverage and per-sportsbook
+shortlists. Ask “Which games did you analyze?” or name a sportsbook in a parlay
+question. Read-only answers distinguish discovered games, current observations,
+unvalidated research and missing joint/price evidence. This adds no chat actions,
+tools, model activation, purchases, code execution or paid requests.
+
 ## Test the free interface now
 
 1. Keep your preview on `development/verified-sports-intelligence`, entrypoint

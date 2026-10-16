@@ -1,5 +1,45 @@
 # Verification matrix
 
+## Automatic slate research update — 2026-10-16
+
+The complete suite passes **230 offline tests** (27 new), with real Requests/HTTPX
+transports blocked. New coverage includes capped scheduling, current/empty-cache
+reuse, fair query rotation, zero-credit discovery at 9/9, outage backoff, whole-slate
+single scoring beyond 24 legs, disclosed beam search, exact combined/joint gates,
+per-game price comparison, collapsed raw UI, sportsbook/game assistant grounding,
+immutable shadows/results, automatic capped score collection, conflict/scope
+handling, push/quarter/player boundaries, loss-inclusive performance cards,
+consistent private backup/restore including quota, reviewed activation/rollback,
+diagnostic drift and disabled online/manual-offline worker paths.
+
+Real zero-credit discovery at 14:05 EDT returned nine Premier League and one MLB
+games within 48 hours; NBA returned zero. The existing cap stayed **9/9** and all
+chargeable endpoints were blocked. Twenty-three market tasks were assessed, not
+retrieved. No new odds, forward predictions or model promotions are claimed. See
+[autonomous-discovery.json](evidence/autonomous-discovery.json).
+
+Both genuine local archives completed three expanding challenger evaluation folds
+in a private database. Source/code/data hashes and periods are recorded in
+[challenger-training.json](evidence/challenger-training.json). There is no reviewed
+champion or independent fresh-period confirmation; older/reused data and absent
+time-stamped market evidence still block promotion. No betting ROI is invented.
+
+A historical UI replay of 394 genuine captured observations rendered default
+summary/game cards, six sportsbook status cards, three-leg book research, operations,
+performance and local BetMGM chat without exceptions. Raw odds stayed collapsed.
+Replay counts describe the old capture, never current markets or real pregame
+forward publications. A separate isolated port-8506 server returned HTTP 200 `ok`
+with odds cap zero and paid AI off. The public preview request failed with
+`ProxyError`; Community Cloud build/browser remains unverified.
+
+Compilation, dependency consistency, whitespace and configured-secret scans pass.
+The existing application/Telegram path is preserved; production/main and paid AI
+are unchanged. Background collection/retraining is not operational, off-host
+persistence is not verified, and actual operator settlement/combined quotes remain
+unavailable. Software tests cannot establish these external capabilities. See
+[the exact preview/operations guide](AUTONOMOUS_RESEARCH.md) and
+[consolidated evidence](evidence/autonomous-phase-verification.json).
+
 Local automated tests use clearly synthetic fixtures and block outbound requests.
 They verify software behavior, not betting profitability or feed-wide correctness.
 The live smoke evidence is separately recorded with actual response/source times.

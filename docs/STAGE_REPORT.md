@@ -1,5 +1,37 @@
 # Development stage report
 
+## Automatic slate/dashboard increment — 2026-10-16
+
+1. **Implemented:** card-based landing page and collapsed raw data, automatic
+   configured-window event discovery and capped rotating market research,
+   evidence-ranked game selections, one qualified/research shortlist per book,
+   private immutable pregame forecasts, conditional final-result collection and
+   guarded settlement, consistent private backups, candidate registry, expanding
+   folds/comparisons, drift review and explicit promotion/rollback controls.
+   Existing manual selectors and local/disabled-OpenAI assistant remain functional.
+2. **Files:** `app.py`; `slate.py`, `slate_views.py`, `book_optimizer.py`,
+   `processing.py`, `persistence.py`, `worker.py`, `lifecycle.py`, `operations_ui.py`;
+   existing pipeline/provider-result/parlay/analyst/CLI/settings/performance UI;
+   `config/settlement_rules.json`; manual offline `research_audit.yml`; new tests,
+   guides and verification evidence. Exact changes are visible in Draft PR #1.
+3. **Passed:** 230 offline tests, compilation/dependency/secret/whitespace checks,
+   isolated Streamlit HTTP 200, genuine zero-credit discovery, historical captured
+   data UI replay and two genuine three-fold archive challenger runs. See
+   [VERIFICATION.md](VERIFICATION.md) for scope and external limitations.
+4. **Incomplete:** genuine current calibration/joint/prop models, fresh independent
+   validation, operator rules and combined prices; external preview browser;
+   durable Community Cloud data and an independent scheduler. No approved model,
+   executed wager, real automated settlement, scheduled retraining or profit claim.
+5. **APIs/costs:** no new subscriptions, paid OpenAI or spending-limit increases.
+   Real discovery used zero provider credits; cap remained 9/9. Pending-result
+   collection can reserve two existing credits per league, never beyond the cap.
+   Private research backups/CLI evaluation add no API charge. Supplier/hosting rights
+   and future durable-worker setup remain separate requirements.
+6. **Next:** test the development preview, secure/test durable shared storage and
+   permitted current data, then obtain actual historical/joint/combined-price
+   evidence before recommending bets. Main/production remain untouched and Draft
+   PR #1 stays unmerged. [Preview and operations instructions](AUTONOMOUS_RESEARCH.md).
+
 ## Advanced-market increment — 2026-10-16
 
 This dated increment supersedes older market/test limitations where stated below.
