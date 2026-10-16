@@ -114,24 +114,35 @@ production deploy, paid signup/upgrade, Telegram delivery or model promotion occ
 - APIs/costs: a licensed combined-pricing/restriction source is essential; quote unknown.
 - Next: connect exact parlay evidence rather than multiply singles.
 
-## Stage 7 — Conversational analyst: local mode implemented, paid option disabled
+## Stage 7 — Conversational assistant: SDK integrated, paid usage disabled
 
-- Implemented: grounded responses from current records for qualifying selections,
-  risks, availability, performance and unavailable information. Optional strict-schema
-  OpenAI intent router, locally checked enums, bounded questions/output, conservative
-  monthly request reservations and local fallback. All factual output is rendered
-  from analytical templates; the model cannot insert numeric claims.
-- Files: `intelligence/assistant.py`, `llm.py`, `app.py`, `tests/test_llm.py`.
-- Passed: empty records, stale exclusion, no invented facts, approval and budget
-  gates, rejection of extra model fields. No live LLM call made.
-- Incomplete: paid API credential/access/approval and live API verification; broad
-  open-ended free-form generative reasoning intentionally not trusted as fact.
-- APIs/costs: default $0. Optional GPT-4.1 mini advertises $0.40/M input and $1.60/M
-  output tokens. Illustrative 2,000 input + 500 output tokens cost $0.0016 per answer
-  ($1.60 per 1,000), excluding tax/extras. Routing output is capped at 200 tokens.
-  A proposed $5 USD/month **local** cap is disabled with paid mode; approval required.
-  Official pricing: https://developers.openai.com/api/docs/models/gpt-4.1-mini
-- Next: enable only after approval, secure credentials/network setup and verification.
+- Implemented: official OpenAI Python SDK Responses adapter with strict evidence
+  selection, server-rendered facts, current quote rechecks and local fallback.
+  Streamlit chat includes bounded history, contextual follow-ups, loading, clear,
+  idle expiry, privacy notice, per-session consent and evidence views. Secure
+  environment/Streamlit Secrets settings support model selection without code
+  changes. Atomic daily/monthly/session request and token/USD admission limits
+  reserve conservatively before client construction, without automatic retries.
+- Files: `intelligence/assistant.py`, `llm.py`, `analyst_config.py`,
+  `analyst_context.py`, `analyst_usage.py`, `chat_privacy.py`, `chat_ui.py`,
+  `app.py`, requirements, `pytest.ini`, assistant/UI tests and
+  [OpenAI setup guide](OPENAI_ASSISTANT.md).
+- Passed: official SDK against an in-memory HTTP transport; approval/key/consent
+  gates, unavailable/stale/unvalidated records, rejected schema injection, secret
+  rejection/redaction, sanitized auth/quota/timeout failures, concurrency and
+  usage limits; Streamlit chat/follow-up/clear/expiry and all existing tests.
+  See [verification matrix](VERIFICATION.md) for final counts/startup evidence.
+- Incomplete: live OpenAI access, account billing, provider-side retention,
+  Codespaces/remote preview browser verification and unrestricted generated prose.
+  No real OpenAI request was made; `PAID_ANALYST_APPROVED = "0"` remains the default.
+  Existing live/prop/parlay/model-validation limitations are unchanged.
+- APIs/costs: local mode $0 model API cost. Optional GPT-4.1 mini documented text
+  rates are $0.40/M input and $1.60/M output tokens, subject to provider change.
+  An illustrative 2,000 input + 500 output tokens is $0.0016 USD before tax.
+  The $5/month local reservation safeguard is not a provider billing cap; paid
+  use still requires future explicit approval, a secure key and session consent.
+- Next: review the development preview locally; enable and live-verify only after
+  the operator's future paid decision and network/privacy/data-rights checks.
 
 ## Stage 8 — Streamlit dashboard: implemented in existing entrypoint
 

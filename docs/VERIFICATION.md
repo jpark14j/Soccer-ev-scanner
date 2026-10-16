@@ -19,7 +19,7 @@ The live smoke evidence is separately recorded with actual response/source times
 | Live updates | Observed in-play prices can be listed. No score/clock/state/latency feed or validated live model; live forecasts deliberately disabled, never described as verified. |
 | Stale quotes | Source/receipt/future/suspension and publication-time expiration checks pass; cache never resets source time. |
 | Telegram | Message formatting, token-redaction, schedule, pending-state/delivery claims, no-duplicate mechanics tested. Actual send not tested: Telegram secrets unavailable in this environment. |
-| Conversational model | Local grounded mode and disabled paid router, budget/approval and strict-output checks tested. No actual paid API call or free-form factual generation verified. |
+| Conversational model | Official SDK Responses API exercised with in-memory HTTP transport; approval/key/consent gates, shared atomic limits, secret rejection, bounded history, stale evidence and sanitized API failures pass. No real OpenAI request made; default remains `"0"`. See [assistant guide](OPENAI_ASSISTANT.md). |
 | GitHub Actions | YAML, branch guard, archive-before-send and pinned actions inspected/tested. Remote CI succeeded on implementation commit `86197da`, run [38843575101](https://github.com/jpark14j/Soccer-ev-scanner/actions/runs/38843575101), including dependency install, pytest and compilation. Daily production job not invoked. |
 | Streamlit | All ten sections plus missing-key startup pass AppTest; local server `/_stcore/health` returned HTTP 200 `ok`. Existing production deployment not changed/tested. |
 | Credential security | Secrets excluded from Git, no literal credentials added, sanitized provider/Telegram errors tested. Existing production secrets not read/changed. |
@@ -37,3 +37,18 @@ remote daily job and its commit permissions, persistent Streamlit ledger and bac
 operator-level price execution/market rules, historical market timing, licensed NBA/
 MLB/prop datasets, score/state synchronization, live latency/suspension handling,
 combined parlay pricing, subscriber privacy/consent, and commercial rights.
+
+## Conversational assistant update — 2026-10-16
+
+The complete development suite now passes **119 tests**, with real Requests and
+HTTPX transports blocked. The official OpenAI SDK 2.54.0 is exercised through an
+in-memory transport. Local Python compilation and dependency consistency checks
+pass. An isolated Streamlit server on port 8503 returned HTTP 200 `ok`; AppTest
+covers all sections and the conversational controls. The existing production and
+preview processes were not replaced. See
+[evidence/assistant-sdk-verification.json](evidence/assistant-sdk-verification.json).
+
+Paid OpenAI calls remain disabled by default and **zero real OpenAI requests were
+made**. Authentication, live model access, real billing/tokenization, provider
+retention and remote preview browser behavior remain unverified. No production
+secrets, main-branch changes, purchases or PR merge were made for this update.

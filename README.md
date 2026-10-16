@@ -33,8 +33,12 @@ Secrets. Never commit credentials or put them in command-line arguments.
 
 All ten requested sections are present. The analyst answers from current
 application records; default local mode **does not call a language model API**.
-A strict-schema optional OpenAI intent router is implemented but disabled. Paid routing requires explicit approval, a token budget and provider connection.
-The model cannot introduce unverified numeric claims; factual answers use templates. Live and prop recommendations remain disabled
+The official OpenAI SDK integration is implemented but disabled by default with
+`PAID_ANALYST_APPROVED = "0"`. The conversational page supports bounded history,
+follow-ups, evidence views, consent and usage limits in both local and optional
+OpenAI modes. OpenAI selects verified evidence; the server renders factual text.
+See [the assistant setup and privacy guide](docs/OPENAI_ASSISTANT.md) for free
+preview testing and future paid activation. No paid request was made. Live and prop recommendations remain disabled
 until their necessary inputs and validation exist; observed prices are distinct
 from predictions and from executable sportsbook offers.
 
@@ -50,8 +54,11 @@ from predictions and from executable sportsbook offers.
 | `PREDICTION_LEDGER_DIR` | `ledger` | Derived immutable prediction/settlement JSONL archive |
 | `HISTORY_DIR` | `data/history` | Licensed historical CSVs plus source manifests |
 | `MODEL_DIR` | `data/models` | Chronological evaluation artifacts |
-| `PAID_ANALYST_APPROVED` | disabled | Set to `1` only after explicit paid API approval |
-| `OPENAI_API_KEY` | absent | Optional paid routing credential in secrets only |
+| `PAID_ANALYST_APPROVED` | `"0"` | Set to `1` only after explicit paid API approval |
+| `OPENAI_API_KEY` | absent | Optional server-side OpenAI credential in secrets only |
+| `OPENAI_MODEL` | `gpt-4.1-mini` | Supported Responses/structured-output model; other models need configured prices |
+| `ANALYST_MAX_DAILY_REQUESTS` | `20` | Atomic per-database admission cap; monthly/session limits also apply |
+| `ANALYST_MAX_OUTPUT_TOKENS` | `800` | Per-response output cap; input bounds also apply |
 | `ANALYST_MONTHLY_USD_CAP` | `5` | Conservative local monthly reservations; not account-wide billing protection |
 | `FOOTBALL_DATA_PERSONAL_RESEARCH` | disabled | Explicit personal-only free-source research mode |
 | `DIGEST_LEAGUES` | all nine competitions | Comma-separated configured competition names |

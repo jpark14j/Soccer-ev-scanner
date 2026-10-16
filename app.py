@@ -5,7 +5,6 @@ from dataclasses import asdict
 import json
 import pandas as pd
 import streamlit as st
-from intelligence.assistant import answer
 from intelligence.domain import utcnow
 from intelligence.ev import qualify
 from intelligence.parlays import analyze, NO_PARLAYS
@@ -180,18 +179,8 @@ elif page=='Live Markets':
     st.warning('Live recommendations are unavailable. Current odds alone do not supply verified game clock, score, player state, latency or suspension information. Pregame models are never applied in play.')
     show_markets(live=True)
 elif page=='AI Assistant':
-    paid_enabled = os.getenv('PAID_ANALYST_APPROVED')=='1' and bool(secret('OPENAI_API_KEY'))
-    st.info('Answers render verified application records. '+('Approved language model routing is enabled with a monthly budget; bounded questions are sent to the provider.' if paid_enabled else 'Local mode: paid language model routing is disabled pending cost approval. No external model receives your questions.'))
-    for message in st.session_state.get('analyst_history',[]):
-        with st.chat_message(message['role']):
-            st.write(message['content'])
-    question = st.chat_input('Ask about qualifying opportunities, risks, parlays or performance')
-    if question:
-        from intelligence.llm import PaidAnalyst
-        analyst = PaidAnalyst(store,secret('OPENAI_API_KEY'),paid_enabled,float(os.getenv('ANALYST_MONTHLY_USD_CAP','5')))
-        response = analyst.respond(question,result,metrics(store.records()))
-        st.session_state.setdefault('analyst_history',[]).extend([{'role':'user','content':question},{'role':'assistant','content':response}])
-        st.rerun()
+    from intelligence.chat_ui import render_assistant
+    render_assistant(result,store,secret)
 elif page=='Performance Tracker':
     origin = st.radio('Record type',['forward','backtest'],horizontal=True)
     records = store.records(origin)
@@ -209,13 +198,15 @@ elif page=='Performance Tracker':
     st.caption('One hypothetical unit per selection. Pushes return stake; voids excluded from turnover. Brier/log loss exclude pushes and voids. Closing-line value needs an evidenced closing price. Losses remain recorded.')
 elif page=='Settings':
     st.write('Competition and sportsbook view preferences are in the sidebar and last for this browser session.')
-    st.write(f'Local daily credit cap: {os.getenv("ODDS_DAILY_CREDITS","16")}. Default retrieval cache: 30 minutes. No paid upgrades or language model calls enabled.')
+    st.write(f'Local daily credit cap: {os.getenv("ODDS_DAILY_CREDITS","16")}. Default retrieval cache: 30 minutes. No subscriptions are purchased by the application.')
     st.write(f'Ontario directory effective date: {registry["directory_as_of"]}. Review expires {registry["review_expires_at"]}. Expired evidence disables eligibility.')
     st.dataframe(pd.DataFrame(registry['books']),hide_index=True,use_container_width=True)
     st.link_button('Official Ontario directory',registry['source'])
+    from intelligence.analyst_config import load_config
+    analyst_config = load_config(secret)
     st.subheader('Connections')
     st.write({'Odds key configured':bool(key),'Telegram bot configured':bool(secret('TELEGRAM_BOT_TOKEN')),
-              'Paid conversational API':'Enabled by configuration' if os.getenv('PAID_ANALYST_APPROVED')=='1' else 'Disabled','NBA/MLB historical data':'Free research imports / licensed files / locally collected completed results'})
+              'Paid conversational API':'Configured; session consent required' if analyst_config.paid_ready else 'Disabled or unconfigured','NBA/MLB historical data':'Free research imports / licensed files / locally collected completed results'})
     st.caption('Scheduling and Telegram preferences use environment variables documented in README. API keys belong in Streamlit Secrets or GitHub Actions Secrets.')
     st.subheader('Additional market requests')
     st.json(PROP_MARKETS)

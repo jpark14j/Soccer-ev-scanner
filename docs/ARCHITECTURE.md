@@ -54,12 +54,19 @@ history. This small-store design avoids premature infrastructure. It is **not** 
 multi-tenant production database. File modification outside the application remains
 possible and must be detected with Git history, permissions and backups.
 
-`assistant.py` renders grounded answers. `llm.py` adds disabled-by-default paid
-intent routing with strict enumerations, local response checks, bounded questions/
-output and conservative monthly reservations. It sends no odds context, tools or
-credentials in the question body. The LLM cannot generate factual numeric output;
-the verified renderer supplies it. Add session context/caching only with privacy
-and retention controls. Prompt instructions cannot grant data or wager access.
+`analyst_context.py` builds read-only, redacted evidence for both assistant modes;
+`assistant.py` preserves the free local answer interface. `chat_ui.py` supplies
+session history, follow-ups, consent, expiry and clear controls. `analyst_config.py`
+reads secure settings and fails closed. `llm.py` uses the official OpenAI Responses
+SDK only after approval, key, consent and budget admission. Bounded current evidence
+and recent questions/topics are sent with `store=False`, no remote conversation
+state and no tools. Strictly validated evidence IDs drive server-rendered facts;
+model-written numeric claims/prose never enter the answer. Quote age is rechecked
+after the API wait. `analyst_usage.py` atomically reserves costs and counts in
+SQLite; it stores no prompt, answer or key and preserves ambiguous reservations.
+Local/remote modes are accurately labeled. Provider retention is separate from
+session expiry; app caps are separate from provider billing. See
+[OPENAI_ASSISTANT.md](OPENAI_ASSISTANT.md) for all defaults, privacy and future activation.
 
 The live screen is a capability boundary: observed in-play odds do not establish
 score, clock, event state, latency or suspension safety. No pregame model is reused

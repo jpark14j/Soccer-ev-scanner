@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 from dataclasses import replace
 import pytest
 import requests
+import httpx
 from intelligence.domain import Quote, Estimate
 from intelligence.ev import qualify
 from intelligence.storage import Store
 
 NOW = datetime(2026,10,16,2,0,tzinfo=timezone.utc)
+OPENAI_TEST_KEY = 'sk-test-NEVER-A-REAL-KEY'
 
 
 @pytest.fixture(autouse=True)
@@ -15,6 +17,8 @@ def no_network(monkeypatch):
     def blocked(*args,**kwargs):
         raise AssertionError('Unit/integration tests must not call external networks')
     monkeypatch.setattr(requests.sessions.Session,'request',blocked)
+    monkeypatch.setattr(httpx.HTTPTransport,'handle_request',blocked)
+    monkeypatch.setattr(httpx.AsyncHTTPTransport,'handle_async_request',blocked)
 
 
 @pytest.fixture
