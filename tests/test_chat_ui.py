@@ -1,3 +1,4 @@
+from ui_navigation import navigate
 """Conversation end-to-end through Streamlit's AppTest, with no network."""
 from pathlib import Path
 from unittest.mock import patch
@@ -16,7 +17,7 @@ def chat(tmp_path,monkeypatch):
     monkeypatch.setenv('OPENAI_API_KEY',KEY)
     monkeypatch.setenv('PAID_ANALYST_APPROVED','0')
     app=AppTest.from_file(Path('app.py').resolve(),default_timeout=20).run()
-    app.sidebar.radio[0].set_value('AI Assistant').run()
+    navigate(app,'AI Assistant')
     assert not app.exception
     return app
 
@@ -79,7 +80,7 @@ def test_configured_paid_mode_still_needs_session_consent(chat,monkeypatch):
 
 def test_key_is_not_displayed_in_settings_or_chat(chat):
     assert KEY not in str(chat.get('text'))+str(chat.get('info'))
-    chat.sidebar.radio[0].set_value('Settings').run()
+    navigate(chat,'Settings')
     assert not chat.exception
     assert KEY not in ''.join(str(element.value) for element in chat.markdown)
 

@@ -226,3 +226,9 @@ Official references:
 - [Structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [GPT-4.1 mini and pricing](https://developers.openai.com/api/docs/models/gpt-4.1-mini)
 - [API data controls](https://developers.openai.com/api/docs/guides/your-data)
+# Current navigation — October 16, 2026
+
+The assistant is preserved under **Settings & Research Tools → Research tool →
+AI Assistant** in the [four-page workspace](FOUR_PAGE_WORKSPACE.md). Paid requests
+remain disabled by default. The rest of this guide documents the existing
+integration and activation controls, not permission to enable it.

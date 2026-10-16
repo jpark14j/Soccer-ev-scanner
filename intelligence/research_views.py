@@ -1,0 +1,106 @@
+"""Concise shared views for the four-page workspace; all filtering is read-only."""
+from dataclasses import replace
+import streamlit as st
+from intelligence.domain import utcnow
+from intelligence.analyst_config import load_config
+from intelligence.chat_privacy import redact,redact_data
+from intelligence.markets import CATALOG
+from intelligence.registry import load_registry
+from intelligence.research_state import EVIDENCE_STATES,APPROVED,EXPERIMENTAL,PRICE_ONLY,BLOCKED,singles,model_health
+from intelligence.slate_views import selection_card
+
+
+def render_single(state,leg,secret_getter=None):
+    sensitive=load_config(secret_getter).sensitive_values
+    safe=lambda value:redact(str(value),sensitive)
+    with st.container(border=True):
+        st.write('**'+safe(leg.quote.event)+'**')
+        st.caption(safe(f'{leg.quote.sport} · {state} · starts {leg.quote.commence_time}'))
+        selection_card(leg,safe)
+        if state==BLOCKED:
+            st.caption('Inspection only. '+safe(leg.quote.status())+'; no current recommendation is supported.')
+        if state==PRICE_ONLY:
+            st.caption('Price comparison only. No win probability, confidence or betting advantage is established.')
+        with st.expander('Why this evidence status?'):
+            for blocker in leg.blockers:
+                st.text(safe(blocker))
+            st.caption('Ranking uses qualification, model evidence, supplied uncertainty and freshness. Equal-evidence price choices have no demonstrated predictive advantage.')
+            st.json(redact_data({k:v for k,v in leg.model_details.items() if k!='quote_id'},sensitive))
+
+
+def render_health(analysis,store,secret_getter=None):
+    health=model_health(analysis,store)
+    health=redact_data(health,load_config(secret_getter).sensitive_values)
+    st.subheader('Data & Model Health')
+    st.caption('Latest observed odds source: '+(health['latest_odds_source'] or 'unavailable')+
+        ' · receipt: '+(health['latest_odds_receipt'] or 'unavailable')+'. Each selection is checked separately for expiry.')
+    st.caption('Sports results checked: '+(health['source_checked_at'] or 'unavailable')+
+        ' ('+health['source_check_kind']+'); latest completed EPL result: '+(health['source_latest'] or 'unavailable')+'. A download date is not a result date.')
+    for reason in health['reasons']:
+        st.write('• '+reason)
+    with st.expander('Model, source and coverage diagnostics'):
+        st.json(health)
+    return health
+
+
+def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
+    from intelligence.book_optimizer import best_by_game,optimize_by_book,scoped_quotes
+    from intelligence.epl_forecasts import high_probability_research
+    now=utcnow();quotes=[q for q in scoped_quotes(analysis,now) if q.bookmaker in books]
+    current=[q for q in quotes if q.status(now)=='current' and q.jurisdiction=='CA-ON']
+    games=best_by_game(analysis,books,now)
+    rows=singles(analysis,books,now=now)
+    a,b=st.columns(2);c,d=st.columns(2)
+    a.metric('Games discovered / observed',len(games))
+    b.metric('Games with current markets',len({q.event_id for q in current}))
+    c.metric('Games with model research',len({leg.quote.event_id for state,leg in rows if state in (APPROVED,EXPERIMENTAL)}))
+    d.metric('Qualified singles',sum(state==APPROVED for state,_ in rows))
+    st.caption(f'{len(current)} current Ontario individual-price observations across {len({q.bookmaker for q in current})} books and {len({(q.event_id,q.market) for q in current})} event/market groups. Coverage is partial, not the full sports calendar.')
+    st.subheader("Today's Research")
+    st.caption('Approved = publication gates pass; experimental = an unapproved model estimate; price-only = observed selection with no supported forecast; blocked = missing or invalid inputs. Break-even percentages are not predicted win probabilities.')
+    st.write('**Singles**')
+    display=[row for row in rows if row[0]!=BLOCKED][:3]
+    if not display:
+        st.info('No current singles research is supported by this snapshot. Missing or stale data never creates a pick.')
+    for state,leg in display:
+        render_single(state,leg,secret_getter)
+    st.write('**Parlays**')
+    choices=optimize_by_book(analysis,books,(2,3),now)
+    if not any(row['qualified'] for row in choices):
+        st.info('No qualifying parlay opportunities identified today.')
+    candidates=sorted((r['research'] for r in choices if r['research']),key=lambda c:c.rank_key)
+    if candidates:
+        candidate=candidates[0];safe=lambda s:redact(str(s),load_config(secret_getter).sensitive_values)
+        st.caption('Exploratory research only. No validated joint probability, accepted combined price or parlay EV is available.')
+        with st.container(border=True):
+            st.write(f'{len(candidate.legs)} legs · '+safe(candidate.legs[0].quote.bookmaker_name))
+            for leg in candidate.legs:
+                from intelligence.markets import selection_label
+                st.text(safe(f'{leg.quote.event} · {selection_label(leg.quote)} · individual decimal {leg.quote.odds:.2f} · source {leg.quote.source_updated_at}'))
+            st.write(f'Theoretical odds product {candidate.theoretical_odds:.2f} — not an executable sportsbook offer.')
+            with st.expander('Parlay research limitations'):
+                st.write(candidate.rank_explanation)
+                for text in (*candidate.blockers,*candidate.warnings):st.text(safe(text))
+    else:
+        st.info('No qualifying parlay opportunities identified today. No compatible current research candidate is available either.')
+    st.caption('High-probability shortlist: '+('research evidence available; review Best Picks & Parlays' if high_probability_research(analysis,now) else 'No credible high-probability selections qualify. Independent model evidence is missing.'))
+    render_health(analysis,store,secret_getter)
+    with st.expander('Scan audit and processing details'):
+        st.json(redact_data({'scan':analysis.slate,'processing':analysis.processing,'exclusions':analysis.exclusions},load_config(secret_getter).sensitive_values))
+
+
+def render_singles(analysis,books,secret_getter=None):
+    registry=load_registry();names={r['odds_api_key']:r['name'] for r in registry['books'] if r.get('odds_api_key') in books}
+    a,b=st.columns(2)
+    sports=a.multiselect('Sports',['NBA','Soccer','MLB'],default=['NBA','Soccer','MLB'],key='picks_sports')
+    selected=b.multiselect('Sportsbooks',sorted(names),default=sorted(names),format_func=lambda k:names[k],key='picks_books')
+    a,b=st.columns(2)
+    market=a.selectbox('Market',['All markets',*CATALOG],format_func=lambda k:CATALOG[k].name if k in CATALOG else k,key='picks_market')
+    markets=None if market=='All markets' else [market]
+    statuses=b.multiselect('Evidence status',EVIDENCE_STATES,default=list(EVIDENCE_STATES),key='picks_evidence')
+    st.caption('Filters only inspect this scan. Research estimates and market break-even percentages are separate; price-only observations are not forecasts.')
+    count=st.selectbox('Selections to display',[6,12,30,100],key='picks_count')
+    rows=singles(analysis,selected,sports,markets,statuses)
+    st.caption(f'{len(rows)} equivalent selections after filtering and price comparison. Ranked by evidence and freshness; no minimum number is forced.')
+    if not rows:st.info('No selections match these filters. No selection or probability is invented.')
+    for state,leg in rows[:count]:render_single(state,leg,secret_getter)

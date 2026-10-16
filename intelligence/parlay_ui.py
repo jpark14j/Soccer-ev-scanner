@@ -1,6 +1,7 @@
 """Daily research UI: actual single prices, explicitly theoretical combinations."""
 import pandas as pd
 import streamlit as st
+from dataclasses import replace
 from intelligence.analyst_config import load_config
 from intelligence.chat_privacy import redact
 from intelligence.domain import utcnow,parse_time
@@ -27,17 +28,20 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
     counts=a.multiselect('Number of legs',[2,3],default=[2,3],key='research_legs')
     categories=b.multiselect('Risk category · price proxy',CATEGORIES,default=list(CATEGORIES),key='research_categories')
     st.caption('Price-based labels, not measured risk: Lower-variance = 2 legs, each ≤ 1.80; Balanced = other products ≤ 6.00; Higher-variance = products > 6.00. These labels do not establish win probabilities or safety.')
-    market_types=st.multiselect('Parlay market types',list(CATALOG),default=list(CATALOG),format_func=lambda m:CATALOG[m].name,key='research_market_types')
-    event_ids=None
-    event_scope=st.radio('Research event scope',['Across available events','One selected event'],horizontal=True,key='research_event_scope')
-    if event_scope=='One selected event':
-        events={q.event_id:f'{q.sport} · {q.event} · {q.commence_time}' for q in analysis.quotes if q.sport in sports and q.bookmaker in selected_books and q.status()=='current'}
-        if events:
-            event_ids=[st.selectbox('Same-game research event',sorted(events),format_func=lambda id:redact(events[id],sensitive),key='research_single_event')]
-        else:
-            event_ids=[]
-            st.caption('No current event can be selected. Stale observations remain inspection-only in Advanced Markets.')
-    st.caption('Open Advanced Markets to retrieve spreads, totals, BTTS or documented event props. Only actually observed current Ontario selections can enter this selector; unvalidated props remain price research.')
+    with st.expander('Market, event and evidence filters'):
+        market_types=st.multiselect('Parlay market types',list(CATALOG),default=list(CATALOG),format_func=lambda m:CATALOG[m].name,key='research_market_types')
+        from intelligence.research_state import EVIDENCE_STATES,evidence_state
+        evidence=st.multiselect('Parlay leg evidence status',EVIDENCE_STATES,default=list(EVIDENCE_STATES),key='research_evidence')
+        event_ids=None
+        event_scope=st.radio('Research event scope',['Across available events','One selected event'],horizontal=True,key='research_event_scope')
+        if event_scope=='One selected event':
+            events={q.event_id:f'{q.sport} · {q.event} · {q.commence_time}' for q in analysis.quotes if q.sport in sports and q.bookmaker in selected_books and q.status()=='current'}
+            if events:
+                event_ids=[st.selectbox('Same-game research event',sorted(events),format_func=lambda id:redact(events[id],sensitive),key='research_single_event')]
+            else:
+                event_ids=[]
+                st.caption('No current event can be selected. Stale observations remain inspection-only in Advanced Markets.')
+    st.caption('Open Settings & Research Tools → Advanced Markets to retrieve spreads, totals, BTTS or documented event props. Only actually observed current Ontario selections can enter this selector; unvalidated props remain price research.')
     selected_leagues=[league for league in leagues if LEAGUES[league][0] in sports]
     with st.expander('Get current prices and inspect search coverage'):
         try:
@@ -72,7 +76,8 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
     # Recompute expiry every minute without making any data-provider request.
     @st.fragment(run_every='60s')
     def show():
-        result=select_candidates(analysis,sports=sports,bookmakers=selected_books,leg_counts=counts,categories=categories,markets=market_types,event_ids=event_ids)
+        filtered=replace(analysis,quotes=[q for q in analysis.quotes if evidence_state(q,analysis)[0] in evidence])
+        result=select_candidates(filtered,sports=sports,bookmakers=selected_books,leg_counts=counts,categories=categories,markets=market_types,event_ids=event_ids)
         st.caption(f'Checked {result.checked_at}. {result.eligible_quotes} eligible individual quotes; searched {result.searched_quotes} quotes and {result.examined_combinations} combinations. At most 24 legs per sportsbook are searched, balanced across sports/events; this is not an exhaustive optimizer.')
         if not result.candidates:
             st.info('No current parlay research candidates match these filters. At least two compatible, current Ontario selections at the same sportsbook are required. Review coverage below or refresh selected odds when quota permits.')
@@ -81,6 +86,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                 q=candidate.legs[0].quote
                 st.subheader(redact(f'Research candidate {index} · {len(candidate.legs)} legs · {q.bookmaker_name}',sensitive))
                 st.caption(f'{candidate.category} · price-based research label · not a validated risk estimate')
+                st.caption('Leg evidence: '+', '.join(dict.fromkeys(evidence_state(leg.quote,analysis)[0] for leg in candidate.legs))+'. No approved combined ticket exists.')
                 st.write(f'Theoretical all-win odds product: **{candidate.theoretical_odds:.2f}**. This is arithmetic on individual prices, not a sportsbook combined quote or an executable offer.')
                 rows=[]
                 for leg in candidate.legs:

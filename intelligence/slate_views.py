@@ -13,7 +13,7 @@ def selection_card(leg,safe):
     q=leg.quote
     st.text(safe(selection_label(q)))
     st.caption(safe(f'{CATALOG[q.market].name} · {q.bookmaker_name} · individual decimal {q.odds:.2f} · source {q.source_updated_at}'))
-    st.caption(f'Break-even including margin: {leg.implied_probability:.1%}. Model: {leg.model_status}.')
+    st.caption(f'Sportsbook break-even including margin: {leg.implied_probability:.1%} (not a win forecast). Model: {leg.model_status}.')
     if leg.estimate:
         st.write(f'Model estimate {leg.estimate.probability:.1%}; supplied envelope {leg.estimate.lower:.1%}–{leg.estimate.upper:.1%}. '+('Validated leg evidence; ticket rules still need checking.' if leg.model_status=='validated' else 'Unvalidated research forecast; not a reliable true probability.'))
         d=leg.model_details

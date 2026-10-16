@@ -168,20 +168,23 @@ version, new evaluation and fresh independent evidence before approval.
 2. Leave `PAID_ANALYST_APPROVED = "0"`, the existing odds credit cap, provider key
    and all production secrets unchanged. No new key or account is required for the
    public-source model. Never paste keys into chat or GitHub.
-3. On **AI Dashboard**, select **Premier League** under Competitions. Open
-   **Prediction evidence → Chronological model evaluation and current input gaps**.
-   Check the model version and the 363/368 calibration/test counts above.
+3. On **AI Dashboard**, read **Data & Model Health** for source dates and missing
+   inputs. Open **Performance Tracker → Held-out model evaluations → Premier League
+   calibrated BTTS / goals 2.5** for the model version and 363/368 calibration/test
+   counts. Use the sport filters on Best Picks & Parlays to inspect existing data.
 4. Press **Refresh analysis** once. It honors the existing odds cache/credit cap;
    it cannot force paid requests or renew old quote timestamps. If the cap is spent
    or prices are older than five minutes, no current quote is fabricated.
-5. Open **Soccer Analytics** / **Best Selections by Game**. BTTS or exactly 2.5-goal
+5. Open **Best Picks & Parlays → Singles**, or **Settings & Research Tools → Research
+   tool → Soccer Analytics** for the detailed model view. BTTS or exactly 2.5-goal
    totals can be modeled once the permitted source catches up and fresh market
    quotes exist. Until then, inspect the explicit stale-result / unresolved-fixture
    reasons. Match-winner cards are outside this focused model, not missing silently.
-6. Open **Performance Tracker → Premier League calibrated BTTS / goals 2.5** for
-   full historical metrics, intervals and calibration bins. **Private forward
-   research forecasts** shows actual paper records, not backfilled successes.
-7. Open **Daily Parlay Research** and **AI Assistant** to check existing behavior.
+6. Open **Performance Tracker → Held-out model evaluations → Premier League
+   calibrated BTTS / goals 2.5** for full historical metrics, intervals and calibration
+   bins. **Prospective paper research** shows actual paper records, not backfilled successes.
+7. Open **Best Picks & Parlays → Parlays** and **Settings & Research Tools → Research
+   tool → AI Assistant** to check existing behavior.
    Parlays remain theoretical and local assistant mode remains free. Raw odds remain
    collapsed. No current predictions or profitable selections should be forced.
 

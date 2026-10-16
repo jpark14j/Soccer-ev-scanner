@@ -211,3 +211,11 @@ fresh independently held-out joint calibration, genuine combined-price access,
 durable storage and a loss-inclusive forward record. Commercial redistribution
 rights remain unverified. No winnings, high win rate or profitable strategy is
 claimed, and no wager can be placed by this application.
+# Current navigation and session scans — October 16, 2026
+
+Use the [four-page workspace guide](FOUR_PAGE_WORKSPACE.md) for the current UI.
+The fourteen destinations described below are now consolidated. Navigation and
+filters retain the session snapshot even after shared-cache expiry; use an
+explicit refresh or scan-scope change to request a capped new scan. Source/receipt
+expiry still disables old selections. This changes navigation, not the odds cap,
+model approval, research algorithms or background-worker authorization.

@@ -5,7 +5,7 @@ from intelligence.performance import metrics,breakdown
 from intelligence.market_validation import load_reports
 
 
-def render_performance(store):
+def render_publications(store):
     origin=st.radio('Record type',['forward','backtest'],horizontal=True,key='performance_origin')
     records=store.records(origin); summary=metrics(records)
     a,b,c=st.columns(3)
@@ -35,6 +35,9 @@ def render_performance(store):
         'Hypothetical ROI':by_size.get(str(n),{}).get('roi')} for n in (1,2,3)])
     st.caption('Empty 2/3-leg groups have no parlay performance evidence. Win rates include decisive outcomes only; pushes return stake and voids are excluded from turnover. One hypothetical unit per publication. Recorded losses remain included.')
     st.caption('Win-rate Wilson intervals are suppressed for shared-event decisions. ROI intervals require at least 30 UTC-day blocks and use a day-block bootstrap; between-day dependence/stationarity remain unverified. Prices are publication observations, not confirmed accepted/placed tickets. Slippage, taxes and operator rules are not inferred.')
+
+
+def render_evaluations(store):
     st.subheader('Held-out forecast research — separate from betting results')
     from intelligence.epl_forecasts import load_artifact
     focused=load_artifact()
@@ -44,9 +47,6 @@ def render_performance(store):
             st.json({'coverage':focused['coverage'],'markets':focused['tasks'],
                      'limitations':focused['limitations'],'source':focused['source'],
                      'sources':focused['sources'],'approved':False,'betting_roi':None})
-    from intelligence.processing import shadow_statistics
-    with st.expander('Private forward research forecasts — not betting performance'):
-        st.json(shadow_statistics(store))
     reports=load_reports()
     if not reports:
         st.info('No current code-matching advanced-market evaluation reports are available.')
@@ -70,3 +70,25 @@ def render_performance(store):
             st.caption(report['score_convention']+'. '+report['interval_assumptions'])
             st.json({'publication_blockers':report['promotion_blockers']})
     st.warning('Persistent storage and backups are required before subscribers rely on this ledger. Existing publication/settlement records remain immutable; research diagnostics never replace forward results.')
+
+
+def render_performance(store):
+    paper,published,evaluations=st.tabs(['Prospective paper research','Published hypothetical records','Held-out model evaluations'])
+    with paper:
+        from intelligence.processing import shadow_statistics
+        summary=shadow_statistics(store)
+        a,b=st.columns(2);c,d=st.columns(2)
+        a.metric('Paper forecasts recorded',summary['private_forecasts'])
+        b.metric('Paper forecasts with result labels',summary['scored_forecast_labels'])
+        groups=summary['by_sport_market_model']
+        c.metric('Paper target hits',sum(r['hits'] for r in groups.values()))
+        d.metric('Paper target misses',sum(r['misses'] for r in groups.values()))
+        st.caption('Immutable forecasts actually recorded before kickoff. Backtests are separate. Source-target hits/misses are not accepted sportsbook wins/losses or betting profitability; shared events and selections are dependent.')
+        with st.expander('Private forward research forecasts — not betting performance'):
+            st.json(summary)
+        if not summary['private_forecasts']:
+            st.info('No prospective paper forecasts have been recorded. Historical test matches are not counted as paper results.')
+    with published:
+        render_publications(store)
+    with evaluations:
+        render_evaluations(store)

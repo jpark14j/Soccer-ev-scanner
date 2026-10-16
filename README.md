@@ -5,7 +5,14 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
-The latest [automatic research guide](docs/AUTONOMOUS_RESEARCH.md) explains the
+The [four-page workspace guide](docs/FOUR_PAGE_WORKSPACE.md) is the current navigation
+and preview guide: AI Dashboard, Best Picks & Parlays, Performance Tracker, and
+Settings & Research Tools. The advanced sport, market, operations and assistant
+modules remain accessible through Research tool. Pages/filters reuse the session
+scan; explicit refreshes still obey the existing cache and credit cap. See the
+[free-results readiness review](docs/FREE_RESULTS_READINESS.md) for current gaps.
+
+The earlier [automatic research guide](docs/AUTONOMOUS_RESEARCH.md) explains the
 new card-based landing page, automatic budget-aware slate discovery, best selections
 by game, one shortlist per sportsbook and guarded operational/model lifecycle.
 Raw odds are collapsed under **Advanced Details / Raw Market Data**. Background

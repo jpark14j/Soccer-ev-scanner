@@ -1,5 +1,39 @@
 # Development stage report
 
+## Four-page navigation and free-data readiness — 2026-10-16
+
+1. **Implemented:** four-destination registry, concise Today's Research, Data &
+   Model Health, shared status-aware singles/price comparison, Singles/Parlays tabs
+   and filters, preserved advanced tools through a secondary selector, three
+   separated performance categories, and session snapshots that prevent navigation
+   or filter changes from starting scans after cache expiry. Explicit refresh and
+   competition-scope changes still use the existing cap/cache. Source failures and
+   missing results stay visible; no model or historical report was retuned.
+2. **Files:** `navigation.py`, `research_state.py`, `research_views.py`,
+   `workspace_ui.py`; `app.py`, parlay/performance/operations/slate views, assistant
+   navigation facts and nested diagnostic redaction; new workspace tests and shared
+   test navigation helper; migrated original UI tests; README, current workspace/
+   free-results guides, existing navigation guidance and verification evidence.
+3. **Passed:** 269 offline tests, compileall, dependency consistency, whitespace and
+   configured-secret checks; isolated existing-app HTTP 200 startup and Streamlit
+   AppTest for four routes, every advanced tool, filters, labels, no-spend navigation,
+   conflict blocking and accurate paper versus historical sample categories.
+4. **Incomplete:** no complete reliable alternative current-results feed was
+   verified for activation. OpenFootball still ends September 20 with 15 unscored
+   past fixtures. Current EPL forecasts remain blocked; no approved model, verified
+   joint parlay offer/advantage, permanent off-host ledger, live-state predictor or
+   remotely verified Community Cloud/mobile-browser rendering is claimed.
+5. **API/cost:** no account, token, paid service, odds request or budget increase;
+   paid AI disabled. Official public-source metadata was rechecked. OpenLigaDB is
+   a candidate pending exact EPL coverage/runtime checks and data-license review;
+   other free options require accounts, have unsuitable access/rights limitations
+   or cannot cover the old gaps. No secret was changed or exposed.
+6. **Next:** user tests the separate preview using the new click guide; verify a
+   complete permitted current-results source before integrating it, preserve the
+   frozen historical benchmark, then collect prospective paper evidence.
+
+See [preview instructions](FOUR_PAGE_WORKSPACE.md) and [source review](FREE_RESULTS_READINESS.md).
+
 ## Automatic slate/dashboard increment — 2026-10-16
 
 1. **Implemented:** card-based landing page and collapsed raw data, automatic

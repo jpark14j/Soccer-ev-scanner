@@ -1,16 +1,13 @@
 """Existing Streamlit entry point: verified markets and evidence-gated analysis."""
 import os
 from pathlib import Path
-from dataclasses import asdict
 import json
 import pandas as pd
 import streamlit as st
 from intelligence.domain import digest,parse_time,utcnow
 from intelligence.ev import qualify
-from intelligence.parlays import analyze, NO_PARLAYS
-from intelligence.performance import metrics, breakdown
 from intelligence.pipeline import configured_store, publish_current, run_analysis, Analysis
-from intelligence.providers import LEAGUES, PROP_MARKETS
+from intelligence.providers import LEAGUES
 from intelligence.registry import load_registry
 from intelligence.markets import selection_label,scope
 
@@ -20,8 +17,7 @@ st.markdown('''<style>
 [data-testid="stMetricValue"] {font-size:1.8rem;}
 [data-testid="stSidebar"] {border-right:1px solid #263545;}
 </style>''',unsafe_allow_html=True)
-PAGES = ['AI Dashboard','Best Selections by Game','Research Operations','Advanced Markets','Daily Parlay Research','Best Opportunities','AI Parlay Builder','NBA Analytics',
-         'Soccer Analytics','MLB Analytics','Live Markets','AI Assistant','Performance Tracker','Settings']
+from intelligence.navigation import PAGES,destination
 registry = load_registry()
 store = configured_store()
 
@@ -42,7 +38,7 @@ key = secret('ODDS_API_KEY')
 with st.sidebar:
     st.title('Sports Intelligence')
     st.caption('ONTARIO · NBA / SOCCER / MLB')
-    page = st.radio('Workspace',PAGES,label_visibility='collapsed')
+    page = st.radio('Workspace',[d.name for d in PAGES],label_visibility='collapsed',key='workspace')
     leagues = st.multiselect('Competitions',list(LEAGUES),default=['NBA','Premier League','MLB'])
     books = st.multiselect('Sportsbooks in view',sorted(b['name'] for b in registry['books']),
                            default=sorted(b['name'] for b in registry['books']))
@@ -62,9 +58,9 @@ def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_ho
 
 st.title(page)
 st.caption('Real market observations · transparent model evidence · no forced recommendations')
-snapshot_scope=(tuple(leagues),digest(key))
+snapshot_scope=(tuple(leagues),digest(key),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours)
 snapshot=st.session_state.get('_research_snapshot')
-if snapshot and snapshot.get('scope')==snapshot_scope and (utcnow()-parse_time(snapshot['stored_at'])).total_seconds()<1800:
+if snapshot and snapshot.get('scope')==snapshot_scope:
     result=snapshot['analysis']
 elif not key:
     st.info('Add ODDS_API_KEY in Streamlit Secrets or the environment to retrieve markets. Credentials are never stored in the repository.')
@@ -72,6 +68,10 @@ elif not key:
 else:
     with st.spinner('Loading available markets and checking model evidence…'):
         result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours)
+
+if not snapshot or snapshot.get('scope')!=snapshot_scope:
+    st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':result,'stored_at':utcnow().isoformat()}
+st.caption('Pages and filters reuse this session’s scan. Prices still expire after five minutes; use Refresh analysis to request an updated capped scan.')
 
 if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
     st.session_state.pop('_research_snapshot',None)
@@ -96,23 +96,6 @@ def current_opportunities(sport=None):
             and (sport is None or o.quote.sport==sport) and qualify(o.quote,o.estimate,now)[0]]
 
 
-def show_opportunities(opportunities):
-    if not opportunities:
-        st.info('No current opportunities meet the minimum analytical requirements. Missing evidence and expired quotes do not qualify.')
-    for o in opportunities[:20]:
-        q,e = o.quote,o.estimate
-        with st.container(border=True):
-            st.subheader(f'{q.selection} · {q.event}')
-            st.caption(f'{q.sport} / {q.league} · {q.market} · {q.bookmaker_name}')
-            a,b,c,d = st.columns(4)
-            a.metric('Observed decimal odds',f'{q.odds:.2f}')
-            b.metric('Model probability',f'{e.probability:.1%}')
-            c.metric('Estimated EV',f'{o.ev:+.1%}')
-            d.metric('Conservative EV',f'{o.conservative_ev:+.1%}')
-            st.write(f'Qualifies because its validated model and current Ontario quote pass the uncertainty-adjusted EV threshold. Rank score: {o.score:.4f} = conservative EV × (1 − interval width).')
-            st.caption(f'Empirical interval: {e.lower:.1%}–{e.upper:.1%} · model {e.model_version} · source update {q.source_updated_at} · received {q.received_at}')
-            st.write('Risks: ' + '; '.join(e.risk_factors))
-
 
 def show_markets(sport=None,live=False):
     now = utcnow()
@@ -132,110 +115,42 @@ def show_markets(sport=None,live=False):
                       'Model history through':r.get('training_end'),'Probability envelope':(r.get('lower'),r.get('upper')) if r.get('probability') is not None else None})
     with st.expander('Advanced Details / Raw Market Data',expanded=False):
         if table:
-            st.dataframe(pd.DataFrame(table),hide_index=True,use_container_width=True)
+            from intelligence.chat_privacy import redact_data
+            from intelligence.analyst_config import load_config
+            st.dataframe(pd.DataFrame(redact_data(table,load_config(secret).sensitive_values)),hide_index=True,use_container_width=True)
         else:
             st.info('No market observations match this view.')
         st.caption('Historical/stale prices are inspection-only. Provider observations are not execution guarantees; settlement scope remains unverified.')
 
 
-@st.fragment(run_every='60s')
-def dashboard():
-    from intelligence.slate_views import render_dashboard
-    render_dashboard(result,store,data_settings,book_keys,secret)
-    show_markets()
+def refresh_selected(selected_leagues,markets=('h2h',),event_id=None,discovered=()):
+    from intelligence.research_refresh import refresh_research,refresh_event
+    fresh=(refresh_event(result,key,selected_leagues[0],event_id,markets,store,limit=data_settings.daily_limit,discovered=discovered) if event_id else
+        refresh_research(result,key,selected_leagues,store,markets=markets,limit=data_settings.daily_limit))
+    st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':fresh,'stored_at':utcnow().isoformat()}
 
 
-# A displayed recommendation gets a permanent immutable publication record. Cached
-# quotes are checked again immediately before publication.
-published = publish_current(result,store)
+# Recheck existing publication gates; browsing pages never creates new API requests.
+published=publish_current(result,store)
 if published:
     from intelligence.ledger import archive
     archive(store,os.getenv('PREDICTION_LEDGER_DIR','ledger'))
-if page=='AI Dashboard':
+from intelligence.workspace_ui import Workspace,render_picks,render_tools
+workspace=Workspace(result,store,data_settings,book_keys,leagues,key,secret,refresh_selected,show_markets,current_opportunities)
+route=destination(page).renderer
+if route=='dashboard':
+    @st.fragment(run_every='60s')
+    def dashboard():
+        from intelligence.research_views import render_daily_dashboard
+        render_daily_dashboard(result,store,data_settings,book_keys,secret)
     dashboard()
-elif page=='Best Selections by Game':
-    from intelligence.slate_views import render_games
-    count=st.selectbox('Games to display',[6,12,30,100],key='game_card_count')
-    render_games(result,book_keys,secret,count)
-    show_markets()
-elif page=='Research Operations':
-    from intelligence.operations_ui import render_operations
-    render_operations(result,store)
-elif page=='Best Opportunities':
-    show_opportunities(current_opportunities())
-    st.caption('The best available qualifying price is selected per equivalent selection. Market-implied probabilities are comparison baselines, never treated as independently estimated truth.')
-elif page in ('Daily Parlay Research','AI Parlay Builder','Advanced Markets'):
-    from intelligence.parlay_ui import render_research
-    from intelligence.research_refresh import refresh_research,refresh_event
-    def refresh_selected(selected_leagues,markets=('h2h',),event_id=None,discovered=()):
-        fresh=(refresh_event(result,key,selected_leagues[0],event_id,markets,store,limit=data_settings.daily_limit,discovered=discovered) if event_id else
-            refresh_research(result,key,selected_leagues,store,markets=markets,limit=data_settings.daily_limit))
-        st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':fresh,'stored_at':utcnow().isoformat()}
-        load_analysis.clear()
-    if page=='Advanced Markets':
-        from intelligence.market_ui import render_markets
-        render_markets(result,store,leagues,book_keys,key,data_settings,refresh_selected,secret)
-    else:
-        from intelligence.slate_views import render_books
-        render_books(result,book_keys,secret,'parlay_book_preference')
-        with st.expander('Advanced research filters and legacy selector',expanded=False):
-            render_research(result,store,book_keys,leagues,bool(key),refresh_selected,secret,data_settings.daily_limit)
-    if page!='Advanced Markets':
-        from intelligence.risk_ui import render_bankroll
-        render_bankroll(current_opportunities())
-        st.subheader('Qualified-leg diagnostic builder')
-        st.caption('This separate diagnostic still requires qualified singles. It never promotes a research candidate into a recommendation.')
-        eligible = current_opportunities()
-        chosen = st.multiselect('Qualifying legs to evaluate',range(len(eligible)),
-                                format_func=lambda i:f'{eligible[i].quote.sport}: {eligible[i].quote.event} / {eligible[i].quote.selection}')
-        if 2<=len(chosen)<=6:
-            analysis = analyze([eligible[i] for i in chosen])
-            lower,upper = analysis['probability_bounds']
-            st.write(f'Theoretical joint probability bounds: {lower:.1%}–{upper:.1%}.')
-            st.caption(analysis['reason']+'. No executable combined price or parlay EV is asserted.')
-        st.write('Lower-variance, balanced and higher-variance categories require a validated joint model, sportsbook restrictions, and an actual combined quote. Different games or sports do not establish independence.')
-elif page in ('NBA Analytics','Soccer Analytics','MLB Analytics'):
-    if page=='Soccer Analytics':
-        from intelligence.slate_views import render_focused_model
-        render_focused_model(result)
-    sport = page.split()[0]
-    show_opportunities(current_opportunities(sport))
-    from intelligence.slate_views import render_games
-    from dataclasses import replace
-    render_games(replace(result,quotes=[q for q in result.quotes if q.sport==sport],slate={**result.slate,'events':[e for e in result.slate.get('events',[]) if e['sport']==sport]}),book_keys,secret)
-    show_markets(sport)
-    evidence_file=Path('docs/evidence')/({'NBA':'nba-research.json','MLB':'mlb-research.json','Soccer':'premier-league-research.json'}[sport])
-    if evidence_file.exists():
-        with st.expander('Historical research evaluation — not forward performance'):
-            evidence=json.loads(evidence_file.read_text())
-            st.write(f'Data through {evidence["data_end"]}; untouched test events: {evidence["test_n"]}. Status: research only.')
-            st.json({'diagnostic_scores':evidence['metrics'],'simple_baseline':evidence.get('simple_baseline_metrics'),'market_baseline':evidence['baseline_metrics'],'publication_blockers':evidence['promotion_blockers']})
-    st.caption('Player-prop ingestion is available through the event endpoint. Prop forecasting requires licensed player history, availability inputs and market-specific validation; it is not enabled.')
-elif page=='Live Markets':
-    st.warning('Live recommendations are unavailable. Current odds alone do not supply verified game clock, score, player state, latency or suspension information. Pregame models are never applied in play.')
-    show_markets(live=True)
-elif page=='AI Assistant':
-    from intelligence.chat_ui import render_assistant
-    render_assistant(result,store,secret)
-elif page=='Performance Tracker':
+elif route=='picks':
+    render_picks(workspace)
+elif route=='performance':
     from intelligence.performance_ui import render_performance
     render_performance(store)
-elif page=='Settings':
-    st.write('Competition and sportsbook view preferences are in the sidebar and last for this browser session.')
-    st.write(f'Local daily credit cap: {data_settings.daily_limit}. Default retrieval cache: {data_settings.cache_seconds} seconds. No subscriptions are purchased by the application.')
-    st.write(f'Ontario directory effective date: {registry["directory_as_of"]}. Review expires {registry["review_expires_at"]}. Expired evidence disables eligibility.')
-    st.dataframe(pd.DataFrame(registry['books']),hide_index=True,use_container_width=True)
-    st.link_button('Official Ontario directory',registry['source'])
-    from intelligence.analyst_config import load_config
-    analyst_config = load_config(secret)
-    st.subheader('Connections')
-    st.write({'Odds key configured':bool(key),'Telegram bot configured':bool(secret('TELEGRAM_BOT_TOKEN')),
-              'Paid conversational API':'Configured; session consent required' if analyst_config.paid_ready else 'Disabled or unconfigured','NBA/MLB historical data':'Free research imports / licensed files / locally collected completed results'})
-    st.caption('Scheduling and Telegram preferences use environment variables documented in README. API keys belong in Streamlit Secrets or GitHub Actions Secrets.')
-    st.subheader('Additional market requests')
-    from intelligence.markets import CATALOG
-    st.dataframe(pd.DataFrame([{'Provider key':m.key,'Market':m.name,'Sports':', '.join(m.sports),'Published provider documentation':m.documented} for m in CATALOG.values()]),hide_index=True,use_container_width=True)
-    st.caption('Documented support is not account or Ontario availability. Open Advanced Markets for market-specific searches/discovery; undocumented corners need exact event discovery. Every request is subject to quota.')
+else:
+    render_tools(workspace)
 
 for manifest in Path(os.getenv('HISTORY_DIR','data/history')).glob('*.source.json'):
     try:

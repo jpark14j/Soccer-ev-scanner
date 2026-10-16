@@ -1,3 +1,4 @@
+from ui_navigation import navigate
 from dataclasses import replace
 from datetime import timedelta
 from pathlib import Path
@@ -20,12 +21,13 @@ def test_default_dashboard_has_cards_and_collapsed_raw_odds(tmp_path,monkeypatch
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
         assert not app.exception
         assert any(m.label=='Games discovered / observed' for m in app.metric)
-        assert any('No Qualifying Parlay' in m.value for m in app.markdown)
+        assert any('No qualifying parlay opportunities' in m.value for m in app.info)
         raw=[e for e in app.expander if e.label=='Advanced Details / Raw Market Data']
-        assert raw and all(e.proto.expanded is False for e in raw)
-        app.sidebar.radio[0].set_value('Best Selections by Game').run()
-        assert not app.exception
-        app.sidebar.radio[0].set_value('Research Operations').run()
+        assert not raw and not app.dataframe  # Home uses concise cards; no raw table.
+        navigate(app,'Best Selections by Game')
+        raw=[e for e in app.expander if e.label=='Advanced Details / Raw Market Data']
+        assert raw and all(not e.proto.expanded for e in raw)
+        navigate(app,'Research Operations')
         assert not app.exception and any('not an always-running' in m.value for m in app.info)
 
 
@@ -51,7 +53,7 @@ def test_performance_cards_show_real_ledger_losses_with_their_sample(tmp_path,mo
     monkeypatch.setenv('PREDICTION_LEDGER_DIR',str(tmp_path/'empty-ledger'))
     with patch('intelligence.pipeline.run_analysis',return_value=Analysis()):
         app=AppTest.from_file(Path('app.py').resolve()).run()
-        app.sidebar.radio[0].set_value('Performance Tracker').run()
+        navigate(app,'Performance Tracker')
     assert not app.exception
     assert next(m for m in app.metric if m.label=='Losses').value=='1'
     assert any('Decisive sample: 1' in c.value for c in app.caption)

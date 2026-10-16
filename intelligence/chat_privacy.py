@@ -26,6 +26,14 @@ def redact(text, sensitive=()):
     return text
 
 
+def redact_data(value,sensitive=()):
+    """Preserve numeric evidence while redacting nested diagnostic display strings."""
+    if isinstance(value,str):return redact(value,sensitive)
+    if isinstance(value,dict):return {redact(str(k),sensitive):redact_data(v,sensitive) for k,v in value.items()}
+    if isinstance(value,(list,tuple)):return [redact_data(v,sensitive) for v in value]
+    return value
+
+
 def validate_input(text, config):
     if not isinstance(text, str):
         raise InvalidChatInput('Enter a text question.')

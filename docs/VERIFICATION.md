@@ -1,5 +1,34 @@
 # Verification matrix
 
+## Four-page workspace increment — 2026-10-16
+
+**269 offline tests pass** (10 added; existing UI tests migrated to the new routes).
+Coverage proves exactly four top-level choices, all preserved advanced tools,
+Singles/Parlays filters and labels, page/tool navigation after shared-cache expiry
+without additional scans/credits, explicit refresh behavior, price comparison that
+rejects stale higher odds, read-only source-health rendering, visible cached result
+conflicts that keep inference blocked, paper hit/miss counts separated from held-out
+tests, and nested diagnostic secret redaction. Existing assistant, parlay,
+chronological-model, quota, settlement and immutable-ledger tests remain in the suite.
+Passing software tests are not evidence of forecasting skill or profitable betting.
+
+The existing app starts on isolated port 8508 (HTTP 200 `ok`) with no odds
+key, cap zero and paid AI disabled. Compilation, dependency consistency, whitespace
+and configured-secret checks pass. The new pages were exercised with Streamlit
+AppTest; real desktop/mobile visual inspection of the hosted preview is unverified.
+The environment's enforced network policy does not permit the Community Cloud host.
+
+The official current OpenFootball file was re-read: 45 completed results through
+September 20, with 15 earlier fixtures unscored. [Source-review evidence](evidence/four-page-source-review.json)
+and [provider/rights/coverage review](FREE_RESULTS_READINESS.md) distinguish verified
+findings from inaccessible or untested alternatives. No new result feed was
+activated. Frozen EPL source/model/policy/evaluation files are unchanged and still
+hash-match. No model was approved, no odds request made, no budget increased and no
+paid AI enabled. The existing real store remains at 9/9 local reserved credits.
+
+See [the current preview click guide](FOUR_PAGE_WORKSPACE.md). Production, main,
+deployment settings and secrets were not modified.
+
 ## Focused prediction increment — 2026-10-16
 
 **259 offline tests pass** (29 added), with real Requests/HTTPX transports blocked.

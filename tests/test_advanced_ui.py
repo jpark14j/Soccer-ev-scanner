@@ -1,3 +1,4 @@
+from ui_navigation import navigate
 from dataclasses import replace
 from datetime import timedelta
 from pathlib import Path
@@ -24,7 +25,7 @@ def advanced_app(tmp_path,monkeypatch,quote):
     analysis=Analysis(quotes=[q],checked_at=now.isoformat())
     with patch('intelligence.pipeline.run_analysis',return_value=analysis):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=30).run()
-        app.sidebar.radio[0].set_value('Advanced Markets').run()
+        navigate(app,'Advanced Markets')
         assert not app.exception
         yield app,analysis,store
 
@@ -56,11 +57,11 @@ def test_no_secret_in_english_data_view_or_scope(advanced_app):
 
 def test_performance_and_optional_risk_controls_work_with_no_fake_returns(advanced_app):
     app,_,_=advanced_app
-    app.sidebar.radio[0].set_value('Performance Tracker').run()
+    navigate(app,'Performance Tracker')
     assert not app.exception
     assert any('No published predictions' in i.value for i in app.info)
     assert any('not a betting win rate' in c.value for c in app.caption)
-    app.sidebar.radio[0].set_value('Daily Parlay Research').run()
+    navigate(app,'Daily Parlay Research')
     next(c for c in app.checkbox if c.label=='Enable hypothetical bankroll analysis').check().run()
     assert not app.exception
     assert any('Kelly unavailable' in m.value for m in app.markdown)

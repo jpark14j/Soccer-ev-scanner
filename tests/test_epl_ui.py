@@ -1,3 +1,4 @@
+from ui_navigation import navigate
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
@@ -23,14 +24,14 @@ def test_preview_pages_show_calibrated_research_and_source_gap(tmp_path,monkeypa
         assert not app.exception
         assert any('Model estimate' in t.value for t in app.markdown)
         assert any('epl-goal-strength-1' in t.value and 'prediction' in t.value for t in app.caption)
-        assert any('No credible high-probability' in t.value for t in app.info)
+        assert any('No credible high-probability' in t.value for t in app.caption)
         assert all(not e.proto.expanded for e in app.expander if e.label=='Advanced Details / Raw Market Data')
-        app.sidebar.radio[0].set_value('Soccer Analytics').run()
+        navigate(app,'Soccer Analytics')
         assert not app.exception and any(t.value=='Prediction evidence' for t in app.subheader)
-        app.sidebar.radio[0].set_value('Performance Tracker').run()
+        navigate(app,'Performance Tracker')
         assert not app.exception
         assert any('Premier League calibrated' in e.label for e in app.expander)
-        app.sidebar.radio[0].set_value('AI Assistant').run()
+        navigate(app,'AI Assistant')
         assert not app.exception
 
 
@@ -45,4 +46,7 @@ def test_source_gap_cards_explain_missing_probability(tmp_path,monkeypatch,quote
     with patch('intelligence.pipeline.run_analysis',return_value=result):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
     assert not app.exception
+    assert any(s.value=='Data & Model Health' for s in app.subheader)
+    assert any('past EPL fixtures have no source score' in t.value for t in app.markdown)
+    navigate(app,'Best Picks & Parlays')
     assert any('Forecast blocked: Latest source result' in t.value for t in app.caption)

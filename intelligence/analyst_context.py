@@ -71,7 +71,7 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
         'Game cards rank at most two selections by qualified value, model evidence and freshness, not payout; ties have no demonstrated statistical superiority.')
     for index in range(0,min(len(games),30),5):
         text='; '.join(f"{g['event']['sport']} {g['event']['event']} starts {g['event']['start']}: {g['observations_evaluated']} current observations evaluated; {g['qualified']} shortlisted qualified singles" for g in games[index:index+5])
-        add('games_'+str(index),'coverage','all',text+'. More games, when present, are available in Best Selections by Game.')
+        add('games_'+str(index),'coverage','all',text+'. More games, when present, are available in Best Picks & Parlays → Singles.')
     eligible = [o for o in analysis.opportunities if qualify(o.quote,o.estimate,now)[0]]
     add('availability','availability','all',
         f'{len(eligible)} current opportunities pass the Ontario, freshness, model-validation and uncertainty-adjusted EV gates. '
@@ -79,7 +79,7 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
         + ('No current opportunities meet the minimum analytical requirements.' if not eligible else 'Only these evidence-gated opportunities qualify.'))
     add('limits','limitations','all','Player statistics, injuries, lineups, weather and validated player-prop models are not connected. '
         'Live prediction is unavailable without verified score/clock/state/latency and suspension data. '
-        'No qualifying parlay opportunities identified today. The Daily Parlay Research page can display current-price research candidates without validated models; these are not recommendations. A validated joint model and actual sportsbook combined quote are required to qualify.')
+        'No qualifying parlay opportunities identified today. Best Picks & Parlays → Parlays (Daily Parlay Research) can display current-price research candidates without validated models; these are not recommendations. A validated joint model and actual sportsbook combined quote are required to qualify.')
     add('actions','capabilities','all','This assistant can explain application records. It cannot place bets, make purchases, '
         'send notifications, run code, execute SQL, alter data or access other accounts. Positive estimated EV never guarantees a win.')
     add('ev_formula','ev','all','For a market without a push, EV = estimated win probability × decimal odds − 1. '
@@ -176,7 +176,7 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
             text+=f'. Theoretical price product {candidate.theoretical_odds:.2f}, not an executable quote. '+candidate.rank_explanation
         text+=' Validated joint probability, actual combined pricing, verified restrictions and candidate-specific betting performance are unavailable.'
         add('book_'+row['bookmaker'],'parlays',focus_sport,text)
-    add('bankroll','bankroll','all','Hypothetical loss tables are available in Daily Parlay Research. The 0.5% per-bet and 2% portfolio caps are chosen exposure assumptions, not profitable stake promises. Fractional Kelly is blocked for research parlays without validated probabilities, uncertainty and actual prices. Overlapping tickets can concentrate losses.')
+    add('bankroll','bankroll','all','Hypothetical loss tables are available in Best Picks & Parlays → Parlays. The 0.5% per-bet and 2% portfolio caps are chosen exposure assumptions, not profitable stake promises. Fractional Kelly is blocked for research parlays without validated probabilities, uncertainty and actual prices. Overlapping tickets can concentrate losses.')
     quota=getattr(analysis,'quota',{})
     if quota:
         add('quota','freshness','all',f"Local odds quota: {quota['used']}/{quota['limit']}; next local reset {quota['next_reset_toronto']} ({quota['next_reset_utc']}). This does not establish the provider's account reset. No cap was automatically raised; stale snapshots remain inspection-only.")

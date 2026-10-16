@@ -1,3 +1,4 @@
+from ui_navigation import navigate
 from pathlib import Path
 from unittest.mock import patch
 import pandas as pd
@@ -54,7 +55,7 @@ def test_all_streamlit_sections_render_without_external_calls(tmp_path,monkeypat
         assert not app.exception
         for page in ['Best Opportunities','AI Parlay Builder','NBA Analytics','Soccer Analytics',
                      'MLB Analytics','Live Markets','AI Assistant','Performance Tracker','Settings']:
-            app.sidebar.radio[0].set_value(page).run()
+            navigate(app,page)
             assert not app.exception, page
 
 
