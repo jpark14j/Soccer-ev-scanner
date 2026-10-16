@@ -10,7 +10,7 @@ from intelligence.quota import quota_details
 
 def credit_status(store,now=None,limit=None):
     try:
-        limit=int(os.getenv('ODDS_DAILY_CREDITS','16')) if limit is None else int(limit)
+        limit=int(os.getenv('ODDS_DAILY_CREDITS','9')) if limit is None else int(limit)
         if not 0<=limit<=10000:
             raise ValueError()
     except (ValueError,TypeError):

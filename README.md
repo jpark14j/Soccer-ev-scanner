@@ -5,6 +5,13 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [Phase 2 engine guide](docs/PHASE2_ENGINE.md) documents the normalized data
+foundation for five soccer leagues plus NBA/MLB archives, new Bundesliga BTTS and
+Ligue 1 goals-2.5 research models, real held-out scores, bounded public-results
+updates and current data blockers. These are research models, not approved betting
+edges. Current source scores remain stale/incomplete; no current opportunity or
+profit is invented. The [source audit](docs/PHASE2_DATA_AUDIT.md) explains selection.
+
 The [four-page workspace guide](docs/FOUR_PAGE_WORKSPACE.md) is the current navigation
 and preview guide: AI Dashboard, Best Picks & Parlays, Performance Tracker, and
 Settings & Research Tools. The advanced sport, market, operations and assistant

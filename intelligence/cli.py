@@ -12,6 +12,12 @@ from intelligence.providers import LEAGUES
 def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest='command',required=True)
+    multi=sub.add_parser('import-multi-history',help='Import verified pinned multi-league files into the private normalized ledger')
+    multi.add_argument('--directory',required=True)
+    multi.add_argument('--download',action='store_true',help='One-off maximum 36 hash-verified public pinned files; never a paid endpoint')
+    expanded=sub.add_parser('evaluate-expanded',help='Reproduce predeclared expanded models; no current market or paid API request')
+    expanded.add_argument('--league',choices=['Bundesliga','Ligue 1'],required=True)
+    expanded.add_argument('--directory',required=True)
     epl=sub.add_parser('evaluate-epl',help='Reproduce frozen EPL diagnostics from pinned public snapshots; no paid calls')
     epl.add_argument('--cache-directory',required=True)
     epl.add_argument('--output',default='research_assets/epl/model.json')
@@ -50,7 +56,16 @@ def main():
     review.add_argument('--action',choices=['promote','rollback'],required=True)
     args = parser.parse_args()
     store = configured_store()
-    if args.command=='evaluate-epl':
+    if args.command=='import-multi-history':
+        from intelligence.data_adapters import import_history,download_snapshot
+        if args.download:download_snapshot(args.directory)
+        print(json.dumps(import_history(store,args.directory),indent=2))
+    elif args.command=='evaluate-expanded':
+        from intelligence.expanded_models import build
+        report=build(args.league,args.directory)
+        print(json.dumps({'league':args.league,'model':report['model_version'],'calibration_n':report['calibration_n'],
+            'periods':report['periods'],'status':report['status'],'edge_approved':False},indent=2))
+    elif args.command=='evaluate-epl':
         if args.download:
             from intelligence.epl_source import ROOT,REVISION
             from intelligence.epl_forecasts import _download

@@ -39,6 +39,13 @@ def render_publications(store):
 
 def render_evaluations(store):
     st.subheader('Held-out forecast research — separate from betting results')
+    from intelligence.expanded_models import load,policy
+    for league in policy()['targets']:
+        expanded=load(league)
+        if expanded:
+            with st.expander(league+' · '+expanded['target']+' · research model'):
+                st.caption('Training through June 2022; calibration 2022–23; validation 2023–24; final test 2024–25. Each competition has its own fitted venue parameters and calibration. No betting-edge approval or profitability claim.')
+                st.json({k:expanded[k] for k in ('model_version','calibration_n','periods','sources','limitations','model_approval_blockers')})
     from intelligence.epl_forecasts import load_artifact
     focused=load_artifact()
     if focused:

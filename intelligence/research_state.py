@@ -22,7 +22,8 @@ def evidence_state(q,analysis,now=None):
     if leg.estimate:
         return EXPERIMENTAL,leg
     from intelligence.epl_forecasts import supported
-    if leg.model_details.get('model') or supported(q) and leg.blockers:
+    from intelligence.expanded_forecasts import supported as expanded_supported
+    if leg.model_details.get('model') or (supported(q) or expanded_supported(q)) and leg.blockers:
         return BLOCKED,leg
     return PRICE_ONLY,leg
 

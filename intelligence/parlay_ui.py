@@ -32,6 +32,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
         market_types=st.multiselect('Parlay market types',list(CATALOG),default=list(CATALOG),format_func=lambda m:CATALOG[m].name,key='research_market_types')
         from intelligence.research_state import EVIDENCE_STATES,evidence_state
         evidence=st.multiselect('Parlay leg evidence status',EVIDENCE_STATES,default=list(EVIDENCE_STATES),key='research_evidence')
+        competitions=st.multiselect('Parlay competitions',list(LEAGUES),default=list(LEAGUES),key='research_competitions')
         event_ids=None
         event_scope=st.radio('Research event scope',['Across available events','One selected event'],horizontal=True,key='research_event_scope')
         if event_scope=='One selected event':
@@ -76,7 +77,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
     # Recompute expiry every minute without making any data-provider request.
     @st.fragment(run_every='60s')
     def show():
-        filtered=replace(analysis,quotes=[q for q in analysis.quotes if evidence_state(q,analysis)[0] in evidence])
+        filtered=replace(analysis,quotes=[q for q in analysis.quotes if q.league in competitions and evidence_state(q,analysis)[0] in evidence])
         result=select_candidates(filtered,sports=sports,bookmakers=selected_books,leg_counts=counts,categories=categories,markets=market_types,event_ids=event_ids)
         st.caption(f'Checked {result.checked_at}. {result.eligible_quotes} eligible individual quotes; searched {result.searched_quotes} quotes and {result.examined_combinations} combinations. At most 24 legs per sportsbook are searched, balanced across sports/events; this is not an exhaustive optimizer.')
         if not result.candidates:

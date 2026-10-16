@@ -121,6 +121,14 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
         text += 'Historical research diagnostics are separate from live forward performance and are not current event probabilities.'
         add('model_'+sport.lower(),'models',sport,text)
     from intelligence.market_validation import load_reports
+    from intelligence.expanded_models import load as load_expanded,policy as expanded_policy
+    for league in expanded_policy()['targets']:
+        model=load_expanded(league)
+        if model:
+            m=model['periods']['final_test']['model']
+            add('expanded_'+model['competition_id'],'models','Soccer',
+                f"{league} {model['target']}, {model['model_version']}: research model, calibration n={model['calibration_n']}, final test n={m['n']}, binary Brier={m['binary_brier']['value']:.6f}, log loss={m['log_loss']['value']:.6f}. "
+                'Independently fitted competition parameters; no approved forecasting or betting edge, no validated joint parlay model. Current source results through '+model['state']['latest']+'; freshness/missing-fixture gates still apply.')
     from intelligence.epl_forecasts import load_artifact
     focused=load_artifact()
     if focused:

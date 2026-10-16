@@ -38,8 +38,10 @@ def render_health(analysis,store,secret_getter=None):
         ' ('+health['source_check_kind']+'); latest completed EPL result: '+(health['source_latest'] or 'unavailable')+'. A download date is not a result date.')
     for reason in health['reasons']:
         st.write('• '+reason)
+    st.caption('Expanded research: Bundesliga BTTS and Ligue 1 total goals 2.5 use separate fitted competition models. Their current source results also end September 20; stale/missing fixtures block current forecasts. Other competitions are data/discovery targets, not automatically modeled.')
     with st.expander('Model, source and coverage diagnostics'):
         st.json(health)
+        render_competitions(analysis,store)
     return health
 
 
@@ -98,9 +100,21 @@ def render_singles(analysis,books,secret_getter=None):
     market=a.selectbox('Market',['All markets',*CATALOG],format_func=lambda k:CATALOG[k].name if k in CATALOG else k,key='picks_market')
     markets=None if market=='All markets' else [market]
     statuses=b.multiselect('Evidence status',EVIDENCE_STATES,default=list(EVIDENCE_STATES),key='picks_evidence')
+    from intelligence.competitions import COMPETITIONS
+    competition=st.selectbox('Competition',['All observed competitions',*COMPETITIONS],key='picks_competition')
+    if competition!='All observed competitions':
+        analysis=replace(analysis,quotes=[q for q in analysis.quotes if q.league==competition])
     st.caption('Filters only inspect this scan. Research estimates and market break-even percentages are separate; price-only observations are not forecasts.')
     count=st.selectbox('Selections to display',[6,12,30,100],key='picks_count')
     rows=singles(analysis,selected,sports,markets,statuses)
     st.caption(f'{len(rows)} equivalent selections after filtering and price comparison. Ranked by evidence and freshness; no minimum number is forced.')
     if not rows:st.info('No selections match these filters. No selection or probability is invented.')
     for state,leg in rows[:count]:render_single(state,leg,secret_getter)
+
+
+def render_competitions(analysis,store):
+    from intelligence.multi_readiness import readiness
+    rows=readiness(analysis,store)
+    active=[r for r in rows if r['coverage']!='Discovery target; no dataset integrated']
+    st.caption('Historical coverage is not current-input readiness. Soccer cups/national teams are discovery targets; no cross-league strengths are transferred.')
+    st.json({'ingested_competitions':active,'targets_without_data':[r['competition'] for r in rows if r not in active]})

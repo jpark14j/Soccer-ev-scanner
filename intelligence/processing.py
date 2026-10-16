@@ -43,13 +43,14 @@ def record_shadow_forecasts(analysis,store,now=None):
             continue
         detail=analysis.advanced_details.get(q.id) or research.get(q.id,{})
         focused=estimate.model_version==focused_version
-        code=focused_hash if focused else advanced_hash if estimate.model_version in VERSIONS.values() else team_hash
+        expanded=estimate.model_version.startswith('venue-goals-1-')
+        code=detail.get('model_code_sha256') if expanded else focused_hash if focused else advanced_hash if estimate.model_version in VERSIONS.values() else team_hash
         data=detail.get('data_sha256','unavailable')
         identifier=digest((q.id,estimate.model_version,q.commence_time,code,data))
         payload={'quote':asdict(q),'estimate':asdict(estimate),'origin':'shadow research',
                  'model_code_sha256':code,'history_data_sha256':data,
-                 'target_scope':'source_reported_ft' if focused else 'full_event_final_including_extras' if q.sport in ('NBA','MLB') else 'regulation_90_unverified',
-                 'model_evidence':detail if focused else {},
+                 'target_scope':'source_reported_ft' if focused else 'expanded_source_ft' if expanded else 'full_event_final_including_extras' if q.sport in ('NBA','MLB') else 'regulation_90_unverified',
+                 'model_evidence':detail if focused or expanded else {},
                  'scope':'Unverified model score target; not accepted sportsbook settlement',
                  'publication_status':'Not a betting recommendation; never included in forward betting ROI'}
         with store.connect() as db:
@@ -106,12 +107,13 @@ def process_cycle(store,provider,leagues,cap,*,collect_results=False,now=None,ru
         shadows=[dict(r) for r in db.execute('SELECT f.* FROM shadow_forecasts f LEFT JOIN shadow_outcomes o ON f.id=o.id WHERE o.id IS NULL')]
     pending=[r['payload']['quote']['league'] for r in records]
     pending.extend(json.loads(r['payload'])['quote']['league'] for r in shadows
-        if json.loads(r['payload']).get('target_scope')!='source_reported_ft'
+        if json.loads(r['payload']).get('target_scope') not in ('source_reported_ft','expanded_source_ft')
         and parse_time(json.loads(r['payload'])['quote']['commence_time'])<now)
     if collect_results:
         pending.extend(l for l in leagues if l in ('NBA','MLB'))
     summary={'collection':{},'settled':0,'pending_completed_publications':len(records),'blocked':{},'shadow_forecasts_recorded':0}
     summary['pending_public_epl_forecasts']=sum(json.loads(r['payload']).get('target_scope')=='source_reported_ft' for r in shadows)
+    summary['pending_expanded_leagues']=sorted({json.loads(r['payload'])['quote']['league'] for r in shadows if json.loads(r['payload']).get('target_scope')=='expanded_source_ft'})
     for league in sorted(set(pending)&set(leagues)):
         if store.cached('daily-completed-v1-'+league,86400,now) is None and quota_details(store,cap,now)['remaining']<2:
             summary['collection'][league]='not requested: existing local credit cap'

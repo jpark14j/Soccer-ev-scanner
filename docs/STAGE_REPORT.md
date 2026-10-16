@@ -1,5 +1,56 @@
 # Development stage report
 
+## Phase 2 — multi-competition ingestion and predictive research
+
+**Stage A:** verified seven seasons for five major soccer leagues; documented
+publisher rights, current source gaps, expected team/fixture counts and NBA/MLB
+archive limits. Selected Bundesliga BTTS and Ligue 1 goals 2.5 before scoring;
+other competitions remain explicit discovery targets.
+
+**Stage B:** added competition/team identity registry, normalized event/fixture
+contracts, immutable observations/snapshots, exact aliases, cross-source conflict
+and withdrawal detection, historical completeness, actual-observation cutoff
+features, licensed archive/local-final adapters and a separately capped public
+current-results client. No odds budget or source restriction was bypassed.
+
+**Stage C:** built separate venue-specific goal-strength fits and frozen monotone
+calibration. Train through 2022, calibration 2022–23, validation 2023–24, final
+test 2024–25. Bundesliga final n=275, Brier 0.241399; Ligue 1 n=306, 0.242145.
+Both paired improvement intervals include zero. Research-only, no activation or
+profitability claim. Existing frozen EPL 363/368 artifact is unchanged.
+
+**Stage D:** normalized 3,940 NBA / 7,276 MLB archive games, bridged already
+collected provider finals without requests, excluded conflicting corrections from
+history, and blocked >90-day-old feature histories for current NBA/MLB inference.
+Current season coverage, players, starting pitchers and availability remain missing;
+no new NBA/MLB model or live readiness is claimed. Legacy unconfigured odds defaults
+were reduced from 16 to the existing 9-credit UI default; explicit settings remain.
+
+**Stage E:** retained exactly four pages; added competition filters, coverage and
+new model diagnostics, grounded assistant facts, source/feature blockers, private
+pregame source-target tracking and dependency descriptors without joint approval.
+303 tests pass (34 added), compile/dependency/whitespace/secret checks and isolated
+HTTP 200 startup pass. Current public checks succeeded but remain stale: Bundesliga
+33 scored / 12 earlier unresolved; Ligue 1 41 / 13. The real odds store stayed 9/9;
+28 archive and three current public GETs, zero odds/paid-AI requests.
+
+Files: new `competitions`, `event_data`, `data_adapters`, `public_results`,
+`venue_goals`, `expanded_models`, `expanded_forecasts`, `multi_readiness`; reviewed
+alias/source/policy configs; two portable artifacts and coverage metadata; pipeline,
+provider defaults, processing/results/slate/CLI, existing UI/assistant integration;
+two new test modules and synthetic fixture update; phase audit/guide/evidence.
+
+Incomplete: current results for every evaluated soccer league are stale/incomplete;
+no actual current forecast, independent approval, market-price baseline, calibrated
+joint parlay offer, current NBA/MLB feature feed, player model, hosted preview test
+or permanent off-host ledger. Additional soccer cups/national leagues are registry
+targets only. No account, paid service, production workflow or deployment was enabled.
+
+Next: verify and reconcile a complete permitted current-results feed for the three
+evaluated soccer leagues, then collect prospective paper evidence. Free accounts
+for football-data.org / BALLDONTLIE could help subject to access/rights review;
+none was created. See [full details and preview instructions](PHASE2_ENGINE.md).
+
 ## Four-page navigation and free-data readiness — 2026-10-16
 
 1. **Implemented:** four-destination registry, concise Today's Research, Data &

@@ -78,16 +78,17 @@ def history_from_results(league,store):
         rows=[json.loads(r['payload']) for r in db.execute('SELECT payload FROM observed_results WHERE league=?',(league,))]
     if not rows:
         return pd.DataFrame()
-    # A source correction becomes a new observation. Only latest known completed
-    # score is used for current research; original snapshots remain in the store.
-    latest={}
+    # Preserve corrections as conflicting evidence, not silently revised features.
+    latest={};versions={}
     for row in sorted(rows,key=lambda r:(r['observed_at'],r['received_at'])):
         latest[row['event_id']]=row
+        versions.setdefault(row['event_id'],set()).add((row['home_score'],row['away_score'],row['home'],row['away'],row['commence_time']))
     records=[]
     for row in latest.values():
+        if len(versions[row['event_id']])!=1:continue
         # Use the first full day after observation as a conservative availability
         # date, not the scheduled start day of a potentially delayed/resumed game.
         records.append({'game_id':row['event_id'],'Date':parse_time(row['observed_at']).strftime('%d/%m/%Y'),
                         'HomeTeam':row['home'],'AwayTeam':row['away'],
                         'FTHG':row['home_score'],'FTAG':row['away_score']})
-    return clean_history(pd.DataFrame(records),'Soccer' if league not in ('NBA','MLB') else league)
+    return clean_history(pd.DataFrame(records),'Soccer' if league not in ('NBA','MLB') else league) if records else pd.DataFrame()

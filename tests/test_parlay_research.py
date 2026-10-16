@@ -238,12 +238,12 @@ def test_chronological_calibration_is_applied_only_to_its_exact_dataset(store,qu
     from intelligence.domain import digest
     from intelligence.evaluation import calibrate
     import intelligence.pipeline as pipeline
-    history=pd.DataFrame({'date':pd.date_range('2024-01-01',periods=180),
+    history=pd.DataFrame({'date':pd.date_range('2026-04-01',periods=180),
                           'HomeTeam':['Home']*180,'AwayTeam':['Away']*180,'FTHG':[110]*180,'FTAG':[100]*180})
     report={'data_sha256':digest(history.to_json(orient='records',date_format='iso')),
             'temperature':1.25,'calibration_bins':[{'n':100,'interval':[.45,.75]}]*10,
             'evidence_id':'synthetic-evaluation','calibration_n':200,'test_n':201,'generated_at':NOW.isoformat(),
-            'data_end':'2024-06-28T00:00:00Z','data_source':'synthetic-test-only','calibration_gap':.03,
+            'data_end':'2026-09-27T00:00:00Z','data_source':'synthetic-test-only','calibration_gap':.03,
             'metrics':{'brier':.4,'log_loss':.6}}
     class Provider:
         def odds(self,*args):

@@ -1,5 +1,49 @@
 # Verification matrix
 
+## Phase 2 data and predictive research — 2026-10-16
+
+**303 offline tests pass** (34 new). Existing tests remain, including the full
+four-page UI, free/disabled-paid assistant, parlay, quota, chronological evaluation
+and immutable-ledger coverage. A calibration-dataset matching fixture was moved to
+recent synthetic dates so it still tests calibration separately from the new
+current-feature freshness gate. No historical metrics were substituted by tests.
+
+New coverage includes stable competition IDs and target-only competitions, exact
+aliases and archive identity scopes, missing/malformed/future scores, atomic
+duplicate rejection, append-only observations, conflicting/date-changed/withdrawn
+results, observed-time cutoffs, genuine historical schedule completeness, independent
+public HTTP limits/cache/failure privacy, license stops, no speculative unknown-
+competition requests, local provider-result bridging without new odds calls,
+chronological/same-day leakage checks, venue incremental/refit equivalence, frozen
+competition-specific calibration/test artifacts, complements and unsupported lines,
+individual-team/source/price freshness, cross-league scope rejection, pipeline
+dispatch, source revisions, private pregame labels without betting returns,
+current NBA/MLB stale-history refusal, competition filters and unchanged navigation.
+
+Legacy direct-provider/non-autonomous defaults were found to be 16 while the UI
+already used 9. They now default to **9**, closing a potential inconsistent CLI
+path without increasing the configured cap. Regression tests exhaust 9 credits
+and prove these paths make no request. Explicit user configuration is preserved.
+
+Actually exercised: 28 additional pinned public archive GETs, reuse of all 36
+verified cached files, normalized imports for five soccer leagues plus NBA/MLB
+archives, and three successful current-public GETs (shared license + two leagues).
+No new odds or paid AI request was made; real local odds usage remains **9/9**.
+Current source files still end September 20, so no genuine current forecast was
+emitted or approved. Existing collected current provider finals were absent in
+this workspace; that bridge is contract-tested, not a claim of complete live data.
+
+The actual existing app starts on isolated localhost port 8509 with HTTP 200 `ok`,
+odds credential absent, cap zero and paid AI/public refresh disabled. Compileall,
+dependency consistency, whitespace and configured-secret checks pass. Frozen EPL
+source/model/policy/artifact files are unchanged; new portable artifacts code-hash
+match. Hosted Community Cloud rebuild/browser/mobile visuals remain unverified.
+
+[Evidence](evidence/phase2-verification.json) · [real metrics, source limits and
+preview steps](PHASE2_ENGINE.md) · [pre-evaluation source audit](PHASE2_DATA_AUDIT.md).
+No main, production deployment, secret, existing workflow or model-approval gate
+was changed. No claim of predictive advantage follows from software tests.
+
 ## Four-page workspace increment — 2026-10-16
 
 **269 offline tests pass** (10 added; existing UI tests migrated to the new routes).

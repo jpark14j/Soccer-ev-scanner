@@ -160,4 +160,6 @@ for manifest in Path(os.getenv('HISTORY_DIR','data/history')).glob('*.source.jso
     except (OSError,ValueError):
         pass
 st.divider()
+from intelligence.free_history import RETRO_ATTRIBUTION
+st.caption(RETRO_ATTRIBUTION)
 st.caption('19+ · Ontario · Statistical estimates can be wrong. Positive estimated EV does not predict an individual win. Set limits; never chase losses. Support: ConnexOntario 1-866-531-2600 / connexontario.ca. No automatic wagering.')

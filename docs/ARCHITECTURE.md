@@ -1,5 +1,13 @@
 # Architecture and rollout boundaries
 
+Phase 2 adds `competitions`, `event_data`, `data_adapters` and `public_results` for
+stable scoped IDs, append-only normalized observations, exact reconciliation,
+coverage and independent public-request limits. `venue_goals`, `expanded_models`
+and `expanded_forecasts` independently fit/evaluate guarded competition-local
+research. `multi_readiness` feeds the existing four-page views and immutable paper
+target labels. Existing EPL artifacts and approval gates remain frozen. See
+[scope, contracts, budgets and current limits](PHASE2_ENGINE.md).
+
 The existing repository and entrypoints are retained; no separate application,
 service cluster, subscription system or paid account was created.
 

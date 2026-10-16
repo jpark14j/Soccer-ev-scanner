@@ -30,6 +30,7 @@ class Analysis:
     slate: dict = field(default_factory=dict)
     processing: dict = field(default_factory=dict)
     focused_model: dict = field(default_factory=dict)
+    expanded_models: dict = field(default_factory=dict)
 
 
 def configured_store():
@@ -42,7 +43,7 @@ def configured_store():
 def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',), collect_results=None, autonomous=False, window_hours=48):
     store = store or configured_store()
     leagues = list(LEAGUES) if leagues is None else leagues
-    provider = provider or OddsAPI(key, store, daily_limit=int(os.getenv('ODDS_DAILY_CREDITS','9' if autonomous else '16')),
+    provider = provider or OddsAPI(key, store, daily_limit=int(os.getenv('ODDS_DAILY_CREDITS','9')),
                                    ttl=int(os.getenv('ODDS_CACHE_SECONDS','1800')))
     if autonomous:
         from intelligence.slate import run_slate
@@ -121,6 +122,7 @@ def evaluate_quotes(result,store):
     result.advanced_estimates={}
     result.advanced_details={}
     result.score_contexts={}
+    result.expanded_models={}
     excluded=Counter(result.exclusions)
     now = utcnow()
     from intelligence.epl_forecasts import supported,prepare,forecast
@@ -144,6 +146,16 @@ def evaluate_quotes(result,store):
                 result.estimates[q.id]=estimate
                 result.advanced_estimates[q.id]=estimate
             excluded['Focused EPL model remains research-only' if estimate else 'Focused EPL input/evidence gate']+=1
+            continue
+        from intelligence.expanded_forecasts import supported as expanded_supported,prepare as expanded_prepare,forecast as expanded_forecast
+        if expanded_supported(q):
+            if q.league not in result.expanded_models:
+                result.expanded_models[q.league]=expanded_prepare(q.league,store,now)
+            estimate,detail=expanded_forecast(q,result.expanded_models[q.league],now)
+            result.research.append(detail);result.advanced_details[q.id]=detail
+            if estimate:
+                result.estimates[q.id]=estimate;result.advanced_estimates[q.id]=estimate
+            excluded['Expanded model remains research-only' if estimate else 'Expanded current-data gate']+=1
             continue
         league = q.league
         if league not in histories:
@@ -175,6 +187,12 @@ def evaluate_quotes(result,store):
             if q.league=='Premier League':
                 blockers.insert(0,'The portable calibrated EPL model covers BTTS and exactly 2.5-goal totals; this market is outside that evaluation')
             result.research.append({'quote_id':q.id,'blockers':blockers})
+            continue
+        if q.sport in ('NBA','MLB') and (now.date()-history.date.max().date()).days>90:
+            result.research.append({'quote_id':q.id,'blockers':[
+                f'{q.sport} source history ends {history.date.max().date().isoformat()}, more than 90 days old; no current forecast was inferred',
+                'Historical diagnostics remain available; complete current team and availability inputs are needed']})
+            excluded['Stale current sport features']+=1
             continue
         event_key = (q.league,q.event_id)
         if league not in history_hashes:

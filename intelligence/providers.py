@@ -31,7 +31,7 @@ class OddsProvider(Protocol):
 
 
 class OddsAPI:
-    def __init__(self, key, store, daily_limit=16, ttl=1800, session=None):
+    def __init__(self, key, store, daily_limit=9, ttl=1800, session=None):
         self.key, self.store = key, store
         self.daily_limit, self.ttl = daily_limit, ttl
         self.session = session or requests.Session()
