@@ -1,5 +1,40 @@
 # Verification matrix
 
+## Phase 3B diagnostic consistency and research quality — 2026-10-16
+
+**383 offline tests pass** (30 new). Regression coverage traces optional-source
+switching, lazy-model diagnostics, available/prepared/used snapshot differences,
+cache refresh and six-hour expiry without HTTP requests, current-result dates
+versus prior-date features, supported and unsupported market execution, actual
+model functions through the synthetic adapter/cache/pipeline, immediate results-
+only session updates, read-only readiness export, three separate rankings,
+below-break-even examples, uncertainty/calibration/sample exclusion, expired
+prices, a synthetic 422-row stale partition, duplicate/provenance handling,
+unchanged parlay qualification, immutable forward recording, no-network legacy
+feed rechecks, ranking filters and all four navigation pages.
+
+The actual local store restores 394 unique stale observations over 25 upcoming
+games, all from private cache, with no duplicate IDs or current eligible prices.
+No claim is made that this is the preview's reported 422-row breakdown. User-
+reported preview counts (60/46/55 results, current EPL forecasts) are explicitly
+distinguished from independently retrieved evidence. No authenticated current
+result or hosted Bundesliga/Ligue 1 inference was verified in this environment.
+
+Compilation, pip dependency consistency, whitespace and configured-secret checks
+pass. Local Streamlit health on isolated port 8511 returns HTTP 200 `ok`, with
+credentials removed, cap zero, refreshes disabled and paid AI disabled. Frozen
+model/policy/alias/artifact, navigation and workflow files remain unchanged and
+all model code hashes match. No model is newly approved; no parlay EV, executable
+ticket or prospective accuracy is inferred from historical backtests. Extra real
+odds, results and paid AI requests: zero. Actual local odds usage remains 9/9;
+genuine local paper forecast/outcome counts remain zero. Hosted paper counts and
+redeployment persistence are unknown, not reported as zero or guaranteed durable.
+
+[Root causes, changed files, limitations and exact preview steps](PHASE3B_READINESS.md)
+· [machine-readable evidence](evidence/phase3b-verification.json). Existing preview
+Secrets need no change. The same development branch/Draft PR #1 is used; main,
+production, paid-service defaults, budgets and approval policies are unchanged.
+
 ## Phase 3A optional current results — 2026-10-16
 
 **353 offline tests pass** (50 new). Coverage adds disabled/missing-token/use-review

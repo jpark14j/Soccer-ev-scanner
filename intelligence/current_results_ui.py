@@ -16,7 +16,17 @@ def render(w):
                 _, meta = current(w.store, league, config=config)
                 st.write(league)
                 st.json({k: v for k, v in meta.items() if k in ('ok', 'problem', 'checked_at', 'coverage', 'sha256', 'source_url')})
-        st.info('Results cache updated. The next Refresh analysis uses this cache; existing odds limits still apply. No new odds were requested by this results check.')
+        from intelligence.cached_research import recheck
+        from intelligence.diagnostics import results_revision
+        fresh=recheck(w.analysis,w.store)
+        snapshot=st.session_state.get('_research_snapshot')
+        if snapshot:
+            snapshot['analysis']=fresh
+            snapshot['results_revision']=results_revision(w.store)
+        st.session_state['_results_only_message']='Results checked and saved market observations re-evaluated without fetching odds. Existing prices may still be stale.'
+        st.rerun()
+    if st.session_state.get('_results_only_message'):
+        st.info(st.session_state['_results_only_message'])
     st.link_button('Results setup and verification guide', 'https://github.com/jpark14j/Soccer-ev-scanner/blob/development/verified-sports-intelligence/docs/PHASE3A_CURRENT_RESULTS.md')
     if config.enabled:
         st.caption('Football data provided by the Football-Data.org API')

@@ -18,6 +18,13 @@ def selection_card(leg,safe):
         st.write(f'Model estimate {leg.estimate.probability:.1%}; supplied envelope {leg.estimate.lower:.1%}–{leg.estimate.upper:.1%}. '+('Validated leg evidence; ticket rules still need checking.' if leg.model_status=='validated' else 'Unvalidated research forecast; not a reliable true probability.'))
         d=leg.model_details
         st.caption(safe(f'Model {leg.estimate.model_version} · prediction {d.get("prediction_at","not recorded")} · history through {leg.estimate.training_end} · historical games {d.get("history_n","unavailable")} · calibration n={d.get("calibration_n",0)} · test n={d.get("test_n",0)}'))
+        from intelligence.research_ranking import comparison
+        gap=comparison(leg);lo,hi=gap['difference_envelope']
+        st.caption(f"Research model minus sportsbook break-even: {100*gap['difference']:+.1f} percentage points; supplied envelope {100*lo:+.1f} to {100*hi:+.1f}. Not established betting value or EV.")
+        if gap['difference']<=0:
+            st.caption('The model estimate is at or below this price’s break-even percentage. This does not support a positive-value claim.')
+        elif lo<=0:
+            st.caption('The supplied uncertainty envelope includes zero or a negative difference.')
     else:
         st.caption('No defensible model probability, confidence or EV is available.')
         if leg.model_details.get('blockers'):

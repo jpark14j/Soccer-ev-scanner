@@ -99,6 +99,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                         'Model estimate':f'{e.probability:.1%} ({leg.model_status})' if e else 'Unavailable',
                         'Model history through':e.training_end if e else 'Unavailable',
                         'Model envelope':f'{e.lower:.1%}–{e.upper:.1%}' if e else 'Unavailable',
+                        'Unvalidated model minus break-even (pp)':round(100*(e.probability-leg.implied_probability),2) if e else None,
                         'Individual EV':f'{leg.estimated_ev:+.1%}' if leg.estimated_ev is not None else 'Not supported'})
                 rows=[{k:redact(v,sensitive) if isinstance(v,str) else v for k,v in row.items()} for row in rows]
                 for row in rows:
@@ -107,6 +108,7 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
                     st.dataframe(pd.DataFrame(rows),hide_index=True,use_container_width=True)
                 st.write('**Joint win probability:** unavailable. **Parlay EV:** not calculated. **Actual combined price:** unavailable. **Sportsbook acceptance/restrictions:** unverified.')
                 st.caption('Implied probabilities are 1 ÷ individual odds and contain bookmaker margin. They are not model forecasts and are never multiplied into a joint probability.')
+                st.caption('Individual model-versus-price differences are research disagreements, not validated betting edges. High marginal probabilities do not approve a parlay.')
                 if candidate.probability_bounds is not None:
                     lo,hi=candidate.probability_bounds
                     lower,upper=candidate.uncertainty_bounds

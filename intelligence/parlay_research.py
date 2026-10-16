@@ -50,6 +50,7 @@ class ResearchCandidate:
     joint_probability: float | None = None
     parlay_ev: float | None = None
     scenario_joint: dict | None = None
+    leg_comparison: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -226,9 +227,11 @@ def research_category(quotes,product):
     return CATEGORIES[2]
 
 
-def balanced_pool(legs,limit):
+def balanced_pool(legs,limit,now=None):
     """Round-robin sports/events before alternate sides; bounded, deterministic."""
     sports=defaultdict(lambda:defaultdict(list))
+    from intelligence.research_ranking import evidence_key
+    now=now or utcnow()
     for leg in legs:
         sports[leg.quote.sport][event_identity(leg.quote)].append(leg)
     ordered=[]
@@ -237,8 +240,7 @@ def balanced_pool(legs,limit):
         events=sports[sport]
         groups=[]
         for _,group in sorted(events.items(),key=lambda item:item[0][2]):
-            groups.append(sorted(group,key=lambda l:(l.model_status!='validated',l.model_status=='missing',
-                l.quote.odds,l.quote.selection,l.quote.id)))
+            groups.append(sorted(group,key=lambda l:(l.model_status!='validated',*evidence_key(l,now))))
         queue=[leg for batch in zip_longest(*groups) for leg in batch if leg is not None]
         queues.append(queue)
     for batch in zip_longest(*queues):
@@ -277,7 +279,7 @@ def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2
         result.eligible_quotes+=1
     candidates=[]
     for (_,book),legs in sorted(by_book.items()):
-        pool=balanced_pool(legs,pool_per_book)
+        pool=balanced_pool(legs,pool_per_book,now)
         result.searched_quotes+=len(pool)
         for n in sorted(set(leg_counts)):
             for combo in combinations(pool,n):
@@ -347,15 +349,23 @@ def build_candidate(combo,analysis,now=None,categories=CATEGORIES):
     researched=sum(leg.estimate is not None for leg in combo)
     width=sum((e.upper-e.lower) if e else 1. for e in estimates)/n
     age=max((now-parse_time(q.source_updated_at)).total_seconds() for q in quotes)
+    from intelligence.research_ranking import evidence_problem,comparison
+    supported=sum(leg.estimate is not None and evidence_problem(leg,now) is None for leg in combo)
+    minimum_probability=min((e.probability for e in estimates if e),default=0.) if all(estimates) else 0.
+    minimum_lower=min((e.lower for e in estimates if e),default=0.) if all(estimates) else 0.
     # No odds/payout/EV optimization or sportsbook preference. Leg
     # fractions avoid rewarding three legs just for adding a model.
-    rank=(-validated/n,-researched/n,len(set(warnings))-1,width,age,n,
+    rank=(-validated/n,-researched/n,-supported/n,len(set(warnings))-1,width,-minimum_lower,-minimum_probability,age,n,
           tuple(sorted(q.id for q in quotes)))
     explanation=(f'{n}/{n} individual prices are current at the same Ontario sportsbook; '
         f'{validated}/{n} validated leg models, {researched}/{n} model estimates; '
         f'mean supplied interval width {width:.3f} (missing models count as 1); '
         f'oldest source observation {age:.0f} seconds old; '
-        'rank uses model-evidence fractions, explicit dependence flags, interval width, freshness and fewer legs, in that order. '
+        f'{supported}/{n} legs meet the research-display calibration/uncertainty requirements; '
+        'rank uses model-evidence fractions, supported calibration, explicit dependence flags, interval width, individual lower bounds/probabilities, freshness and fewer legs. Individual probability comparisons are not a joint win estimate. '
         'Price availability is an entry gate; combined prices are unavailable. Ranking is research priority, not estimated profit.')
     return ResearchCandidate(digest((book,tuple(sorted(q.id for q in quotes)))),combo,
-        category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation,scenario_joint=scenario),''
+        category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation,scenario_joint=scenario,
+        leg_comparison={'supported_calibration_legs':supported,'minimum_individual_probability':minimum_probability if all(estimates) else None,
+            'minimum_individual_lower_envelope':minimum_lower if all(estimates) else None,
+            'legs':[comparison(leg) for leg in combo],'joint_probability':None,'parlay_ev':None}),''

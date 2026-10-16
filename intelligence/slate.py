@@ -124,6 +124,7 @@ def run_slate(key,leagues,store,provider,*,window_hours=48,collect_results=False
                 status='returned Ontario observations' if any(q.jurisdiction=='CA-ON' for q in quotes) else 'queried; no Ontario observations returned'
                 by_id={q.id:q for q in result.quotes}
                 by_id.update({q.id:q for q in quotes}); result.quotes=list(by_id.values())
+                result.quote_origins.update({q.id:{'origin':'provider snapshot','received_at':q.received_at} for q in quotes})
                 cache=('last-success-'+league+'-'+market if event is None else 'event-snapshot-'+league+'-'+event+'-'+market)
                 store.cache(cache,response)
                 if rejected:

@@ -8,21 +8,21 @@ from intelligence.domain import utcnow, parse_time, digest
 from intelligence.current_results import configuration, current
 
 
-def prepare_epl(store, now=None):
+def prepare_epl(store, now=None, allow_fetch=True):
     from intelligence.epl_forecasts import prepare
     if not configuration().enabled:
-        return prepare(store, now)
-    return _prepare('Premier League', store, now)
+        return prepare(store, now) if allow_fetch else prepare(store, now, allow_refresh=False)
+    return _prepare('Premier League', store, now, allow_fetch)
 
 
-def prepare_expanded(league, store, now=None):
+def prepare_expanded(league, store, now=None, allow_fetch=True):
     from intelligence.expanded_forecasts import prepare
     if not configuration().enabled:
-        return prepare(league, store, now)
-    return _prepare(league, store, now)
+        return prepare(league, store, now) if allow_fetch else prepare(league, store, now, allow_refresh=False)
+    return _prepare(league, store, now, allow_fetch)
 
 
-def _prepare(league, store, now=None):
+def _prepare(league, store, now=None, allow_fetch=True):
     from intelligence.epl_forecasts import load_artifact
     from intelligence.expanded_models import load
     from intelligence.epl_source import team
@@ -36,7 +36,7 @@ def _prepare(league, store, now=None):
     anchor = 'anchor' if epl else 'as_of'
     if parse_time(artifact['generated_at']) > now or artifact['state'][anchor] > now.date().isoformat():
         return {'problem': 'Future-dated frozen model state'}
-    events, meta = current(store, league, now)
+    events, meta = current(store, league, now, allow_fetch=allow_fetch)
     if not meta['ok']:
         return {'problem': meta['problem'], 'results_provider': 'football-data.org'}
     if (now-parse_time(meta['checked_at'])).total_seconds() >= 21600:

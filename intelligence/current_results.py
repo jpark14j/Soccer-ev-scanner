@@ -165,7 +165,7 @@ def _reserve(store, now):
     return True
 
 
-def current(store, league, now=None, config=None, session=None):
+def current(store, league, now=None, config=None, session=None, allow_fetch=True):
     """One bounded GET/cache miss; six requests/day/store, six-hour failure cache.
 
     A 429 blocks this adapter for 24 hours; no redirects, automatic retries or
@@ -183,6 +183,8 @@ def current(store, league, now=None, config=None, session=None):
     cached = store.cached(key, TTL, now)
     if cached is not None:
         return _restore(cached, store, league, now)
+    if not allow_fetch:
+        return failure('No fresh cached results; use Refresh soccer results only to verify the source')
     if store.cached('football-data-cooldown', 86400, now):
         return failure('Provider rate limit: results refresh paused for 24 hours')
     owner = uuid4().hex
@@ -284,3 +286,31 @@ def status(store, config=None, now=None):
                 {k: v for k, v in store.cached(cache_key(league, season_at(now)), TTL, now).items()
                  if k in ('ok', 'problem', 'checked_at', 'coverage', 'sha256')}
                 for league in CODES}}
+
+
+def cached_status(store, league, now=None):
+    """Read metadata, including expired receipt dates, without fetching/ingesting."""
+    now = now or utcnow()
+    key = cache_key(league, season_at(now))
+    with store.connect() as db:
+        row = db.execute('SELECT payload FROM cache WHERE key=?', (key,)).fetchone()
+    if not row:
+        return {'provider':'football-data.org','available':False,'fresh':False,
+                'problem':'No current-season results snapshot has been observed in this store'}
+    try:
+        data = json.loads(row['payload'])
+        checked = parse_time(data['checked_at'])
+        fresh = 0 <= (now-checked).total_seconds() < TTL
+        result = {k:data[k] for k in ('ok','checked_at','coverage','sha256','problem','source_url') if k in data}
+        result.update(provider='football-data.org',available=True,fresh=fresh)
+        if not fresh:
+            result['problem'] = 'Results verification expired; a download timestamp is not a completed-result date'
+        # Reconciliation failures cannot be hidden by an otherwise valid cache.
+        with store.connect() as db:
+            has_events = bool(db.execute("SELECT name FROM sqlite_master WHERE name='event_observations'").fetchone())
+        if has_events and any(r['conflicts'] for r in reconciled(store, COMPETITIONS[league].id, now)):
+            result.update(ok=False,problem='Conflicting normalized results require manual reconciliation')
+        return result
+    except (ValueError,TypeError,KeyError):
+        return {'provider':'football-data.org','available':False,'fresh':False,
+                'problem':'Cached source metadata is invalid; no readiness inferred'}

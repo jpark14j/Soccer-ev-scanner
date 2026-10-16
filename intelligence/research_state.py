@@ -39,7 +39,7 @@ def singles(analysis,bookmakers=None,sports=None,markets=None,statuses=None,now=
             state=BLOCKED
         if statuses is not None and state not in statuses:
             continue
-        rank=(EVIDENCE_STATES.index(state),*leg_rank(leg,now),-q.odds)
+        rank=(EVIDENCE_STATES.index(state),*leg_rank(leg,now))
         old=unique.get(q.key)
         # Compare prices only within identical evidence; never prefer a stale price.
         if old is None or EVIDENCE_STATES.index(state)<EVIDENCE_STATES.index(old[0]) or (
@@ -49,54 +49,36 @@ def singles(analysis,bookmakers=None,sports=None,markets=None,statuses=None,now=
 
 
 def model_health(analysis,store=None,now=None):
-    """Describe existing observations; downloading a file is never a freshness fix."""
-    from intelligence.epl_forecasts import load_artifact
-    from intelligence.epl_source import SEASONS
-    now=now or utcnow();bundle=load_artifact();model=getattr(analysis,'focused_model',{}) or bundle
-    observations=None
-    if bundle and store and model.get('results_provider')!='football-data.org':
-        observations=store.cached('epl-public-v1-'+bundle['artifact_sha256'],86400,now)
-    problem=model.get('problem') if model else 'Portable EPL artifact missing or differs from current code'
-    if observations and not observations.get('ok'):
-        problem=observations.get('reason','Public result observation unavailable')
-    state=model.get('state',{}) if model else {}
-    current_rows=observations.get('rows',[]) if observations and observations.get('ok') else []
-    latest=max((r['date'] for r in current_rows),default=state.get('latest'))
-    fixtures=observations['fixtures'] if observations and observations.get('ok') else model.get('fixtures',[]) if model else []
-    missing=[r for r in fixtures if r['season']==SEASONS[-1] and r['date']<now.date().isoformat()]
-    checked=(observations or {}).get('checked_at') or (model or {}).get('source_check')
-    # Generation is a bundled snapshot receipt, not a new live results verification.
-    if not checked and bundle:
-        checked=bundle['generated_at']
-    quotes=analysis.quotes
-    statuses=Counter(q.status(now) for q in quotes)
-    def latest_time(attribute):
-        times=[]
-        for q in quotes:
-            try:times.append(parse_time(getattr(q,attribute)))
-            except (ValueError,TypeError):pass
-        return max(times,default=None)
-    source,received=latest_time('source_updated_at'),latest_time('received_at')
-    details=[b for row in analysis.research for b in row.get('blockers',[])]
+    """The same per-competition evidence drives overview and expanded diagnostics."""
+    from intelligence.diagnostics import competition_diagnostics,quote_inventory
+    now=now or utcnow()
+    competitions=competition_diagnostics(analysis,store,now)
+    epl=next(r for r in competitions if r['competition']=='Premier League')
+    inventory=quote_inventory(analysis,now)
     reasons=[]
-    if problem:reasons.append(problem)
+    if epl['source_problem']:reasons.append(epl['source_problem'])
+    latest=epl['latest_result']
     if latest:
         age=(now.date()-parse_time(latest+'T00:00:00+00:00').date()).days
         if age>21:reasons.append(f'EPL results are {age} days old (latest {latest}); the 21-day source gate blocks forecasts')
-    else:reasons.append('Current EPL result coverage is unavailable')
-    if missing:reasons.append(f'{len(missing)} past EPL fixtures have no source score; affected team forecasts remain blocked')
-    if statuses.get('stale'):reasons.append(f'{statuses["stale"]} odds observations are stale and cannot support current selections')
-    if not any(q.status(now)=='current' and q.jurisdiction=='CA-ON' for q in quotes):
-        reasons.append('No current Ontario price is verified in this snapshot')
-    reasons.extend(['EPL goal-strength model is research-only; no new model has reviewed recommendation approval',
-                    'Player logs, injuries and confirmed lineups are missing; player-prop forecasts are unavailable',
-                    'Current NBA/MLB feature coverage is insufficient; older archive diagnostics do not supply current statistics',
-                    'Joint parlay calibration, verified sportsbook restrictions and actual combined prices are unavailable'])
-    return {'source_latest':latest,'source_checked_at':checked,
-        'source_check_kind':model.get('source_kind') or ('cached public refresh' if observations else 'existing analysis / bundled snapshot'),
-        'unresolved_scores':len(missing),'missing_dates':dict(Counter(r['date'] for r in missing)),
-        'latest_odds_source':source.isoformat() if source else None,
-        'latest_odds_receipt':received.isoformat() if received else None,
-        'quote_statuses':dict(statuses),'model_version':(bundle or {}).get('model_version'),
-        'model_status':'research-only' if bundle else 'unavailable','source_problem':problem,
-        'reasons':list(dict.fromkeys(reasons)),'specific_blockers':list(dict.fromkeys(details))}
+    if epl['past_unresolved']:
+        reasons.append(f"{epl['past_unresolved']} past EPL fixtures have no source score; affected team forecasts remain blocked")
+    if inventory['stale_upcoming_in_window']:
+        reasons.append(f"{inventory['stale_upcoming_in_window']} saved upcoming-price observations are stale; they are inspection-only and need genuinely refreshed prices before use")
+    if not inventory['current_eligible']:reasons.append('No current Ontario price is verified in this snapshot')
+    reasons.extend(['All three soccer models remain research-only; no new model has reviewed recommendation approval',
+        'Player logs, injuries and confirmed lineups are missing; player-prop forecasts are unavailable',
+        'Current NBA/MLB feature coverage is insufficient; older archives do not supply current statistics',
+        'Joint parlay calibration, verified sportsbook restrictions and actual combined prices are unavailable'])
+    times=lambda attribute:[parse_time(getattr(q,attribute)) for q in analysis.quotes if q.status(now)!='invalid timestamp']
+    source,received=times('source_updated_at'),times('received_at')
+    return {'source_latest':latest,'source_checked_at':epl['source_check'],
+        'source_check_kind':epl['current_source'] if epl['current_source']=='football-data.org' else 'existing analysis / bundled snapshot',
+        'unresolved_scores':epl['past_unresolved'] or 0,'missing_dates':{},
+        'latest_odds_source':max(source).isoformat() if source else None,
+        'latest_odds_receipt':max(received).isoformat() if received else None,
+        'quote_statuses':inventory['status_counts'],'quote_inventory':inventory,
+        'model_version':epl['model'],'model_status':'research-only' if epl['model_status']=='Research model' else 'unavailable',
+        'source_problem':epl['source_problem'],'competitions':competitions,
+        'reasons':list(dict.fromkeys(reasons)),
+        'specific_blockers':list(dict.fromkeys(b for r in analysis.research for b in r.get('blockers',[])))}

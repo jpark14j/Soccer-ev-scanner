@@ -5,6 +5,13 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [Phase 3B readiness guide](docs/PHASE3B_READINESS.md) documents consistent
+current-source/inference diagnostics, results-only session updates, three separate
+research rankings and a stale-price inventory. Your configured preview can use
+its genuine results cache; diagnostics distinguish available data from actual
+per-market inference. All three soccer models remain experimental and unapproved.
+Readiness and paper-record exports make no paid request and expose no token.
+
 The [Phase 3A results guide](docs/PHASE3A_CURRENT_RESULTS.md) describes the optional,
 disabled-by-default football-data.org integration, its six-request daily cap,
 full-season reconciliation, frozen-model bridge and paper-record export. A free
@@ -15,7 +22,7 @@ The [Phase 2 engine guide](docs/PHASE2_ENGINE.md) documents the normalized data
 foundation for five soccer leagues plus NBA/MLB archives, new Bundesliga BTTS and
 Ligue 1 goals-2.5 research models, real held-out scores, bounded public-results
 updates and current data blockers. These are research models, not approved betting
-edges. Current source scores remain stale/incomplete; no current opportunity or
+edges. The bundled OpenFootball scores remain stale/incomplete; no current opportunity or
 profit is invented. The [source audit](docs/PHASE2_DATA_AUDIT.md) explains selection.
 
 The [four-page workspace guide](docs/FOUR_PAGE_WORKSPACE.md) is the current navigation
@@ -34,8 +41,9 @@ scheduling and Community Cloud redeployment persistence remain unconfigured.
 The [focused prediction guide](docs/EPL_PREDICTIONS.md) documents the new portable
 Premier League BTTS / 2.5-goal models, real chronological test results, exact input
 gates and preview steps. Neither beats the simple baselines convincingly or meets
-approval standards. Current public results are incomplete/stale, so current
-forecasts remain blocked rather than fabricated. See the
+approval standards. The default OpenFootball path is incomplete/stale; the
+configured optional feed can support experimental pregame estimates only when
+all existing input and current-price gates pass. See the
 [missing-model audit](docs/MISSING_MODEL_AUDIT.md) for NBA/MLB and other-market gaps.
 
 The application retrieves genuine NBA, soccer and MLB sportsbook observations,

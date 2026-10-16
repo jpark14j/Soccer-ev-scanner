@@ -1,5 +1,11 @@
 # Phase 3A: optional current soccer results
 
+**Phase 3B follow-up:** the user has since configured the preview feed and reports
+current results and EPL estimates. The dated audit below records the development
+environment at Phase 3A. Current diagnostics now separate available results from
+actual inference; see [Phase 3B](PHASE3B_READINESS.md). It does not claim independent
+verification of the preview's data or guaranteed persistent records.
+
 Reviewed October 16, 2026, Ontario time. Starting commit:
 `bbda4e3d0f8a5aca1d115cadb4a4758da8f26c48`. Development branch only;
 Draft PR #1 remains draft and unmerged. No account, paid subscription, new odds

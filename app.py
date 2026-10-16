@@ -74,6 +74,8 @@ else:
 
 if not snapshot or snapshot.get('scope')!=snapshot_scope:
     st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':result,'stored_at':utcnow().isoformat()}
+from intelligence.cached_research import synchronize
+result=synchronize(st.session_state['_research_snapshot'],store)
 st.caption('Pages and filters reuse this session’s scan. Prices still expire after five minutes; use Refresh analysis to request an updated capped scan.')
 
 if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
@@ -130,6 +132,8 @@ def refresh_selected(selected_leagues,markets=('h2h',),event_id=None,discovered=
     from intelligence.research_refresh import refresh_research,refresh_event
     fresh=(refresh_event(result,key,selected_leagues[0],event_id,markets,store,limit=data_settings.daily_limit,discovered=discovered) if event_id else
         refresh_research(result,key,selected_leagues,store,markets=markets,limit=data_settings.daily_limit))
+    from intelligence.cached_research import record_and_label
+    fresh=record_and_label(fresh,store)
     st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':fresh,'stored_at':utcnow().isoformat()}
 
 

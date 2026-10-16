@@ -1,5 +1,10 @@
 # Free Premier League current-results readiness
 
+**Current follow-up:** the preview feed is now configured according to the user.
+The [Phase 3B guide](PHASE3B_READINESS.md) explains dynamic source/inference
+diagnostics and verification. The dated source-selection reviews below remain
+historical evidence, not a live status of the configured preview.
+
 **Phase 3A follow-up:** a secure, disabled-by-default football-data.org adapter and
 frozen-model bridge now exist. Actual authenticated current coverage remains
 unverified and all current gaps persist. See the [setup, source evidence and

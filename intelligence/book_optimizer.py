@@ -20,11 +20,10 @@ def scoped_quotes(analysis,now=None):
 
 
 def leg_rank(leg,now):
+    from intelligence.research_ranking import evidence_key
     opportunity=qualify(leg.quote,leg.estimate,now)[0] if leg.estimate else None
     return (opportunity is None,-opportunity.conservative_ev if opportunity else 0,
-        leg.model_status!='validated',leg.estimate is None,
-        leg.estimate.upper-leg.estimate.lower if leg.estimate else 1,
-        (now-parse_time(leg.quote.source_updated_at)).total_seconds(),leg.quote.id)
+        leg.model_status!='validated',*evidence_key(leg,now))
 
 
 def best_by_game(analysis,bookmakers=None,now=None,limit=2):

@@ -38,11 +38,46 @@ def render_health(analysis,store,secret_getter=None):
         ' ('+health['source_check_kind']+'); latest completed EPL result: '+(health['source_latest'] or 'unavailable')+'. A download date is not a result date.')
     for reason in health['reasons']:
         st.write('• '+reason)
-    st.caption('Expanded research: Bundesliga BTTS and Ligue 1 total goals 2.5 use separate fitted competition models. Their current source results also end September 20; stale/missing fixtures block current forecasts. Other competitions are data/discovery targets, not automatically modeled.')
+    if st.button('Recheck saved research · no API calls',key='cached_research_recheck'):
+        from intelligence.cached_research import recheck
+        from intelligence.diagnostics import results_revision
+        snapshot=st.session_state.get('_research_snapshot')
+        if snapshot:
+            snapshot['analysis']=recheck(analysis,store)
+            snapshot['results_revision']=results_revision(store)
+            st.rerun()
+    for row in health['competitions']:
+        if row['competition'] in ('Premier League','Bundesliga','Ligue 1'):
+            st.caption(f"{row['competition']} · current source: {row['current_source']} · completed: {row['current_completed'] if row['current_completed'] is not None else 'unavailable'} · latest result: {row['latest_result'] or 'unavailable'} · {row['current_forecast']} · model approval: {row['validation']}")
+    inventory=health['quote_inventory']
+    st.caption(f"Saved-scan price inventory: {inventory['current_eligible']} currently eligible; {inventory['stale_upcoming_in_window']} stale upcoming observations; {inventory['outside_window_or_started_inspection']} outside-window/started observations for inspection. Counts cover the full saved scan, before sportsbook view filters. They count prices/selections, not games; diagnostics make no API request.")
     with st.expander('Model, source and coverage diagnostics'):
         st.json(health)
         render_competitions(analysis,store)
+        st.write(inventory['note'])
+    if st.button('Prepare readiness evidence export',key='readiness_export'):
+        from intelligence.diagnostics import readiness_export
+        import json
+        payload=redact_data(readiness_export(analysis,store),load_config(secret_getter).sensitive_values)
+        st.download_button('Download readiness evidence JSON',json.dumps(payload,indent=2),
+            file_name='forecast-readiness.json',mime='application/json',key='readiness_download')
     return health
+
+
+def render_rankings(analysis,books,secret_getter=None,widget_key='dashboard_ranking',limit=3):
+    from intelligence.research_ranking import rank_research,RANKINGS
+    report=rank_research(analysis,books)
+    name=st.selectbox('Research ranking',RANKINGS,key=widget_key)
+    st.caption(report['descriptions'][name])
+    st.caption(report['requirements'])
+    rows=report['rankings'][name]
+    if not rows:
+        st.info('No selections meet the evidence requirements for this research ranking. No recommendation is forced.')
+    for state,leg in rows[:limit]:
+        render_single(state,leg,secret_getter)
+    with st.expander('Research ranking exclusions'):
+        st.json(report['exclusions'])
+    return rows
 
 
 def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
@@ -61,11 +96,13 @@ def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
     st.subheader("Today's Research")
     st.caption('Approved = publication gates pass; experimental = an unapproved model estimate; price-only = observed selection with no supported forecast; blocked = missing or invalid inputs. Break-even percentages are not predicted win probabilities.')
     st.write('**Singles**')
-    display=[row for row in rows if row[0]!=BLOCKED][:3]
-    if not display:
-        st.info('No current singles research is supported by this snapshot. Missing or stale data never creates a pick.')
-    for state,leg in display:
-        render_single(state,leg,secret_getter)
+    render_rankings(analysis,books,secret_getter)
+    with st.expander('All experimental estimates and price observations · inspection only'):
+        display=[row for row in rows if row[0]!=BLOCKED][:3]
+        if not display:
+            st.info('No current singles research is supported by this snapshot. Missing or stale data never creates a pick.')
+        for state,leg in display:
+            render_single(state,leg,secret_getter)
     st.write('**Parlays**')
     choices=optimize_by_book(analysis,books,(2,3),now)
     if not any(row['qualified'] for row in choices):
@@ -109,7 +146,10 @@ def render_singles(analysis,books,secret_getter=None):
     rows=singles(analysis,selected,sports,markets,statuses)
     st.caption(f'{len(rows)} equivalent selections after filtering and price comparison. Ranked by evidence and freshness; no minimum number is forced.')
     if not rows:st.info('No selections match these filters. No selection or probability is invented.')
-    for state,leg in rows[:count]:render_single(state,leg,secret_getter)
+    filtered=replace(analysis,quotes=[leg.quote for _,leg in rows])
+    render_rankings(filtered,selected,secret_getter,'picks_ranking',count)
+    with st.expander('All filtered observations · inspection only'):
+        for state,leg in rows[:count]:render_single(state,leg,secret_getter)
 
 
 def render_competitions(analysis,store):

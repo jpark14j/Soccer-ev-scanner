@@ -31,6 +31,8 @@ class Analysis:
     processing: dict = field(default_factory=dict)
     focused_model: dict = field(default_factory=dict)
     expanded_models: dict = field(default_factory=dict)
+    quote_origins: dict = field(default_factory=dict)
+    evaluated_at: str = ''
 
 
 def configured_store():
@@ -89,6 +91,8 @@ def restore_market_snapshots(result,store,leagues):
     import json
     from datetime import timedelta
     by_id={q.id:q for q in result.quotes}
+    for q in result.quotes:
+        result.quote_origins.setdefault(q.id,{'origin':'analysis input','received_at':q.received_at})
     now=utcnow()
     with store.connect() as db:
         for league in leagues:
@@ -107,13 +111,14 @@ def restore_market_snapshots(result,store,leagues):
                         old=by_id.get(q.id)
                         if old is None or (parse_time(q.source_updated_at),parse_time(q.received_at))>(parse_time(old.source_updated_at),parse_time(old.received_at)):
                             by_id[q.id]=q
+                            result.quote_origins[q.id]={'origin':'restored private cache','cache_recorded_at':row['at'],'received_at':q.received_at}
                 except (ValueError,KeyError,TypeError):
                     result.warnings.append('A malformed cached market snapshot was ignored')
     result.quotes=list(by_id.values())
     return result
 
 
-def evaluate_quotes(result,store):
+def evaluate_quotes(result,store,*,allow_results_fetch=True):
     """Rebuild model evidence for merged featured/event quotes without fetching odds."""
     from intelligence.advanced_models import make_context,probability,forecast_problem
     result.opportunities=[]
@@ -123,13 +128,16 @@ def evaluate_quotes(result,store):
     result.advanced_details={}
     result.score_contexts={}
     result.expanded_models={}
+    result.focused_model={}
     excluded=Counter(result.exclusions)
     now = utcnow()
+    result.evaluated_at=now.isoformat()
     from intelligence.epl_forecasts import supported
     from intelligence.current_soccer import prepare_epl as prepare,forecast
     focused=None
     predictions, histories, reports, champions, history_hashes = {}, {}, {}, {}, {}
-    for q in result.quotes:
+    from intelligence.book_optimizer import scoped_quotes
+    for q in scoped_quotes(result,now):
         if q.status(now) != 'current':
             excluded[q.status(now)] += 1
             continue
@@ -138,7 +146,7 @@ def evaluate_quotes(result,store):
             continue
         if supported(q):
             if focused is None:
-                focused=prepare(store,now)
+                focused=prepare(store,now) if allow_results_fetch else prepare(store,now,allow_fetch=False)
                 result.focused_model=focused
             estimate,detail=forecast(q,focused,now)
             result.research.append(detail)
@@ -152,7 +160,8 @@ def evaluate_quotes(result,store):
         from intelligence.current_soccer import prepare_expanded as expanded_prepare,forecast as expanded_forecast
         if expanded_supported(q):
             if q.league not in result.expanded_models:
-                result.expanded_models[q.league]=expanded_prepare(q.league,store,now)
+                result.expanded_models[q.league]=(expanded_prepare(q.league,store,now) if allow_results_fetch else
+                    expanded_prepare(q.league,store,now,allow_fetch=False))
             estimate,detail=expanded_forecast(q,result.expanded_models[q.league],now)
             result.research.append(detail);result.advanced_details[q.id]=detail
             if estimate:
@@ -164,7 +173,8 @@ def evaluate_quotes(result,store):
             try:
                 directory=os.getenv('HISTORY_DIR','data/history')
                 report_directory=os.getenv('MODEL_DIR','data/models')
-                histories[league] = load_soccer(league, store) if q.sport == 'Soccer' else load_local(league,directory)
+                histories[league] = ((load_soccer(league,store) if allow_results_fetch else load_soccer(league,store,allow_fetch=False))
+                    if q.sport=='Soccer' else load_local(league,directory))
                 if histories[league].empty:
                     from intelligence.results import history_from_results
                     histories[league] = history_from_results(league,store)

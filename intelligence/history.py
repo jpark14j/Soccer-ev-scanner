@@ -40,7 +40,7 @@ def clean_history(frame, sport='Soccer'):
     return frame.drop_duplicates(identities).sort_values(['date']+[k for k in identities if k!='date']).reset_index(drop=True)
 
 
-def load_soccer(league, store=None, session=None):
+def load_soccer(league, store=None, session=None, allow_fetch=True):
     local = load_licensed(league, os.getenv('HISTORY_DIR', 'data/history'))
     if not local.empty:
         return local
@@ -55,6 +55,8 @@ def load_soccer(league, store=None, session=None):
     cached = store.cached(cache_key, 345600) if store else None
     if cached is not None:
         return clean_history(pd.DataFrame(cached))
+    if not allow_fetch:
+        return pd.DataFrame()
     if store is None:
         raise ValueError('Personal research downloads require a persistent cache')
     client = session or requests.Session()
