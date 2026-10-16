@@ -1,0 +1,10 @@
+{
+  "NBA": {
+    "completed_records": 0,
+    "received_at": "2026-10-16T02:59:52.448110+00:00"
+  },
+  "MLB": {
+    "completed_records": 3,
+    "received_at": "2026-10-16T02:59:52.843872+00:00"
+  }
+}

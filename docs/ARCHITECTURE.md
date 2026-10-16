@@ -1,0 +1,75 @@
+# Architecture and rollout boundaries
+
+The existing repository and entrypoints are retained; no separate application,
+service cluster, subscription system or paid account was created.
+
+```mermaid
+flowchart TD
+    UI[Existing Streamlit app.py] --> P[Shared pipeline]
+    T[Existing Telegram / Actions] --> P
+    P --> O[OddsProvider adapter / cache / quota]
+    O --> R[Ontario evidence registry]
+    P --> H[Licensed statistics / history]
+    H --> M[Sport-specific research models]
+    M --> V[Chronological calibration / test evidence]
+    V --> E[EV + uncertainty + freshness gates]
+    O --> E
+    E --> S[Qualifying singles / price comparison]
+    S --> J[Joint model + actual combined price gates]
+    E --> D[SQLite immutable publication ledger]
+    D --> A[Append-only derived JSONL archive]
+    A --> G[GitHub audit history]
+    D --> F[Performance / settlements]
+    S --> X[Grounded local analyst]
+    S --> N[One daily Telegram report]
+```
+
+`domain.py` holds immutable quote/estimate/opportunity contracts. `providers.py`
+implements authorized odds retrieval and a protocol for future adapters. Event
+identity includes the provider, market, side, line and player, preventing accidental
+cross-line/participant comparison. Missing source times, malformed prices,
+ambiguous duplicates, stale/suspended quotes and unknown jurisdictions fail closed.
+
+`history.py`, `soccer.py`, `models.py`, `evaluation.py` separate statistics from
+models and evidence. Historical odds never enter prediction features. Date-only
+results exclude the entire event day; exact canonical aliases replace fuzzy joins.
+A market baseline is complete-market normalized implied odds, excluding the target
+book; it is labeled as a comparison and cannot qualify a selection by itself.
+
+`ev.py` calculates EV, the implied probability, uncertainty-adjusted EV and an
+explicit rank score. Only validated h2h models are eligible in this implementation.
+There is no validated model artifact yet. Spread, Asian, total, prop and period
+markets require their own forecast, settlement semantics and evidence.
+
+`parlays.py` computes dependence-agnostic Frechet bounds when correlation evidence
+is missing. It never multiplies leg prices to invent a combined offer. A genuine
+combined quote must identify exactly the same book/legs, restrictions, provenance
+and source time; a separately validated joint estimate is required. Opposing
+match-winner selections and duplicate legs are rejected. Theoretical analysis
+cannot become an executable recommendation through UI wording.
+
+`storage.py` makes publications/settlements append-only with SQLite triggers.
+`ledger.py` archives derived records with content IDs; restoration rejects conflicting
+history. This small-store design avoids premature infrastructure. It is **not** a
+multi-tenant production database. File modification outside the application remains
+possible and must be detected with Git history, permissions and backups.
+
+`assistant.py` renders grounded answers. `llm.py` adds disabled-by-default paid
+intent routing with strict enumerations, local response checks, bounded questions/
+output and conservative monthly reservations. It sends no odds context, tools or
+credentials in the question body. The LLM cannot generate factual numeric output;
+the verified renderer supplies it. Add session context/caching only with privacy
+and retention controls. Prompt instructions cannot grant data or wager access.
+
+The live screen is a capability boundary: observed in-play odds do not establish
+score, clock, event state, latency or suspension safety. No pregame model is reused
+in play. A future live adapter needs synchronized score/state/odds timestamps,
+sequence numbers, suspension detection, sport-specific remaining-game models and
+cost-aware scheduling. Current code implements no live forecasting.
+
+For commercialization, introduce user identity/tenant boundaries at the service
+layer, a transactional managed database/object backup, separate subscriber views,
+consented notifications, access limits and account-level quota. Keep adapters/model
+interfaces stable so mobile or commercial API clients do not depend on Streamlit.
+An external API needs explicit data-redistribution rights. Do not add infrastructure
+or billable services until usage and contracts justify them.

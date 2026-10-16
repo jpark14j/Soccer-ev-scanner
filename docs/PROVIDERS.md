@@ -45,8 +45,9 @@ historical endpoints are paid-plan only. We do not call historical endpoints.
 Advertised monthly USD pricing when reviewed: free 500 credits, $30/20K,
 $59/100K, $119/5M, $249/15M. Existing account entitlements remain unverified until
 a real response. Default h2h for 9 competitions once daily is about 270 credits
-per 30 days; three featured markets would be about 810, excluding retries and
-props. Default local cap is 12 credits/day and cache is 30 minutes. Actual
+per 30 days for odds alone; completed NBA/MLB scores add about 120. Three featured
+markets would be about 810 for odds alone, excluding retries and props. Default local cap is 16 credits/day and cache is 30 minutes. See FREE_DATA.md for
+completed-result collection and reviewed free archive licences. Actual
 provider headers are captured; multiple deployments have separate local budgets
 and share account quota. No automatic upgrade or paid API is enabled.
 

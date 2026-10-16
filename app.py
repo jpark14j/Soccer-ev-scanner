@@ -1,302 +1,232 @@
-"""Soccer Picks — mobile-first, explainable market-consensus research prototype."""
-import itertools
-import io
-import math
-import difflib
+"""Existing Streamlit entry point: verified markets and evidence-gated analysis."""
+import os
+from pathlib import Path
+from dataclasses import asdict
+import json
 import pandas as pd
-from datetime import datetime, timezone
-import requests
 import streamlit as st
+from intelligence.assistant import answer
+from intelligence.domain import utcnow
+from intelligence.ev import qualify
+from intelligence.parlays import analyze, NO_PARLAYS
+from intelligence.performance import metrics, breakdown
+from intelligence.pipeline import configured_store, publish_current, run_analysis, Analysis
+from intelligence.providers import LEAGUES, PROP_MARKETS
+from intelligence.registry import load_registry
 
-st.set_page_config(page_title="Soccer Picks | Ontario", page_icon="⚽", layout="centered")
-SPORTS = {"Premier League":"soccer_epl", "La Liga":"soccer_spain_la_liga", "Bundesliga":"soccer_germany_bundesliga", "Serie A":"soccer_italy_serie_a", "Ligue 1":"soccer_france_ligue_one", "MLS":"soccer_usa_mls", "Champions League":"soccer_uefa_champs_league"}
-TARGET = "betmgm_ca_on"
-MIN_PEERS = 3
-MIN_EDGE = 0.01  # indicative price gap, not a validated betting edge
-HISTORY_LEAGUES = {"Premier League": "E0", "La Liga": "SP1", "Bundesliga": "D1", "Serie A": "I1", "Ligue 1": "F1"}
-HISTORY_SEASONS = ("2425", "2526", "2627")
-ALIASES = {"manchester united":"man united", "manchester city":"man city", "tottenham hotspur":"tottenham", "newcastle united":"newcastle", "west ham united":"west ham", "wolverhampton wanderers":"wolves", "brighton and hove albion":"brighton", "nottingham forest":"nottm forest", "internazionale":"inter", "inter milan":"inter", "ac milan":"milan", "atletico madrid":"ath madrid", "athletic club":"ath bilbao", "real betis":"betis", "bayern munich":"bayern munich", "borussia dortmund":"dortmund", "rb leipzig":"rb leipzig", "bayer leverkusen":"leverkusen", "paris saint germain":"paris sg", "olympique marseille":"marseille", "olympique lyonnais":"lyon", "as roma":"roma", "juventus turin":"juventus", "ssc napoli":"napoli", "hellas verona":"verona"}
-
-
-st.markdown("""<style>
-.block-container {padding-top: 1.5rem; max-width: 760px;}
-[data-testid="stMetricValue"] {font-size: 1.6rem;}
-</style>""", unsafe_allow_html=True)
-st.title("⚽ Soccer Picks")
-st.caption("One tap. A few picks to review. No forced bets.")
-st.info("**Experimental research tool:** uses historical match results to cross-check sportsbook estimates where data is available. The model is not backtested or validated; no wins are guaranteed.")
-
-try:
-    KEY = st.secrets.get("ODDS_API_KEY", "")
-except Exception:
-    KEY = ""
-if not KEY:
-    st.error("Add ODDS_API_KEY to Streamlit Settings → Secrets. Never publish your key in GitHub.")
-    st.stop()
-
-with st.expander("⚙️ Leagues", expanded=False):
-    leagues = st.multiselect("Scan these leagues", list(SPORTS), default=["Premier League", "La Liga", "Bundesliga", "Serie A"])
+st.set_page_config(page_title='Sports Intelligence | Ontario',page_icon='⚽',layout='wide')
+st.markdown('''<style>
+.block-container {max-width:1200px;padding-top:2rem;}
+[data-testid="stMetricValue"] {font-size:1.8rem;}
+[data-testid="stSidebar"] {border-right:1px solid #263545;}
+</style>''',unsafe_allow_html=True)
+PAGES = ['AI Dashboard','Best Opportunities','AI Parlay Builder','NBA Analytics',
+         'Soccer Analytics','MLB Analytics','Live Markets','AI Assistant','Performance Tracker','Settings']
+registry = load_registry()
+store = configured_store()
 
 
-@st.cache_data(ttl=21600, show_spinner=False)
-def load_history(league):
-    """Historical match results from public football-data.co.uk CSVs; no credentials required."""
-    code = HISTORY_LEAGUES.get(league)
-    if not code:
-        return pd.DataFrame()
-    frames = []
-    for season in HISTORY_SEASONS:
-        url = f"https://www.football-data.co.uk/mmz4281/{season}/{code}.csv"
-        try:
-            response = requests.get(url, timeout=12, headers={"User-Agent": "SoccerPicksResearch/1.0"})
-            response.raise_for_status()
-            df = pd.read_csv(io.BytesIO(response.content), on_bad_lines="skip")
-            needed = {"Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG"}
-            if needed.issubset(df.columns):
-                frames.append(df[list(needed)].copy())
-        except (requests.RequestException, ValueError, pd.errors.ParserError):
-            continue
-    if not frames:
-        return pd.DataFrame()
-    df = pd.concat(frames, ignore_index=True)
-    df["date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
-    for col in ("FTHG", "FTAG"):
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    df = df.dropna(subset=["date", "HomeTeam", "AwayTeam", "FTHG", "FTAG"])
-    df = df[(df.FTHG >= 0) & (df.FTAG >= 0)].sort_values("date")
-    return df
-
-
-def canonical(name):
-    import re
-    cleaned = re.sub(r"[^a-z0-9 ]", "", str(name).lower()).strip()
-    cleaned = re.sub(r"\s+", " ", cleaned)
-    return ALIASES.get(cleaned, cleaned)
-
-
-def match_team(name, options):
-    index = {canonical(option): option for option in options}
-    key = canonical(name)
-    if key in index:
-        return index[key]
-    matches = difflib.get_close_matches(key, list(index), n=2, cutoff=0.86)
-    # Reject ambiguous fuzzy matches rather than attach the wrong team's statistics.
-    if len(matches) != 1:
-        return None
-    return index[matches[0]]
-
-
-def poisson_1x2(home_xg, away_xg, max_goals=12):
-    def pmf(rate):
-        return [math.exp(-rate) * rate**k / math.factorial(k) for k in range(max_goals + 1)]
-    h, a = pmf(home_xg), pmf(away_xg)
-    home_win = sum(h[i] * a[j] for i in range(len(h)) for j in range(i))
-    draw = sum(h[i] * a[i] for i in range(len(h)))
-    away_win = sum(h[i] * a[j] for i in range(len(h)) for j in range(i + 1, len(h)))
-    total = home_win + draw + away_win
-    return [home_win / total, draw / total, away_win / total]
-
-
-def independent_prediction(history, home_name, away_name, kickoff):
-    """Simple shrinkage Poisson strength model; explicitly unvalidated."""
-    if history.empty:
-        return None
+def secret(name):
+    value = os.getenv(name,'')
+    if value:
+        return value
     try:
-        cutoff = pd.Timestamp(datetime.fromisoformat(kickoff.replace("Z", "+00:00"))).tz_localize(None)
-    except (TypeError, ValueError):
-        return None
-    past = history[history.date < cutoff].copy()
-    if len(past) < 80:
-        return None
-    teams = set(past.HomeTeam) | set(past.AwayTeam)
-    home = match_team(home_name, teams)
-    away = match_team(away_name, teams)
-    if home is None or away is None or home == away:
-        return None
-    home_games = past[past.HomeTeam == home].tail(24)
-    away_games = past[past.AwayTeam == away].tail(24)
-    if len(home_games) < 8 or len(away_games) < 8:
-        return None
-    league_home = float(past.FTHG.tail(450).mean())
-    league_away = float(past.FTAG.tail(450).mean())
-    if min(league_home, league_away) <= 0:
-        return None
-    # Shrink toward league average to avoid overreacting to small samples.
-    prior = 10
-    home_scored = (home_games.FTHG.sum() + prior * league_home) / (len(home_games) + prior)
-    home_allowed = (home_games.FTAG.sum() + prior * league_away) / (len(home_games) + prior)
-    away_scored = (away_games.FTAG.sum() + prior * league_away) / (len(away_games) + prior)
-    away_allowed = (away_games.FTHG.sum() + prior * league_home) / (len(away_games) + prior)
-    expected_home = min(4.0, max(0.2, home_scored * away_allowed / league_home))
-    expected_away = min(4.0, max(0.2, away_scored * home_allowed / league_away))
-    probs = poisson_1x2(expected_home, expected_away)
-    return {"probabilities": probs, "home_xg": expected_home, "away_xg": expected_away,
-            "home_games": len(home_games), "away_games": len(away_games)}
+        return st.secrets.get(name,'')
+    except (FileNotFoundError,st.errors.StreamlitSecretNotFoundError):
+        return ''
 
 
-def read_market(event, league):
-    home, away = event.get("home_team"), event.get("away_team")
-    if not home or not away:
-        return []
-    names = (home, "Draw", away)
-    books = {}
-    for book in event.get("bookmakers", []):
-        for market in book.get("markets", []):
-            if market.get("key") != "h2h":
-                continue
-            prices = {x.get("name"): x.get("price") for x in market.get("outcomes", [])}
-            if all(isinstance(prices.get(n), (float, int)) and prices[n] > 1 for n in names):
-                books[book.get("key")] = prices
-            break
-    if TARGET not in books:
-        return []
-    peers = [p for k, p in books.items() if k != TARGET]
-    if len(peers) < MIN_PEERS:
-        return []
-    probabilities = []
-    for prices in peers:
-        implied = {n: 1 / prices[n] for n in names}
-        total = sum(implied.values())
-        probabilities.append({n: implied[n] / total for n in names})
-    rows = []
-    for selection in names:
-        p = sum(x[selection] for x in probabilities) / len(probabilities)
-        odds = books[TARGET][selection]
-        rows.append({"event_id": event.get("id", f"{home}-{away}-{event.get('commence_time')}"),
-                     "league": league, "match": f"{home} vs {away}", "kickoff": event.get("commence_time", ""),
-                     "selection": selection, "odds": odds, "prob": p, "edge": p * odds - 1,
-                     "peers": len(peers), "home": home, "away": away})
-    return rows
+key = secret('ODDS_API_KEY')
+with st.sidebar:
+    st.title('Sports Intelligence')
+    st.caption('ONTARIO · NBA / SOCCER / MLB')
+    page = st.radio('Workspace',PAGES,label_visibility='collapsed')
+    leagues = st.multiselect('Competitions',list(LEAGUES),default=list(LEAGUES))
+    books = st.multiselect('Sportsbooks in view',sorted(b['name'] for b in registry['books']),
+                           default=sorted(b['name'] for b in registry['books']))
+    # Provider titles vary; filter using the registry key rather than display text.
+    book_keys = {b['odds_api_key'] for b in registry['books'] if b['name'] in books and b['odds_api_key']}
+    st.caption('Quotes: The Odds API. Statistical estimates are separately labeled.')
+    st.caption('19+ in Ontario. Analysis only. No wagers are placed.')
 
 
-def scan(leagues):
-    rows, errors = [], []
-    now = datetime.now(timezone.utc)
-    for league in leagues:
-        try:
-            response = requests.get(f"https://api.the-odds-api.com/v4/sports/{SPORTS[league]}/odds/",
-                                    params={"apiKey": KEY, "regions": "ca", "markets": "h2h", "oddsFormat": "decimal"}, timeout=25)
-            response.raise_for_status()
-            for event in response.json():
-                try:
-                    kickoff = datetime.fromisoformat(event.get("commence_time", "").replace("Z", "+00:00"))
-                    if kickoff <= now:
-                        continue
-                    rows.extend(read_market(event, league))
-                except (ValueError, TypeError):
-                    continue
-        except (requests.RequestException, ValueError, TypeError) as exc:
-            errors.append(f"{league}: {str(exc)[:130]}")
-    return rows, errors, datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+@st.cache_data(ttl=1800,show_spinner=False)
+def load_analysis(api_key,competitions,db_path):
+    return run_analysis(api_key,list(competitions),store=configured_store())
 
 
-def shortlist(rows):
-    """Rank singles and two-leg parlays together; never force either bet type."""
-    qualified = [r for r in rows if r["edge"] >= MIN_EDGE and r["peers"] >= MIN_PEERS and r.get("model_prob") is not None and r["model_prob"] >= r["prob"]]
-    # Require an independent historical-results model to agree with the market signal.
-    # Conservative ranking uses the lower of model and market probabilities.
-    # One selection per event for parlay construction; avoid duplicate/opposing legs.
-    singles = sorted(qualified, key=lambda r: (r["edge"] * (r["prob"] ** 0.5), r["prob"]), reverse=True)
-    choices = []
-    for row in singles[:35]:
-        choices.append({"kind": "Single", "legs": [row], "prob": row["prob"],
-                        "odds": row["odds"], "edge": row["edge"],
-                        "score": row["edge"] * (row["prob"] ** 0.5)})
-    # Construct parlays from different matches only. Avoid very low-probability combinations.
-    for a, b in itertools.combinations(singles[:35], 2):
-        if a["event_id"] == b["event_id"]:
-            continue
-        prob = a["prob"] * b["prob"]
-        if prob < 0.25:
-            continue
-        odds = a["odds"] * b["odds"]
-        edge = prob * odds - 1
-        if edge < MIN_EDGE:
-            continue
-        choices.append({"kind": "2-leg parlay", "legs": [a, b], "prob": prob,
-                        "odds": odds, "edge": edge,
-                        # Small complexity discount: estimated parlay probabilities are less robust.
-                        "score": 0.75 * edge * (prob ** 0.5)})
-    choices.sort(key=lambda c: (c["score"], c["prob"]), reverse=True)
-    # Limit repetition of the same match across recommendations.
-    output, seen_events = [], set()
-    for choice in choices:
-        event_ids = {leg["event_id"] for leg in choice["legs"]}
-        if event_ids & seen_events:
-            continue
-        output.append(choice)
-        seen_events.update(event_ids)
-        if len(output) == 3:
-            break
-    return output
-
-
-def show_pick(choice, number):
-    with st.container(border=True):
-        st.markdown(f"### #{number} · {choice['kind']}")
-        for i, leg in enumerate(choice["legs"], 1):
-            prefix = f"Leg {i}: " if len(choice["legs"]) > 1 else ""
-            st.markdown(f"{prefix}**{leg['selection']}** · {leg['match']} ({leg['league']})")
-            st.caption(f"Kickoff: {leg['kickoff']}")
-        left, right = st.columns(2)
-        left.metric("BetMGM odds", f"{choice['odds']:.2f}")
-        right.metric("Est. chance", f"{choice['prob']:.0%}")
-        if len(choice["legs"]) == 1:
-            st.write("**Why shown:** Historical team-results model agrees with the price comparison. Neither estimate is validated.")
-        else:
-            st.write("**Why shown:** Both matches passed the price checks and independent historical-results cross-check. Combined chance assumes independence.")
-        st.caption(f"Indicative price difference: {choice['edge']:+.1%}. Estimated chance uses conservative market/model comparison. Unvalidated; not a verified advantage.")
-
-if st.button("🔎 Find My Best Picks", type="primary", use_container_width=True):
-    if not leagues:
-        st.warning("Choose at least one league in Settings.")
-    else:
-        with st.spinner("Checking BetMGM Ontario and comparison prices…"):
-            st.session_state.latest = scan(leagues)
-
-if "latest" in st.session_state:
-    rows, errors, timestamp = st.session_state.latest
-    st.caption(f"Last checked: {timestamp} · {len(set(r['event_id'] for r in rows))} comparable matches")
-    for error in errors:
-        st.warning(error)
-    # Fetch team results only when the user scans. Fail closed when data is missing.
-    if rows:
-        with st.spinner("Cross-checking historical team performance…"):
-            histories = {league: load_history(league) for league in set(r["league"] for r in rows)}
-            predictions = {}
-            for row in rows:
-                key = (row["event_id"], row["league"])
-                if key not in predictions:
-                    predictions[key] = independent_prediction(histories[row["league"]], row["home"], row["away"], row["kickoff"])
-                model = predictions[key]
-                if model:
-                    index = 0 if row["selection"] == row["home"] else 1 if row["selection"] == "Draw" else 2
-                    row["model_prob"] = model["probabilities"][index]
-                    row["model_xg"] = (model["home_xg"], model["away_xg"])
-                    row["prob"] = min(row["prob"], row["model_prob"])
-                    row["edge"] = row["prob"] * row["odds"] - 1
-                else:
-                    row["model_prob"] = None
-    picks = shortlist(rows)
-    st.subheader("🏆 Best picks")
-    if picks:
-        st.caption("Singles and parlays compete in one ranking. Only opportunities passing price checks appear; up to three are shown.")
-        for index, pick in enumerate(picks, 1):
-            show_pick(pick, index)
-    else:
-        st.success("**No strong picks right now.** Nothing passed both the sportsbook price checks and the historical-results cross-check. Check again later.")
-    with st.expander("How this works · important limitations"):
-        st.write("The app checks BetMGM Ontario against at least three other Canadian sportsbooks, then independently estimates match probabilities from historical league results (football-data.co.uk) using a basic home/away Poisson goals model. It only shows picks where the two methods agree and the conservative estimate passes a 1% indicative price check. Some leagues, newly promoted teams, and cup matches may have no usable history. **The model has not been backtested, calibrated, or shown to beat the market.** Historical goals are not provider xG; injuries, lineups, and player props are not included. Two-leg parlay probabilities assume independence, which may not hold. Data and odds may be stale; verify before acting. No bets are placed.")
-    import csv
-    import io
-    buffer = io.StringIO()
-    writer = csv.DictWriter(buffer, fieldnames=["league", "match", "kickoff", "selection", "odds", "market_probability", "indicative_edge", "reference_books"])
-    writer.writeheader()
-    for r in rows:
-        writer.writerow({"league": r["league"], "match": r["match"], "kickoff": r["kickoff"], "selection": r["selection"], "odds": r["odds"], "market_probability": round(r["prob"], 5), "indicative_edge": round(r["edge"], 5), "reference_books": r["peers"]})
-    st.download_button("Export analysis (CSV)", data=buffer.getvalue(), file_name="soccer_research.csv", mime="text/csv")
+st.title(page)
+st.caption('Real market observations · transparent model evidence · no forced recommendations')
+if not key:
+    st.info('Add ODDS_API_KEY in Streamlit Secrets or the environment to retrieve markets. Credentials are never stored in the repository.')
+    result = Analysis()
 else:
-    st.write("Tap the button to scan live soccer odds and see up to three simple recommendations.")
+    with st.spinner('Loading available markets and checking model evidence…'):
+        result = load_analysis(key,tuple(leagues),store.path)
 
+if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
+    load_analysis.clear()
+    st.rerun()
+
+if result.checked_at:
+    st.caption(f'Analysis loaded {result.checked_at}. Individual quote source times appear below. Provider cache: 30 minutes by default; recommendations expire after five minutes.')
+for warning in result.warnings:
+    st.warning(warning)
+for error in result.errors:
+    st.warning(error)
+
+
+def current_opportunities(sport=None):
+    now = utcnow()
+    return [o for o in result.opportunities if o.quote.bookmaker in book_keys
+            and (sport is None or o.quote.sport==sport) and qualify(o.quote,o.estimate,now)[0]]
+
+
+def show_opportunities(opportunities):
+    if not opportunities:
+        st.info('No current opportunities meet the minimum analytical requirements. Missing evidence and expired quotes do not qualify.')
+    for o in opportunities[:20]:
+        q,e = o.quote,o.estimate
+        with st.container(border=True):
+            st.subheader(f'{q.selection} · {q.event}')
+            st.caption(f'{q.sport} / {q.league} · {q.market} · {q.bookmaker_name}')
+            a,b,c,d = st.columns(4)
+            a.metric('Observed decimal odds',f'{q.odds:.2f}')
+            b.metric('Model probability',f'{e.probability:.1%}')
+            c.metric('Estimated EV',f'{o.ev:+.1%}')
+            d.metric('Conservative EV',f'{o.conservative_ev:+.1%}')
+            st.write(f'Qualifies because its validated model and current Ontario quote pass the uncertainty-adjusted EV threshold. Rank score: {o.score:.4f} = conservative EV × (1 − interval width).')
+            st.caption(f'Empirical interval: {e.lower:.1%}–{e.upper:.1%} · model {e.model_version} · source update {q.source_updated_at} · received {q.received_at}')
+            st.write('Risks: ' + '; '.join(e.risk_factors))
+
+
+def show_markets(sport=None,live=False):
+    now = utcnow()
+    quotes = [q for q in result.quotes if q.bookmaker in book_keys and (sport is None or q.sport==sport)]
+    if live:
+        quotes = [q for q in quotes if 'in-play' in q.status(now)]
+    research = {r['quote_id']:r for r in result.research}
+    table = []
+    for q in quotes:
+        r = research.get(q.id,{})
+        table.append({'Sport':q.sport,'Event':q.event,'Market':q.market,
+                      'Participant':q.participant,'Selection':q.selection,'Line':q.point,
+                      'Sportsbook':q.bookmaker_name,'Observed odds':q.odds,
+                      'Source update':q.source_updated_at,'Received':q.received_at,
+                      'Status':q.status(now),'Model estimate (research unless validated)':r.get('probability'),
+                      'Model validated':r.get('validated',False)})
+    if table:
+        st.dataframe(pd.DataFrame(table),hide_index=True,use_container_width=True)
+    else:
+        st.info('No markets returned for this view. Availability depends on the provider, current events and account entitlements.')
+    st.caption('Provider-observed prices are not an execution guarantee. Confirm current price, rules and suspension status at the Ontario sportsbook.')
+
+
+@st.fragment(run_every='60s')
+def dashboard():
+    # Recheck quote expiry without any network calls on this timer.
+    opportunities = current_opportunities()
+    current = [q for q in result.quotes if q.bookmaker in book_keys and q.status()=='current']
+    a,b,c = st.columns(3)
+    a.metric('Qualifying singles',len(opportunities))
+    b.metric('Current Ontario quotes',len(current))
+    c.metric('Books observed',len({q.bookmaker for q in current}))
+    show_opportunities(opportunities)
+    st.subheader('Analytical readiness')
+    st.dataframe(pd.DataFrame([
+        {'Sport':'NBA','Markets':'Real provider feed','Model':'Normal margin candidate; licensed history and validation required'},
+        {'Sport':'Soccer','Markets':'Real provider feed','Model':'Historical-goals Poisson candidate; chronological evaluation available'},
+        {'Sport':'MLB','Markets':'Real provider feed','Model':'Run-count Poisson candidate; licensed history and validation required'}]),hide_index=True,use_container_width=True)
+    st.info(NO_PARLAYS)
+    with st.expander('Why selections did not qualify'):
+        st.json(result.exclusions)
+
+
+# A displayed recommendation gets a permanent immutable publication record. Cached
+# quotes are checked again immediately before publication.
+published = publish_current(result,store)
+if published:
+    from intelligence.ledger import archive
+    archive(store,os.getenv('PREDICTION_LEDGER_DIR','ledger'))
+if page=='AI Dashboard':
+    dashboard()
+elif page=='Best Opportunities':
+    show_opportunities(current_opportunities())
+    st.caption('The best available qualifying price is selected per equivalent selection. Market-implied probabilities are comparison baselines, never treated as independently estimated truth.')
+elif page=='AI Parlay Builder':
+    st.info(NO_PARLAYS)
+    eligible = current_opportunities()
+    chosen = st.multiselect('Qualifying legs to evaluate',range(len(eligible)),
+                            format_func=lambda i:f'{eligible[i].quote.sport}: {eligible[i].quote.event} / {eligible[i].quote.selection}')
+    if 2<=len(chosen)<=6:
+        analysis = analyze([eligible[i] for i in chosen])
+        lower,upper = analysis['probability_bounds']
+        st.write(f'Theoretical joint probability bounds: {lower:.1%}–{upper:.1%}.')
+        st.caption(analysis['reason']+'. No executable combined price or parlay EV is asserted.')
+    st.write('Lower-variance, balanced and higher-variance categories require a validated joint model, sportsbook restrictions, and an actual combined quote. Different games or sports do not establish independence.')
+elif page in ('NBA Analytics','Soccer Analytics','MLB Analytics'):
+    sport = page.split()[0]
+    show_opportunities(current_opportunities(sport))
+    st.subheader('Observed markets and research estimates')
+    show_markets(sport)
+    evidence_file=Path('docs/evidence')/({'NBA':'nba-research.json','MLB':'mlb-research.json','Soccer':'premier-league-research.json'}[sport])
+    if evidence_file.exists():
+        with st.expander('Historical research evaluation — not forward performance'):
+            evidence=json.loads(evidence_file.read_text())
+            st.write(f'Data through {evidence["data_end"]}; untouched test events: {evidence["test_n"]}. Status: research only.')
+            st.json({'diagnostic_scores':evidence['metrics'],'simple_baseline':evidence.get('simple_baseline_metrics'),'market_baseline':evidence['baseline_metrics'],'publication_blockers':evidence['promotion_blockers']})
+    st.caption('Player-prop ingestion is available through the event endpoint. Prop forecasting requires licensed player history, availability inputs and market-specific validation; it is not enabled.')
+elif page=='Live Markets':
+    st.warning('Live recommendations are unavailable. Current odds alone do not supply verified game clock, score, player state, latency or suspension information. Pregame models are never applied in play.')
+    show_markets(live=True)
+elif page=='AI Assistant':
+    paid_enabled = os.getenv('PAID_ANALYST_APPROVED')=='1' and bool(secret('OPENAI_API_KEY'))
+    st.info('Answers render verified application records. '+('Approved language model routing is enabled with a monthly budget; bounded questions are sent to the provider.' if paid_enabled else 'Local mode: paid language model routing is disabled pending cost approval. No external model receives your questions.'))
+    for message in st.session_state.get('analyst_history',[]):
+        with st.chat_message(message['role']):
+            st.write(message['content'])
+    question = st.chat_input('Ask about qualifying opportunities, risks, parlays or performance')
+    if question:
+        from intelligence.llm import PaidAnalyst
+        analyst = PaidAnalyst(store,secret('OPENAI_API_KEY'),paid_enabled,float(os.getenv('ANALYST_MONTHLY_USD_CAP','5')))
+        response = analyst.respond(question,result,metrics(store.records()))
+        st.session_state.setdefault('analyst_history',[]).extend([{'role':'user','content':question},{'role':'assistant','content':response}])
+        st.rerun()
+elif page=='Performance Tracker':
+    origin = st.radio('Record type',['forward','backtest'],horizontal=True)
+    records = store.records(origin)
+    summary = metrics(records)
+    if not records:
+        st.info('No published predictions in this ledger. Performance metrics will appear only after genuine publications and evidence-backed settlements.')
+    else:
+        st.json(summary)
+        dimension = st.selectbox('Break down by',['sport','market','model_version'])
+        st.json(breakdown(records,dimension))
+        st.dataframe(pd.DataFrame([{'Published':r['at'],'Sport':r['payload']['quote']['sport'],
+                                   'Event':r['payload']['quote']['event'],'Selection':r['payload']['quote']['selection'],
+                                   'Outcome':r['outcome'],'Result evidence':r['source']} for r in records]),hide_index=True,use_container_width=True)
+    st.warning('This Streamlit instance needs persistent storage and backups before publication to subscribers. The scheduled workflow archives derived predictions in GitHub; Streamlit local files are not automatically pushed.')
+    st.caption('One hypothetical unit per selection. Pushes return stake; voids excluded from turnover. Brier/log loss exclude pushes and voids. Closing-line value needs an evidenced closing price. Losses remain recorded.')
+elif page=='Settings':
+    st.write('Competition and sportsbook view preferences are in the sidebar and last for this browser session.')
+    st.write(f'Local daily credit cap: {os.getenv("ODDS_DAILY_CREDITS","16")}. Default retrieval cache: 30 minutes. No paid upgrades or language model calls enabled.')
+    st.write(f'Ontario directory effective date: {registry["directory_as_of"]}. Review expires {registry["review_expires_at"]}. Expired evidence disables eligibility.')
+    st.dataframe(pd.DataFrame(registry['books']),hide_index=True,use_container_width=True)
+    st.link_button('Official Ontario directory',registry['source'])
+    st.subheader('Connections')
+    st.write({'Odds key configured':bool(key),'Telegram bot configured':bool(secret('TELEGRAM_BOT_TOKEN')),
+              'Paid conversational API':'Enabled by configuration' if os.getenv('PAID_ANALYST_APPROVED')=='1' else 'Disabled','NBA/MLB historical data':'Free research imports / licensed files / locally collected completed results'})
+    st.caption('Scheduling and Telegram preferences use environment variables documented in README. API keys belong in Streamlit Secrets or GitHub Actions Secrets.')
+    st.subheader('Additional market requests')
+    st.json(PROP_MARKETS)
+    st.caption('These are provider request keys, not claims of Ontario availability. Event-specific requests consume quota and are opt-in through the adapter.')
+
+for manifest in Path(os.getenv('HISTORY_DIR','data/history')).glob('*.source.json'):
+    try:
+        attribution=json.loads(manifest.read_text()).get('attribution')
+        if attribution:
+            st.caption(attribution)
+    except (OSError,ValueError):
+        pass
 st.divider()
-st.caption("18+ only where legal. This is a research tool, not financial advice or a promise of winnings. No bets are placed. Check local rules and sportsbook terms.")
+st.caption('19+ · Ontario · Statistical estimates can be wrong. Positive estimated EV does not predict an individual win. Set limits; never chase losses. Support: ConnexOntario 1-866-531-2600 / connexontario.ca. No automatic wagering.')
