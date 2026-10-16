@@ -152,7 +152,7 @@ def run_slate(key,leagues,store,provider,*,window_hours=48,collect_results=False
     result.processing['shadow_forecasts_recorded']=record_shadow_forecasts(result,store,recorded_at)
     from intelligence.processing import label_public_epl
     if not result.focused_model and result.processing.get('pending_public_epl_forecasts'):
-        from intelligence.epl_forecasts import prepare
+        from intelligence.current_soccer import prepare_epl as prepare
         result.focused_model=prepare(store,recorded_at)
     result.processing['public_epl_target_labels']=label_public_epl(store,result.focused_model,recorded_at)
     from intelligence.multi_readiness import process_expanded_paper

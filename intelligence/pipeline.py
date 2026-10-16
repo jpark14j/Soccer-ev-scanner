@@ -125,7 +125,8 @@ def evaluate_quotes(result,store):
     result.expanded_models={}
     excluded=Counter(result.exclusions)
     now = utcnow()
-    from intelligence.epl_forecasts import supported,prepare,forecast
+    from intelligence.epl_forecasts import supported
+    from intelligence.current_soccer import prepare_epl as prepare,forecast
     focused=None
     predictions, histories, reports, champions, history_hashes = {}, {}, {}, {}, {}
     for q in result.quotes:
@@ -147,7 +148,8 @@ def evaluate_quotes(result,store):
                 result.advanced_estimates[q.id]=estimate
             excluded['Focused EPL model remains research-only' if estimate else 'Focused EPL input/evidence gate']+=1
             continue
-        from intelligence.expanded_forecasts import supported as expanded_supported,prepare as expanded_prepare,forecast as expanded_forecast
+        from intelligence.expanded_forecasts import supported as expanded_supported
+        from intelligence.current_soccer import prepare_expanded as expanded_prepare,forecast as expanded_forecast
         if expanded_supported(q):
             if q.league not in result.expanded_models:
                 result.expanded_models[q.league]=expanded_prepare(q.league,store,now)

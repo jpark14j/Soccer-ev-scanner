@@ -1,5 +1,11 @@
 # Free Premier League current-results readiness
 
+**Phase 3A follow-up:** a secure, disabled-by-default football-data.org adapter and
+frozen-model bridge now exist. Actual authenticated current coverage remains
+unverified and all current gaps persist. See the [setup, source evidence and
+preview guide](PHASE3A_CURRENT_RESULTS.md); the review below records the earlier
+selection state, not a claim that its integration is still absent.
+
 Reviewed October 16, 2026 (Ontario time). No account was created, token requested,
 subscription purchased, paid endpoint enabled or odds credit cap increased.
 Free access and public reachability do not automatically grant commercial rights.

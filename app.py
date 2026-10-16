@@ -34,6 +34,8 @@ def secret(name):
 
 from intelligence.data_settings import load_settings
 data_settings=load_settings(secret)
+from intelligence.current_results import configuration as results_configuration
+results_config=results_configuration(secret)
 key = secret('ODDS_API_KEY')
 with st.sidebar:
     st.title('Sports Intelligence')
@@ -49,7 +51,7 @@ with st.sidebar:
 
 
 @st.cache_data(ttl=1800,show_spinner=False)
-def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours):
+def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours,results_scope):
     from intelligence.providers import OddsAPI
     data_store=configured_store()
     provider=OddsAPI(api_key,data_store,daily_limit=cap,ttl=ttl)
@@ -58,7 +60,8 @@ def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_ho
 
 st.title(page)
 st.caption('Real market observations · transparent model evidence · no forced recommendations')
-snapshot_scope=(tuple(leagues),digest(key),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours)
+results_scope=(results_config.enabled,results_config.use_reviewed,digest(results_config.token))
+snapshot_scope=(tuple(leagues),digest(key),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope)
 snapshot=st.session_state.get('_research_snapshot')
 if snapshot and snapshot.get('scope')==snapshot_scope:
     result=snapshot['analysis']
@@ -67,7 +70,7 @@ elif not key:
     result = Analysis()
 else:
     with st.spinner('Loading available markets and checking model evidence…'):
-        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours)
+        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope)
 
 if not snapshot or snapshot.get('scope')!=snapshot_scope:
     st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':result,'stored_at':utcnow().isoformat()}

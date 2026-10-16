@@ -54,7 +54,7 @@ def model_health(analysis,store=None,now=None):
     from intelligence.epl_source import SEASONS
     now=now or utcnow();bundle=load_artifact();model=getattr(analysis,'focused_model',{}) or bundle
     observations=None
-    if bundle and store:
+    if bundle and store and model.get('results_provider')!='football-data.org':
         observations=store.cached('epl-public-v1-'+bundle['artifact_sha256'],86400,now)
     problem=model.get('problem') if model else 'Portable EPL artifact missing or differs from current code'
     if observations and not observations.get('ok'):
@@ -93,7 +93,7 @@ def model_health(analysis,store=None,now=None):
                     'Current NBA/MLB feature coverage is insufficient; older archive diagnostics do not supply current statistics',
                     'Joint parlay calibration, verified sportsbook restrictions and actual combined prices are unavailable'])
     return {'source_latest':latest,'source_checked_at':checked,
-        'source_check_kind':'cached public refresh' if observations else 'existing analysis / bundled snapshot',
+        'source_check_kind':model.get('source_kind') or ('cached public refresh' if observations else 'existing analysis / bundled snapshot'),
         'unresolved_scores':len(missing),'missing_dates':dict(Counter(r['date'] for r in missing)),
         'latest_odds_source':source.isoformat() if source else None,
         'latest_odds_receipt':received.isoformat() if received else None,

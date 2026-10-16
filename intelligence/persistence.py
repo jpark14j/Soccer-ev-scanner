@@ -33,3 +33,25 @@ def backup_store(store,target):
     target.chmod(0o600)
     return {'created_at':utcnow().isoformat(),'consistent_private_backup':True,
             'off_host_durability_verified':False}
+
+
+def paper_export(store, limit=10000):
+    """Portable inspection copy, without chat, caches, credentials or backtests.
+
+    Downloading this file to another device gives a user an off-host copy. This
+    function alone cannot verify that a download occurred or provide restore.
+    """
+    import json
+    from intelligence.processing import ensure_processing
+    ensure_processing(store)
+    if type(limit) is not int or not 1 <= limit <= 10000:
+        raise ValueError('Invalid bounded paper export size')
+    with store.connect() as db:
+        rows = db.execute('SELECT f.*,o.at AS labeled_at,o.outcome,o.source FROM shadow_forecasts f LEFT JOIN shadow_outcomes o ON f.id=o.id ORDER BY f.at,f.id LIMIT ?', (limit+1,)).fetchall()
+    if len(rows) > limit:
+        raise ValueError('Paper export exceeds UI limit; use a consistent private SQLite backup')
+    return {'format':'sports-intelligence-paper-v1','exported_at':utcnow().isoformat(),
+            'origin':'Actually recorded prospective paper research; not backtests or betting returns',
+            'off_host_durability_verified':False,
+            'records':[{'id':r['id'],'recorded_at':r['at'],'forecast':json.loads(r['payload']),
+                        'labeled_at':r['labeled_at'],'outcome':r['outcome'],'outcome_source':r['source']} for r in rows]}

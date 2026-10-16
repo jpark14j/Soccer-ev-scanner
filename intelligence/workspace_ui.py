@@ -123,6 +123,8 @@ def render_settings(w):
         'Paid conversational API':'Configured; session consent required' if config.paid_ready else 'Disabled or unconfigured',
         'NBA/MLB historical data':'Free research imports / licensed files / locally collected completed results'})
     st.caption('Scheduling and Telegram preferences use environment variables documented in README. API keys belong in Streamlit Secrets or GitHub Actions Secrets.')
+    from intelligence.current_results_ui import render as render_results
+    render_results(w)
     with st.expander('Additional market requests'):
         st.dataframe(pd.DataFrame([{'Provider key':m.key,'Market':m.name,'Sports':', '.join(m.sports),
             'Published provider documentation':m.documented} for m in CATALOG.values()]),hide_index=True,use_container_width=True)

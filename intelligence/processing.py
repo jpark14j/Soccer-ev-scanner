@@ -220,6 +220,9 @@ def label_public_epl(store,artifact,now=None):
             payload=json.loads(record['payload']);q=payload['quote']
             if payload.get('target_scope')!='source_reported_ft':
                 continue
+            from intelligence.current_soccer import paper_result_matches
+            if not paper_result_matches(q,artifact):
+                continue
             start=parse_time(q['commence_time'])
             if not parse_time(record['at'])<start<now:
                 continue
@@ -230,6 +233,6 @@ def label_public_epl(store,artifact,now=None):
             hit=positive==(q['selection'].lower() in ('yes','over'))
             n+=db.execute('INSERT OR IGNORE INTO shadow_outcomes VALUES(?,?,?,?)',
                 (record['id'],now.isoformat(),'hit' if hit else 'miss',
-                 'openfootball public source-reported full-time target; checked '+artifact['source_check']+
+                 artifact.get('results_provider','openfootball')+' source-reported full-time target; checked '+artifact['source_check']+
                  '; data '+artifact['data_sha256']+'; not operator settlement')).rowcount
     return n

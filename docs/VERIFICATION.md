@@ -1,5 +1,40 @@
 # Verification matrix
 
+## Phase 3A optional current results — 2026-10-16
+
+**353 offline tests pass** (50 new). Coverage adds disabled/missing-token/use-review
+zero-request gates, complete seasonal schedules, exact team/fixture ID binding,
+source scope/status/score/timestamp validation, truncation/filtered responses,
+unknown aliases, cross-snapshot conflicts and withdrawals, frozen-result
+disagreements, failure/privacy/size limits, shared quota/cache/429 handling,
+conditional frozen-model inference without promotion, no silent fallback, exact
+kickoff matching, before-kickoff recording, immutable duplicate handling, miss
+labels, separate paper exports, token redaction and four-page/UI controls.
+All provider responses in the new automated tests are explicitly synthetic.
+
+Actual source audit: three manual GitHub connector reads confirm EPL 45, Bundesliga
+33 and Ligue 1 41 explicit finals, all ending September 20; 15/12/13 past fixtures
+remain unresolved. Football-data.org documentation/terms were reviewed but no
+authenticated response was available. OpenLigaDB's 2026 directory was readable;
+current match payloads were unavailable through the web tool. No claim of recovered
+scores, current forecasts or profitable advantage follows from contract tests.
+
+Local Streamlit startup on isolated port 8510 returns HTTP 200 `ok`, odds credential
+absent, cap zero, optional results/public refresh and paid AI disabled. Compilation,
+dependency consistency, whitespace and configured-secret checks pass. All three
+frozen model code hashes still match; source/model/policy/alias/artifact/navigation
+and existing workflow files are unchanged. New results adapter defaults disabled.
+Actual existing odds usage stays 9/9; no new odds/paid AI/authenticated results
+request was made. Genuine paper forecasts and outcome labels remain zero.
+
+Account-backed API behavior, actual delayed-feed completeness/latency, commercial
+resale rights, hosted preview rebuild/interactive browser and off-host restore
+remain unverified. The execution environment's allowlist excludes the new API and
+preview hosts; no bypass was attempted. Community Cloud does not guarantee local
+files. Read the [setup and preview guide](PHASE3A_CURRENT_RESULTS.md) and
+[evidence](evidence/phase3a-verification.json). Work is committed only to the
+existing development branch/Draft PR #1; no main/production/merge or paid enablement.
+
 ## Phase 2 data and predictive research — 2026-10-16
 
 **303 offline tests pass** (34 new). Existing tests remain, including the full

@@ -85,7 +85,7 @@ def load_config(secret_getter=None):
         input_rate = max(input_rate, Decimal(known[0]))
         output_rate = max(output_rate, Decimal(known[1]))
     key = str(get('OPENAI_API_KEY', ''))
-    sensitive = tuple(str(get(name)) for name in ('OPENAI_API_KEY', 'ODDS_API_KEY', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID') if get(name))
+    sensitive = tuple(str(get(name)) for name in ('OPENAI_API_KEY', 'ODDS_API_KEY', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'FOOTBALL_DATA_TOKEN') if get(name))
     if redact(model,sensitive)!=model:
         errors.append('OPENAI_MODEL appears to contain a credential; paid requests are blocked.')
         model = 'gpt-4.1-mini'

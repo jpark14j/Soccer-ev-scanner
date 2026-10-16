@@ -16,6 +16,7 @@ OPENAI_TEST_KEY = 'sk-test-NEVER-A-REAL-KEY'
 def no_network(monkeypatch):
     monkeypatch.setenv('EPL_PUBLIC_REFRESH','0')
     monkeypatch.setenv('MULTI_RESULTS_REFRESH','0')
+    monkeypatch.setenv('FOOTBALL_DATA_ENABLED','0')
     def blocked(*args,**kwargs):
         raise AssertionError('Unit/integration tests must not call external networks')
     monkeypatch.setattr(requests.sessions.Session,'request',blocked)

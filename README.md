@@ -5,6 +5,12 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [Phase 3A results guide](docs/PHASE3A_CURRENT_RESULTS.md) describes the optional,
+disabled-by-default football-data.org integration, its six-request daily cap,
+full-season reconciliation, frozen-model bridge and paper-record export. A free
+account token and permitted-use review are still needed to verify actual current
+coverage. No September/October gap or genuine new forecast is claimed resolved.
+
 The [Phase 2 engine guide](docs/PHASE2_ENGINE.md) documents the normalized data
 foundation for five soccer leagues plus NBA/MLB archives, new Bundesliga BTTS and
 Ligue 1 goals-2.5 research models, real held-out scores, bounded public-results
