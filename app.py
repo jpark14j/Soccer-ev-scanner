@@ -5,7 +5,7 @@ from dataclasses import asdict
 import json
 import pandas as pd
 import streamlit as st
-from intelligence.domain import utcnow
+from intelligence.domain import digest,parse_time,utcnow
 from intelligence.ev import qualify
 from intelligence.parlays import analyze, NO_PARLAYS
 from intelligence.performance import metrics, breakdown
@@ -19,7 +19,7 @@ st.markdown('''<style>
 [data-testid="stMetricValue"] {font-size:1.8rem;}
 [data-testid="stSidebar"] {border-right:1px solid #263545;}
 </style>''',unsafe_allow_html=True)
-PAGES = ['AI Dashboard','Best Opportunities','AI Parlay Builder','NBA Analytics',
+PAGES = ['AI Dashboard','Daily Parlay Research','Best Opportunities','AI Parlay Builder','NBA Analytics',
          'Soccer Analytics','MLB Analytics','Live Markets','AI Assistant','Performance Tracker','Settings']
 registry = load_registry()
 store = configured_store()
@@ -56,7 +56,11 @@ def load_analysis(api_key,competitions,db_path):
 
 st.title(page)
 st.caption('Real market observations · transparent model evidence · no forced recommendations')
-if not key:
+snapshot_scope=(tuple(leagues),digest(key))
+snapshot=st.session_state.get('_research_snapshot')
+if snapshot and snapshot.get('scope')==snapshot_scope and (utcnow()-parse_time(snapshot['stored_at'])).total_seconds()<1800:
+    result=snapshot['analysis']
+elif not key:
     st.info('Add ODDS_API_KEY in Streamlit Secrets or the environment to retrieve markets. Credentials are never stored in the repository.')
     result = Analysis()
 else:
@@ -64,6 +68,7 @@ else:
         result = load_analysis(key,tuple(leagues),store.path)
 
 if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
+    st.session_state.pop('_research_snapshot',None)
     load_analysis.clear()
     st.rerun()
 
@@ -136,7 +141,7 @@ def dashboard():
         {'Sport':'NBA','Markets':'Real provider feed','Model':'Normal margin candidate; licensed history and validation required'},
         {'Sport':'Soccer','Markets':'Real provider feed','Model':'Historical-goals Poisson candidate; chronological evaluation available'},
         {'Sport':'MLB','Markets':'Real provider feed','Model':'Run-count Poisson candidate; licensed history and validation required'}]),hide_index=True,use_container_width=True)
-    st.info(NO_PARLAYS)
+    st.info(NO_PARLAYS+' Open Daily Parlay Research to inspect current-price research combinations, even without validated models.')
     with st.expander('Why selections did not qualify'):
         st.json(result.exclusions)
 
@@ -152,8 +157,16 @@ if page=='AI Dashboard':
 elif page=='Best Opportunities':
     show_opportunities(current_opportunities())
     st.caption('The best available qualifying price is selected per equivalent selection. Market-implied probabilities are comparison baselines, never treated as independently estimated truth.')
-elif page=='AI Parlay Builder':
-    st.info(NO_PARLAYS)
+elif page in ('Daily Parlay Research','AI Parlay Builder'):
+    from intelligence.parlay_ui import render_research
+    from intelligence.research_refresh import refresh_research
+    def refresh_selected(selected_leagues):
+        fresh=refresh_research(result,key,selected_leagues,store)
+        st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':fresh,'stored_at':utcnow().isoformat()}
+        load_analysis.clear()
+    render_research(result,store,book_keys,leagues,bool(key),refresh_selected,secret)
+    st.subheader('Qualified-leg diagnostic builder')
+    st.caption('This separate diagnostic still requires qualified singles. It never promotes a research candidate into a recommendation.')
     eligible = current_opportunities()
     chosen = st.multiselect('Qualifying legs to evaluate',range(len(eligible)),
                             format_func=lambda i:f'{eligible[i].quote.sport}: {eligible[i].quote.event} / {eligible[i].quote.selection}')

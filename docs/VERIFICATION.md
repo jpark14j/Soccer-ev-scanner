@@ -52,3 +52,25 @@ Paid OpenAI calls remain disabled by default and **zero real OpenAI requests wer
 made**. Authentication, live model access, real billing/tokenization, provider
 retention and remote preview browser behavior remain unverified. No production
 secrets, main-branch changes, purchases or PR merge were made for this update.
+
+## Daily parlay research update — 2026-10-16
+
+**162 tests pass** with real transports blocked, including the selector, all filters,
+source expiry, single-book provenance, duplicate/contradictory/nested legs, integer
+score feasibility against enumerated outcomes, dependence warnings, no invented
+joint probability/combined quote/EV, exact calibration-dataset matching and explicit
+quota-controlled refresh. Existing assistant and all dashboard sections still pass.
+Compilation and configured-secret scanning pass; isolated Streamlit health is 200.
+
+A genuine NBA/MLB/Premier League check returned 516 normalized observations,
+454 current Ontario quotes and three research candidates. Captured current data
+renders three NBA-only and Soccer-only candidates; MLB-only correctly yields none
+because just one eligible MLB event was present. The three-leg filter and local
+assistant work on the same data. No executable parlay, published research prediction,
+validated model promotion or positive parlay EV is asserted.
+
+The separate Community Cloud preview URL is unreachable from this environment
+(proxy connection failure and inaccessible web-reader result), so its actual build/
+login/browser state is **unverified**. This does not establish that the app is down.
+See [preview test steps](PARLAY_RESEARCH.md) and
+[evidence/parlay-research-verification.json](evidence/parlay-research-verification.json).

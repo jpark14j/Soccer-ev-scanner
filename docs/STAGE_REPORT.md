@@ -100,19 +100,34 @@ production deploy, paid signup/upgrade, Telegram delivery or model promotion occ
 - APIs/costs: no extra service.
 - Next: extend markets only after their models and settlement rules are verified.
 
-## Stage 6 — Parlay engine: analysis safeguards implemented; discovery partial
+## Stage 6 — Daily parlay research MVP implemented; qualification still gated
 
-- Implemented: arbitrary-dependence joint bounds, duplicate/opposing-leg rejection,
-  exact combined-price/restriction/leg/book/source-time checks, joint-estimate
-  validation gate and variance categories when evidence qualifies. Missing evidence
-  stays theoretical without invented price/EV. Exact no-opportunity message used.
-- Files: `intelligence/parlays.py`, `app.py`.
-- Passed: correlation-sensitive supplied joint example (different from the
-  independence product), bounds, mismatched prices/restrictions, duplicate/opposing legs.
-- Incomplete: fitted joint models, actual combined quote feed, sportsbook-specific
-  restriction feeds and automatic qualified-combination search.
-- APIs/costs: a licensed combined-pricing/restriction source is essential; quote unknown.
-- Next: connect exact parlay evidence rather than multiply singles.
+- Implemented: same-Ontario-book 2/3-leg discovery from current pregame observations,
+  sport/book/leg/category filters, bounded/diversified top-three ranking, actual
+  single prices/timestamps, explicitly theoretical all-win product, precise model/
+  joint-price/restriction blockers, integer-score contradiction checks and dependence
+  warnings. Research never enters the published prediction ledger. Existing qualified
+  analysis gates and diagnostic builder are preserved. Selected-competition refresh
+  respects quota/cooldown and skips score collection. Existing matching historical
+  archives can supply clearly dated research estimates and calibration envelopes;
+  mismatched datasets cannot borrow evaluation/calibration results.
+- Files: `intelligence/parlay_research.py`, `parlay_ui.py`, `research_refresh.py`,
+  `team_codes.py`, `pipeline.py`, `analyst_context.py`, `app.py`, research/UI tests,
+  README and [the research guide](PARLAY_RESEARCH.md).
+- Passed: complete regression suite, selection and filter paths, stale/invalid/unknown
+  Ontario quotes, opposing/nested legs and score feasibility versus brute-force
+  outcomes, conditional bounds, unavailable combined prices/EV, quota and exact
+  calibration-dataset matching. Genuine three-competition provider check: 516 quotes,
+  454 current Ontario observations, three research candidates, zero executable
+  parlays. Genuine captured-data Streamlit controls and local-mode assistant pass.
+- Incomplete: actual authorized combined quotes, book restriction feed and validated
+  joint models. No parlay recommendation or positive parlay EV is asserted. Community
+  Cloud preview access is blocked from this environment; user browser check remains.
+- APIs/costs: existing provider credits only (three competitions for the live smoke);
+  no subscription purchase, paid OpenAI activation or new service. Static archived
+  history remains old research data and may be absent on Community Cloud.
+- Next: validate the user's preview rebuild, then integrate real combined-price and
+  current/joint-model evidence before recommendations can qualify.
 
 ## Stage 7 — Conversational assistant: SDK integrated, paid usage disabled
 

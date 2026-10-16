@@ -31,7 +31,7 @@ Use the existing `ODDS_API_KEY` through environment variables or Streamlit Secre
 Telegram additionally uses `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in Actions
 Secrets. Never commit credentials or put them in command-line arguments.
 
-All ten requested sections are present. The analyst answers from current
+All ten requested sections plus Daily Parlay Research are present. The analyst answers from current
 application records; default local mode **does not call a language model API**.
 The official OpenAI SDK integration is implemented but disabled by default with
 `PAID_ANALYST_APPROVED = "0"`. The conversational page supports bounded history,
@@ -41,6 +41,17 @@ See [the assistant setup and privacy guide](docs/OPENAI_ASSISTANT.md) for free
 preview testing and future paid activation. No paid request was made. Live and prop recommendations remain disabled
 until their necessary inputs and validation exist; observed prices are distinct
 from predictions and from executable sportsbook offers.
+
+## Daily Parlay Research
+
+Open [your development preview](https://soccer-ev-scanner-preview-jp.streamlit.app/)
+and choose **Daily Parlay Research** (also available through **AI Parlay Builder**).
+Filter NBA/soccer/MLB, sportsbook, 2/3 legs and price-based risk category. Up to three
+compatible current-price research candidates can appear without validated models.
+Individual odds/timestamps are real observations; their combined product is always
+labeled theoretical. No joint probability, executable price or parlay EV is invented.
+An explicit selected-competition refresh respects existing quota; filters make no
+requests. See [preview test steps, methodology and limitations](docs/PARLAY_RESEARCH.md).
 
 ## Configuration and cost control
 

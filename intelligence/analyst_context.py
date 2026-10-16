@@ -66,7 +66,7 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
         + ('No current opportunities meet the minimum analytical requirements.' if not eligible else 'Only these evidence-gated opportunities qualify.'))
     add('limits','limitations','all','Player statistics, injuries, lineups, weather and validated player-prop models are not connected. '
         'Live prediction is unavailable without verified score/clock/state/latency and suspension data. '
-        'No qualifying parlay opportunities identified today. A validated joint model and actual sportsbook combined quote are required.')
+        'No qualifying parlay opportunities identified today. The Daily Parlay Research page can display current-price research candidates without validated models; these are not recommendations. A validated joint model and actual sportsbook combined quote are required to qualify.')
     add('actions','capabilities','all','This assistant can explain application records. It cannot place bets, make purchases, '
         'send notifications, run code, execute SQL, alter data or access other accounts. Positive estimated EV never guarantees a win.')
     add('ev_formula','ev','all','For a market without a push, EV = estimated win probability × decimal odds − 1. '

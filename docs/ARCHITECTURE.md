@@ -48,6 +48,18 @@ and source time; a separately validated joint estimate is required. Opposing
 match-winner selections and duplicate legs are rejected. Theoretical analysis
 cannot become an executable recommendation through UI wording.
 
+`parlay_research.py` is a separate discovery path that admits current Ontario
+single observations even without validated estimates. It searches a bounded,
+sport-balanced pool at one sportsbook, rejects incompatible score constraints,
+flags dependence and ranks transparent research components. Theoretical price
+products never become combined quotes or EV. `parlay_ui.py` exposes the selector;
+`research_refresh.py` offers explicit quota-controlled retrieval, merging verified
+snapshots across the existing dashboard/assistant without polling on filter changes.
+`team_codes.py` contains exact archive name mappings. Historical forecasts carry
+calibration sizes, data dates, uncertainty envelopes and publication blockers;
+evaluation datasets must match before calibration is used. See
+[PARLAY_RESEARCH.md](PARLAY_RESEARCH.md).
+
 `storage.py` makes publications/settlements append-only with SQLite triggers.
 `ledger.py` archives derived records with content IDs; restoration rejects conflicting
 history. This small-store design avoids premature infrastructure. It is **not** a
