@@ -11,6 +11,13 @@ by game, one shortlist per sportsbook and guarded operational/model lifecycle.
 Raw odds are collapsed under **Advanced Details / Raw Market Data**. Background
 scheduling and Community Cloud redeployment persistence remain unconfigured.
 
+The [focused prediction guide](docs/EPL_PREDICTIONS.md) documents the new portable
+Premier League BTTS / 2.5-goal models, real chronological test results, exact input
+gates and preview steps. Neither beats the simple baselines convincingly or meets
+approval standards. Current public results are incomplete/stale, so current
+forecasts remain blocked rather than fabricated. See the
+[missing-model audit](docs/MISSING_MODEL_AUDIT.md) for NBA/MLB and other-market gaps.
+
 The application retrieves genuine NBA, soccer and MLB sportsbook observations,
 checks Ontario feed provenance and freshness, and publishes only selections that
 pass model evidence and uncertainty-adjusted EV requirements. **No model has been

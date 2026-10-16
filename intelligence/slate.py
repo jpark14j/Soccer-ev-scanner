@@ -148,7 +148,13 @@ def run_slate(key,leagues,store,provider,*,window_hours=48,collect_results=False
                 'Configured competitions and time window are not the entire sports calendar']}
     # Shadow forecasts are private diagnostics, separate from published bets/ROI.
     from intelligence.processing import record_shadow_forecasts
-    result.processing['shadow_forecasts_recorded']=record_shadow_forecasts(result,store,now)
-    result.processing['published_predictions']=len(__import__('intelligence.pipeline',fromlist=['publish_current']).publish_current(result,store,now))
+    recorded_at=utcnow()  # Responses arrived after scan start; never backdate receipt/publication checks.
+    result.processing['shadow_forecasts_recorded']=record_shadow_forecasts(result,store,recorded_at)
+    from intelligence.processing import label_public_epl
+    if not result.focused_model and result.processing.get('pending_public_epl_forecasts'):
+        from intelligence.epl_forecasts import prepare
+        result.focused_model=prepare(store,recorded_at)
+    result.processing['public_epl_target_labels']=label_public_epl(store,result.focused_model,recorded_at)
+    result.processing['published_predictions']=len(__import__('intelligence.pipeline',fromlist=['publish_current']).publish_current(result,store,recorded_at))
     LOG.info('slate_scan_complete',extra={'discovered_events':len(discovered),'query_statuses':dict(Counter(q['status'] for q in queries))})
     return result

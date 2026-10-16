@@ -12,6 +12,10 @@ from intelligence.providers import LEAGUES
 def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest='command',required=True)
+    epl=sub.add_parser('evaluate-epl',help='Reproduce frozen EPL diagnostics from pinned public snapshots; no paid calls')
+    epl.add_argument('--cache-directory',required=True)
+    epl.add_argument('--output',default='research_assets/epl/model.json')
+    epl.add_argument('--download',action='store_true',help='Download the eight hash-verified public pinned files first (no account)')
     evaluate = sub.add_parser('evaluate')
     evaluate.add_argument('--league',choices=list(LEAGUES),required=True)
     evaluate.add_argument('--source',help='Provenance/licence reference for local history')
@@ -46,7 +50,26 @@ def main():
     review.add_argument('--action',choices=['promote','rollback'],required=True)
     args = parser.parse_args()
     store = configured_store()
-    if args.command=='research-cycle':
+    if args.command=='evaluate-epl':
+        if args.download:
+            from intelligence.epl_source import ROOT,REVISION
+            from intelligence.epl_forecasts import _download
+            from intelligence.epl_validation import ROOT as PROJECT_ROOT
+            from hashlib import sha256
+            import requests
+            snapshot=json.loads((PROJECT_ROOT/'config/epl_source_snapshot.json').read_text())
+            target=Path(args.cache_directory);target.mkdir(parents=True,exist_ok=True)
+            with requests.Session() as session:
+                for name,expected in snapshot['files'].items():
+                    raw=_download(session,ROOT+REVISION+'/'+name)
+                    if sha256(raw).hexdigest()!=expected:
+                        raise ValueError('Pinned source content differs from reviewed hash')
+                    (target/name.replace('/','_')).write_bytes(raw)
+        from intelligence.epl_validation import build
+        report=build(args.cache_directory,args.output)
+        print(json.dumps({'model':report['model_version'],'coverage':report['coverage'],
+            'held_out':{k:v['periods']['held_out'] for k,v in report['tasks'].items()},'approved':False},indent=2))
+    elif args.command=='research-cycle':
         from intelligence.worker import run_cycle
         leagues=[s.strip() for s in args.leagues.split(',') if s.strip()]
         if not set(leagues)<=set(LEAGUES):

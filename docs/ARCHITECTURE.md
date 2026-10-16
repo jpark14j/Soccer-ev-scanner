@@ -131,3 +131,15 @@ consented notifications, access limits and account-level quota. Keep adapters/mo
 interfaces stable so mobile or commercial API clients do not depend on Streamlit.
 An external API needs explicit data-redistribution rights. Do not add infrastructure
 or billable services until usage and contracts justify them.
+# Focused portable prediction path — 2026-10-16
+
+`epl_source` validates the publisher-CC0 result contract and exact aliases;
+`epl_goal_model` fits prior-date decayed/shrunk scoring strengths;
+`epl_validation` freezes chronological calibration, evaluates against baselines and
+builds a hash-matched portable artifact; `epl_forecasts` checks live input coverage,
+refreshes public current-season results at most daily and returns research estimates
+to `pipeline`. Existing game cards, assistant facts and performance views consume
+the same evidence. `processing` appends pregame paper forecasts and separate
+source-target labels without ticket settlement or recommendation promotion.
+There is no joint-parlay approval, actual-wager import, paid AI or new infrastructure.
+See [the focused model guide](EPL_PREDICTIONS.md) for assumptions and reproducibility.

@@ -29,6 +29,7 @@ class Analysis:
     quota: dict = field(default_factory=dict)
     slate: dict = field(default_factory=dict)
     processing: dict = field(default_factory=dict)
+    focused_model: dict = field(default_factory=dict)
 
 
 def configured_store():
@@ -122,6 +123,8 @@ def evaluate_quotes(result,store):
     result.score_contexts={}
     excluded=Counter(result.exclusions)
     now = utcnow()
+    from intelligence.epl_forecasts import supported,prepare,forecast
+    focused=None
     predictions, histories, reports, champions, history_hashes = {}, {}, {}, {}, {}
     for q in result.quotes:
         if q.status(now) != 'current':
@@ -129,6 +132,18 @@ def evaluate_quotes(result,store):
             continue
         if q.jurisdiction != 'CA-ON':
             excluded['Ontario feed not established'] += 1
+            continue
+        if supported(q):
+            if focused is None:
+                focused=prepare(store,now)
+                result.focused_model=focused
+            estimate,detail=forecast(q,focused,now)
+            result.research.append(detail)
+            result.advanced_details[q.id]=detail
+            if estimate:
+                result.estimates[q.id]=estimate
+                result.advanced_estimates[q.id]=estimate
+            excluded['Focused EPL model remains research-only' if estimate else 'Focused EPL input/evidence gate']+=1
             continue
         league = q.league
         if league not in histories:
@@ -156,7 +171,10 @@ def evaluate_quotes(result,store):
         history, report = histories[league], reports[league]
         if history is None or history.empty:
             excluded['Historical statistics unavailable'] += 1
-            result.research.append({'quote_id':q.id,'blockers':['Historical statistics are unavailable or failed source/licence checks; no probability was estimated']})
+            blockers=['Historical statistics are unavailable or failed source/licence checks; no probability was estimated']
+            if q.league=='Premier League':
+                blockers.insert(0,'The portable calibrated EPL model covers BTTS and exactly 2.5-goal totals; this market is outside that evaluation')
+            result.research.append({'quote_id':q.id,'blockers':blockers})
             continue
         event_key = (q.league,q.event_id)
         if league not in history_hashes:

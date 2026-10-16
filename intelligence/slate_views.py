@@ -16,8 +16,12 @@ def selection_card(leg,safe):
     st.caption(f'Break-even including margin: {leg.implied_probability:.1%}. Model: {leg.model_status}.')
     if leg.estimate:
         st.write(f'Model estimate {leg.estimate.probability:.1%}; supplied envelope {leg.estimate.lower:.1%}–{leg.estimate.upper:.1%}. '+('Validated leg evidence; ticket rules still need checking.' if leg.model_status=='validated' else 'Unvalidated research forecast; not a reliable true probability.'))
+        d=leg.model_details
+        st.caption(safe(f'Model {leg.estimate.model_version} · prediction {d.get("prediction_at","not recorded")} · history through {leg.estimate.training_end} · historical games {d.get("history_n","unavailable")} · calibration n={d.get("calibration_n",0)} · test n={d.get("test_n",0)}'))
     else:
         st.caption('No defensible model probability, confidence or EV is available.')
+        if leg.model_details.get('blockers'):
+            st.caption(safe('Forecast blocked: '+leg.model_details['blockers'][0]))
     if leg.estimated_ev is not None:
         st.write(f'Estimated single EV {leg.estimated_ev:+.1%}; not parlay EV.')
 
@@ -117,5 +121,36 @@ def render_dashboard(analysis,store,settings,books,secret_getter=None):
         st.json({'discovery':slate.get('discovery',[]),'market_tasks':slate.get('queries',[]),
             'gaps':slate.get('gaps',[]),'processing':analysis.processing,'errors':analysis.errors,
             'warnings':analysis.warnings,'exclusions':analysis.exclusions})
+    render_focused_model(analysis)
     render_games(analysis,books,secret_getter,max_games=3)
     render_books(analysis,books,secret_getter,'dashboard_book_preference')
+
+
+def render_focused_model(analysis):
+    from intelligence.epl_forecasts import load_artifact,high_probability_research
+    artifact=load_artifact()
+    st.subheader('Prediction evidence')
+    if not artifact:
+        st.info('Focused EPL artifact is missing or differs from the current model code. No forecast is inferred.')
+        return
+    source=analysis.focused_model or artifact
+    if source.get('problem'):
+        st.warning(source['problem'])
+    else:
+        st.caption(f"{artifact['model_version']} · Premier League BTTS and total goals 2.5 · research only · source results through {source['state']['latest']} · no approved betting model")
+    with st.expander('Chronological model evaluation and current input gaps'):
+        for market,task in artifact['tasks'].items():
+            period=task['periods']['held_out'];m=period['model'];base=period['constant_baseline']
+            st.write(f"{market}: calibration n={task['calibration_n']}; test n={m['n']} ({period['start']} to {period['end']}). Binary Brier {m['binary_brier']['value']:.4f}; constant baseline {base['binary_brier']['value']:.4f}; log loss {m['log_loss']['value']:.4f}; classification accuracy {m['classification_accuracy']['value']:.1%}.")
+        st.caption('Historical classification accuracy is not betting win rate. No market-beating or profitable advantage is established. Full intervals, calibration bins and later-period drift diagnostics are in Performance Tracker.')
+        blockers=list(dict.fromkeys(b for row in analysis.research if row.get('model')==artifact['model_version'] for b in row.get('blockers',[])))
+        for blocker in blockers:
+            st.text(blocker)
+        if not blockers:
+            st.caption('No current supported quote has been evaluated in this view. A fresh Ontario EPL BTTS or exactly 2.5-goal total and complete recent public results are required.')
+    st.caption('High-probability research shortlist: estimated probability ≥65%, envelope lower bound ≥60%, width ≤25%, adequate calibration support and independent evidence required. High win probability does not imply positive EV.')
+    shortlist=high_probability_research(analysis)
+    if not shortlist:
+        st.info('No credible high-probability selections qualify. Exploratory backtests do not establish independent forecasting reliability.')
+    for q,e,d in shortlist:
+        st.write(f'{q.event} · {q.selection} · research estimate {e.probability:.1%} · envelope {e.lower:.1%}–{e.upper:.1%}; no approved betting EV.')

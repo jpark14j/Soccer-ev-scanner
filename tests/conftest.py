@@ -14,6 +14,7 @@ OPENAI_TEST_KEY = 'sk-test-NEVER-A-REAL-KEY'
 
 @pytest.fixture(autouse=True)
 def no_network(monkeypatch):
+    monkeypatch.setenv('EPL_PUBLIC_REFRESH','0')
     def blocked(*args,**kwargs):
         raise AssertionError('Unit/integration tests must not call external networks')
     monkeypatch.setattr(requests.sessions.Session,'request',blocked)

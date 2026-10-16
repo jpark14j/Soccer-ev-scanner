@@ -36,6 +36,14 @@ def render_performance(store):
     st.caption('Empty 2/3-leg groups have no parlay performance evidence. Win rates include decisive outcomes only; pushes return stake and voids are excluded from turnover. One hypothetical unit per publication. Recorded losses remain included.')
     st.caption('Win-rate Wilson intervals are suppressed for shared-event decisions. ROI intervals require at least 30 UTC-day blocks and use a day-block bootstrap; between-day dependence/stationarity remain unverified. Prices are publication observations, not confirmed accepted/placed tickets. Slippage, taxes and operator rules are not inferred.')
     st.subheader('Held-out forecast research — separate from betting results')
+    from intelligence.epl_forecasts import load_artifact
+    focused=load_artifact()
+    if focused:
+        with st.expander('Premier League calibrated BTTS / goals 2.5 — research only'):
+            st.caption('Training through June 2023; calibration July 2023–June 2024; primary test July 2024–June 2025. Later periods monitor partial-coverage drift. Binary Brier convention: (p − outcome)², unlike the two-class scores below.')
+            st.json({'coverage':focused['coverage'],'markets':focused['tasks'],
+                     'limitations':focused['limitations'],'source':focused['source'],
+                     'sources':focused['sources'],'approved':False,'betting_roi':None})
     from intelligence.processing import shadow_statistics
     with st.expander('Private forward research forecasts — not betting performance'):
         st.json(shadow_statistics(store))

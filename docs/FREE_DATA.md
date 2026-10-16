@@ -89,3 +89,11 @@ The pre-existing football-data free source is personal/academic, light-download
 research only, disabled by default for the commercial path. No free source is
 represented as a substitute for Ontario-specific odds, timestamped historical
 market evidence or actual combined parlay pricing.
+# Focused EPL source update — 2026-10-16
+
+`openfootball/football.json` explicitly dedicates its data to the public domain
+under CC0. Seven pinned seasons, source hashes and derived fitted state are now
+used for EPL BTTS / exactly 2.5-goal research. This does not grant commercial rights
+to sportsbook feeds or other providers. The current public result file is incomplete
+and ends September 20; downloads do not make its results current. No current-results
+account was created. See [evaluation, source limits and preview steps](EPL_PREDICTIONS.md).

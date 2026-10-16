@@ -308,3 +308,37 @@ production deploy, paid signup/upgrade, Telegram delivery or model promotion occ
 - Next: review this branch, verify free refresh credentials/rights, train/test
   candidates on new
   untouched data, then verify deployment and notifications before merging.
+# Focused prediction stage — 2026-10-16
+
+1. **Implemented:** audited missing inference; selected EPL BTTS / goals 2.5;
+   imported hash-verified publisher-CC0 outcomes; fitted decayed/shrunk Poisson
+   strengths and frozen monotone calibration; genuine chronological/baseline/
+   bootstrap diagnostics; deployed portable fitted state; explicit current-input
+   gates and daily free-source refresh; research card/assistant integration;
+   conservative high-probability gate; immutable paper recording and public target
+   labels separated from betting results. Existing parlay and assistant remain.
+2. **Files:** `intelligence/epl_{source,goal_model,validation,forecasts}.py`,
+   `config/epl_{forecast_policy,source_snapshot}.json`,
+   `research_assets/epl/model.json`; pipeline/processing/slate/CLI, concise cards,
+   assistant facts and performance integration; `tests/test_epl_predictions.py`,
+   `tests/test_epl_ui.py`, slate/conftest updates; model audit, reproducibility/
+   preview guide and verification evidence/documentation. No production configs.
+3. **Passed:** 259 tests (29 added); compileall; pip consistency; whitespace;
+   actual account-free public results refresh; existing-app local HTTP 200 health;
+   Streamlit AppTest valid research, stale-data cards, soccer/performance/assistant.
+4. **Incomplete:** current source results end September 20 and 15 prior fixtures
+   lack scores. Current forecasts are blocked, not fabricated. Historical results
+   do not beat baselines convincingly; no independent evidence/approval, actual
+   joint parlay prices/models, current NBA/MLB/player feature feeds, actual wagers,
+   or verified durable Community Cloud ledger. Hosted preview cannot be reached
+   from this environment's proxy. No genuine current forecast is claimed.
+5. **API/cost:** no new account/key/subscription, paid AI or odds requests; unchanged
+   existing 9-credit cap (currently 9/9). Public refresh uses at most two GETs per
+   rolling day per shared store. Publisher CC0 grant does not clear other feeds'
+   commercial redistribution rights. No current-results account was activated.
+6. **Next:** obtain complete permitted recent results and fresh supported markets
+   within the existing cap, collect prospective paper evidence, review independent
+   validation versus timestamped markets, then consider reviewed model promotion
+   and joint-model research. Do not tune on the reported test or relax gates.
+
+See [actual metrics and exact preview click steps](EPL_PREDICTIONS.md).

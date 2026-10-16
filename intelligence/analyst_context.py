@@ -121,6 +121,27 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
         text += 'Historical research diagnostics are separate from live forward performance and are not current event probabilities.'
         add('model_'+sport.lower(),'models',sport,text)
     from intelligence.market_validation import load_reports
+    from intelligence.epl_forecasts import load_artifact
+    focused=load_artifact()
+    if focused:
+        parts=[]
+        for market,task in focused['tasks'].items():
+            m=task['periods']['held_out']['model'];base=task['periods']['held_out']['constant_baseline']
+            parts.append(f"{market}: calibration n={task['calibration_n']}; test n={m['n']}; binary Brier {m['binary_brier']['value']:.6f} versus constant baseline {base['binary_brier']['value']:.6f}; log loss {m['log_loss']['value']:.6f}; classification accuracy {m['classification_accuracy']['value']:.1%}")
+        add('focused_epl','models','Soccer',focused['model_version']+': research only. '+'; '.join(parts)+
+            '. No independent confirmation, approved champion or market-beating evidence. No betting profitability or parlay joint-model claim. Source: '+focused['source']+
+            '; bundled results through '+focused['state']['latest']+'. Current forecasts additionally require complete recent results and fresh Ontario prices.')
+        from intelligence.epl_forecasts import supported
+        for q in [q for q in analysis.quotes if supported(q) and q.status(now)=='current'][:3]:
+            d=analysis.advanced_details.get(q.id,{})
+            e=analysis.estimates.get(q.id)
+            text=f'{q.event} / {q.market} / {q.selection}: source odds {q.odds:.2f}, updated {q.source_updated_at}; sportsbook break-even {1/q.odds:.1%}. '
+            if e:
+                text+=f'Research estimate {e.probability:.1%}, frequency envelope {e.lower:.1%}–{e.upper:.1%}; model {e.model_version}, prediction {d.get("prediction_at","unavailable")}, calibration n={d.get("calibration_n",0)}, test n={d.get("test_n",0)}. Not an approved probability or betting EV. '
+            else:
+                text+='No current probability or betting EV is supported. '
+            text+='Missing requirements: '+'; '.join(d.get('blockers',['Current model evidence is unavailable']))
+            add('focused_quote_'+q.id[:16],'models','Soccer',text)
     for report in load_reports():
         parts=[f"{task['market']} fixed diagnostic line {task['fixed_diagnostic_line']}: test n={task['test_n']}, two-class Brier={task['metrics']['brier']:.6f}, log loss={task['metrics']['log_loss']:.6f}, classification accuracy={task['classification_accuracy']:.1%}, simple-baseline accuracy={task['baseline_classification_accuracy']:.1%}" for task in report['tasks']]
         add('advanced_'+report['sport'].lower(),'models',report['sport'],
@@ -216,7 +237,7 @@ def select_local(question, context, history=()):
         kind = 'limitations'
     elif any(word in lower for word in ('perform','profit','roi','win rate','results')):
         kind = 'performance'
-    elif any(word in lower for word in ('model','validat','calibrat','backtest','historical','confidence','why')):
+    elif any(word in lower for word in ('model','validat','calibrat','backtest','historical','confidence','why','forecast','probabilit','prediction')):
         kind = 'models'
     elif any(word in lower for word in ('stale','update','timestamp','changed','change','fresh')):
         kind = 'freshness'

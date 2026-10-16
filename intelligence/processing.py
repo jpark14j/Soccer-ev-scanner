@@ -31,7 +31,9 @@ def record_shadow_forecasts(analysis,store,now=None):
     from intelligence.market_validation import code_hash
     from intelligence.evaluation import model_code_hash
     from intelligence.advanced_models import VERSIONS
+    from intelligence.epl_validation import policy as epl_policy,code_hash as epl_hash
     advanced_hash,team_hash=code_hash(),model_code_hash()
+    focused_version,focused_hash=epl_policy()['model_version'],epl_hash()
     research={row['quote_id']:row for row in analysis.research}
     for q in analysis.quotes:
         estimate=analysis.advanced_estimates.get(q.id) or analysis.estimates.get(q.id)
@@ -40,12 +42,14 @@ def record_shadow_forecasts(analysis,store,now=None):
         if parse_time(estimate.training_end)>=now:
             continue
         detail=analysis.advanced_details.get(q.id) or research.get(q.id,{})
-        code=advanced_hash if estimate.model_version in VERSIONS.values() else team_hash
+        focused=estimate.model_version==focused_version
+        code=focused_hash if focused else advanced_hash if estimate.model_version in VERSIONS.values() else team_hash
         data=detail.get('data_sha256','unavailable')
         identifier=digest((q.id,estimate.model_version,q.commence_time,code,data))
         payload={'quote':asdict(q),'estimate':asdict(estimate),'origin':'shadow research',
                  'model_code_sha256':code,'history_data_sha256':data,
-                 'target_scope':'full_event_final_including_extras' if q.sport in ('NBA','MLB') else 'regulation_90_unverified',
+                 'target_scope':'source_reported_ft' if focused else 'full_event_final_including_extras' if q.sport in ('NBA','MLB') else 'regulation_90_unverified',
+                 'model_evidence':detail if focused else {},
                  'scope':'Unverified model score target; not accepted sportsbook settlement',
                  'publication_status':'Not a betting recommendation; never included in forward betting ROI'}
         with store.connect() as db:
@@ -101,10 +105,13 @@ def process_cycle(store,provider,leagues,cap,*,collect_results=False,now=None,ru
     with store.connect() as db:
         shadows=[dict(r) for r in db.execute('SELECT f.* FROM shadow_forecasts f LEFT JOIN shadow_outcomes o ON f.id=o.id WHERE o.id IS NULL')]
     pending=[r['payload']['quote']['league'] for r in records]
-    pending.extend(json.loads(r['payload'])['quote']['league'] for r in shadows if parse_time(json.loads(r['payload'])['quote']['commence_time'])<now)
+    pending.extend(json.loads(r['payload'])['quote']['league'] for r in shadows
+        if json.loads(r['payload']).get('target_scope')!='source_reported_ft'
+        and parse_time(json.loads(r['payload'])['quote']['commence_time'])<now)
     if collect_results:
         pending.extend(l for l in leagues if l in ('NBA','MLB'))
     summary={'collection':{},'settled':0,'pending_completed_publications':len(records),'blocked':{},'shadow_forecasts_recorded':0}
+    summary['pending_public_epl_forecasts']=sum(json.loads(r['payload']).get('target_scope')=='source_reported_ft' for r in shadows)
     for league in sorted(set(pending)&set(leagues)):
         if store.cached('daily-completed-v1-'+league,86400,now) is None and quota_details(store,cap,now)['remaining']<2:
             summary['collection'][league]='not requested: existing local credit cap'
@@ -168,6 +175,59 @@ def shadow_statistics(store):
         pairs=[(json.loads(r['payload'])['estimate']['probability'],int(r['outcome']=='hit')) for r in settled]
         brier=sum((p-y)**2 for p,y in pairs)/len(pairs)
         logloss=-sum(math.log(max(1e-12,min(1-1e-12,p if y else 1-p))) for p,y in pairs)/len(pairs)
+    groups={}
+    for row in rows:
+        payload=json.loads(row['payload']);q=payload['quote'];e=payload['estimate']
+        key=' / '.join((q['sport'],q['market'],e['model_version']))
+        groups.setdefault(key,[]).append((e['probability'],row['outcome']))
+    grouped={}
+    for key,group in groups.items():
+        pairs=[(p,int(outcome=='hit')) for p,outcome in group if outcome in ('hit','miss')]
+        n=len(pairs);hits=sum(y for _,y in pairs)
+        bins=[]
+        for index in range(10):
+            bucket=[(p,y) for p,y in pairs if min(9,int(p*10))==index]
+            if bucket:
+                bins.append({'range':[index/10,(index+1)/10],'n':len(bucket),
+                    'mean_probability':sum(p for p,_ in bucket)/len(bucket),
+                    'observed_frequency':sum(y for _,y in bucket)/len(bucket)})
+        grouped[key]={'recorded':len(group),'labeled':n,'hits':hits,'misses':n-hits,
+            'selection_hit_rate':hits/n if n else None,
+            'binary_brier':sum((p-y)**2 for p,y in pairs)/n if n else None,
+            'log_loss':-sum(math.log(max(1e-12,min(1-1e-12,p if y else 1-p))) for p,y in pairs)/n if n else None,
+            'calibration_bins':bins,'betting_roi':None,
+            'note':'Dependent source-target labels, not sportsbook settlement or independently verified forecasting skill'}
     return {'private_forecasts':len(rows),'scored_forecast_labels':len(settled),
         'binary_brier':brier,'log_loss':logloss,'betting_roi':None,
+        'by_sport_market_model':grouped,
         'note':'Unvalidated first pregame forecasts; shared games/lines/books are dependent. These are model-target labels, not operator wins/losses or a tradable advantage.'}
+
+
+def label_public_epl(store,artifact,now=None):
+    """Append source-target labels only, never ticket settlement or hypothetical ROI."""
+    from intelligence.epl_source import team
+    now=now or utcnow();ensure_processing(store)
+    if not artifact or artifact.get('problem'):
+        return 0
+    # Current-season rows only. Archived forecasts are never reconstructed/backdated.
+    results={(r['home'],r['away'],r['date']):r for r in artifact['current_rows']}
+    n=0
+    with store.connect() as db:
+        records=db.execute('SELECT f.* FROM shadow_forecasts f LEFT JOIN shadow_outcomes o ON f.id=o.id WHERE o.id IS NULL').fetchall()
+        for record in records:
+            payload=json.loads(record['payload']);q=payload['quote']
+            if payload.get('target_scope')!='source_reported_ft':
+                continue
+            start=parse_time(q['commence_time'])
+            if not parse_time(record['at'])<start<now:
+                continue
+            row=results.get((team(q['home']),team(q['away']),start.date().isoformat()))
+            if not row or row['date']>=now.date().isoformat():
+                continue
+            positive=row['hg']>0 and row['ag']>0 if q['market']=='btts' else row['hg']+row['ag']>2.5
+            hit=positive==(q['selection'].lower() in ('yes','over'))
+            n+=db.execute('INSERT OR IGNORE INTO shadow_outcomes VALUES(?,?,?,?)',
+                (record['id'],now.isoformat(),'hit' if hit else 'miss',
+                 'openfootball public source-reported full-time target; checked '+artifact['source_check']+
+                 '; data '+artifact['data_sha256']+'; not operator settlement')).rowcount
+    return n

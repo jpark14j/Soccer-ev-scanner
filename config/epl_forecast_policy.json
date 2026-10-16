@@ -1,0 +1,22 @@
+{
+  "model_version": "epl-goal-strength-1",
+  "markets": ["btts", "totals_2.5"],
+  "half_life_days": 180,
+  "prior_team_games": 15,
+  "minimum_league_games": 200,
+  "minimum_team_games": 12,
+  "minimum_effective_team_games": 8,
+  "maximum_result_age_days": 21,
+  "minimum_calibration_bin": 50,
+  "train_end": "2023-06-30",
+  "calibration_start": "2023-07-01",
+  "calibration_end": "2024-06-30",
+  "test_start": "2024-07-01",
+  "test_end": "2025-06-30",
+  "bootstrap_resamples": 1000,
+  "bootstrap_seed": 74103,
+  "high_probability_minimum": 0.65,
+  "high_probability_lower_minimum": 0.60,
+  "high_probability_maximum_width": 0.25,
+  "note": "Predeclared before this increment's evaluation. Fixed score thresholds, no historical sportsbook prices. No tuning on test outcomes; any later model requires a fresh held-out period. No approval or profit assertion."
+}

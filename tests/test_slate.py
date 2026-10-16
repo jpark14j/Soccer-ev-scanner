@@ -94,3 +94,23 @@ def test_event_window_omits_outside_games_and_labels_discovery_failure(store,quo
     result=run_slate('synthetic',['MLB'],store,provider)
     assert result.slate['discovery'][0]['status']=='unverified saved fallback'
     assert result.warnings
+
+
+def test_forecast_recording_uses_post_fetch_time_not_scan_start(store,quote,fixed_clock):
+    provider=Provider(store,quote,0)
+    finished=NOW+timedelta(seconds=8)
+    with patch('intelligence.slate.utcnow',side_effect=[NOW,finished]), \
+         patch('intelligence.processing.record_shadow_forecasts',return_value=0) as record:
+        run_slate('synthetic',['NBA'],store,provider)
+    assert record.call_args.args[2]==finished
+
+
+def test_pending_public_results_refresh_without_any_new_market_quote(store,quote,fixed_clock):
+    provider=Provider(store,quote,0)
+    with patch('intelligence.processing.process_cycle',return_value={'pending_public_epl_forecasts':1}), \
+         patch('intelligence.epl_forecasts.prepare',return_value={'problem':'synthetic offline gap'}) as prepare, \
+         patch('intelligence.processing.label_public_epl',return_value=0) as label:
+        result=run_slate('synthetic',['NBA'],store,provider)
+    prepare.assert_called_once()
+    assert label.call_args.args[1]=={'problem':'synthetic offline gap'}
+    assert result.processing['public_epl_target_labels']==0 and provider.calls==[]

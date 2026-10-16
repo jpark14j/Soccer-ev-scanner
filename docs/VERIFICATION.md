@@ -1,5 +1,33 @@
 # Verification matrix
 
+## Focused prediction increment — 2026-10-16
+
+**259 offline tests pass** (29 added), with real Requests/HTTPX transports blocked.
+New coverage exercises source/schema/score/hash checks, same/future-day leakage
+protection, Poisson/complement probabilities, monotone calibration, paired day-block
+diagnostics, artifact tampering, supported lines and aliases, stale/unresolved and
+insufficient inputs, cache/failure redaction, licensing/history correction stops,
+incremental features with frozen calibration, current inference before legacy
+history fallback, immutable pregame records, source-target losses, grouped paper
+statistics, post-fetch recording time, pending-result refresh without new markets,
+high-probability gates and Streamlit research/blocked-data interactions.
+
+The genuine EPL evaluation uses 2,298 public source results, 363 calibration
+matches and 368 primary-test matches. Neither evaluated market establishes an
+advantage over the simple baselines. The public license/current-season refresh
+actually succeeded without an account; it still ends September 20 with 15 earlier
+unscored fixtures. No genuine current pregame probabilities, approved model,
+independent forward success, executable parlay or betting profit is claimed.
+See [the complete focused-model evidence](evidence/epl-prediction-verification.json)
+and [metrics, assumptions and exact preview steps](EPL_PREDICTIONS.md).
+
+The existing app starts on isolated port 8507 with HTTP 200 `ok`, odds credentials
+absent, cap zero and paid AI disabled. Compilation, dependency consistency and
+whitespace checks pass. No new odds requests were made; the existing store remains
+9/9. The Community Cloud URL returned `ProxyError` through this environment, so
+hosted rebuild/UI is **unverified**. Production, main and paid API settings were
+not changed. Persistent off-host paper-ledger storage remains unconfigured.
+
 ## Automatic slate research update — 2026-10-16
 
 The complete suite passes **230 offline tests** (27 new), with real Requests/HTTPX

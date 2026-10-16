@@ -195,6 +195,9 @@ elif page in ('Daily Parlay Research','AI Parlay Builder','Advanced Markets'):
             st.caption(analysis['reason']+'. No executable combined price or parlay EV is asserted.')
         st.write('Lower-variance, balanced and higher-variance categories require a validated joint model, sportsbook restrictions, and an actual combined quote. Different games or sports do not establish independence.')
 elif page in ('NBA Analytics','Soccer Analytics','MLB Analytics'):
+    if page=='Soccer Analytics':
+        from intelligence.slate_views import render_focused_model
+        render_focused_model(result)
     sport = page.split()[0]
     show_opportunities(current_opportunities(sport))
     from intelligence.slate_views import render_games
