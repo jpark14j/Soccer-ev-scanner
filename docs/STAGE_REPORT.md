@@ -52,15 +52,16 @@ production deploy, paid signup/upgrade, Telegram delivery or model promotion occ
   publisher permissions/attribution, doubleheader IDs and hashes; daily completed
   NBA/MLB result collection uses the existing Odds API account.
 - Files: `intelligence/history.py`, `providers.py`, `pipeline.py`,
-  `docs/DATA_CONTRACTS.md`.
+  `free_history.py`, `results.py`, `docs/DATA_CONTRACTS.md`, `docs/FREE_DATA.md`.
 - Passed: actual feed contract for all nine competitions, empty/error fail-closed
   paths, historical cleaner and prop participant/line contract tests.
 - Incomplete: licensed automated NBA/MLB/player/context statistics integrations;
   actual prop coverage for Ontario remains unverified. Two real prop samples
   returned no quotes (`docs/evidence/prop-samples.json`).
-- APIs/costs: statistics supplier/licence or existing licensed files essential;
-  advanced inputs may require supplier selection/quote. Free archives and the
-  existing scores endpoint now support development without a new subscription.
+- APIs/costs: the implemented archives are free under the reviewed publisher
+  permissions, and result collection uses existing account quota. No new
+  subscription is required for this increment. Current advanced inputs remain
+  unavailable; do not buy or assume rights to them.
 - Next: chronological validation with genuine datasets.
 
 ## Stage 4 — Prediction models: partial; no model approved for recommendations
@@ -203,8 +204,12 @@ production deploy, paid signup/upgrade, Telegram delivery or model promotion occ
   actual odds contract checks, genuine chronological evaluation, Streamlit health.
 - Incomplete: production deployment, real Telegram/LLM sends, independently credible
   prediction/prop/live/parlay validation and supplier/commercial approvals. Remote
-  CI status is recorded separately after pushing; do not infer it from local tests.
-- APIs/costs: no new paid services. Essential next input is the user's existing
-  licensed datasets/provider access or permission to obtain supplier quotes.
-- Next: review this branch, resolve data rights/access, train/test candidates on new
+  CI also passed on the implementation commit `86197dafdb62ed8ae775354c2cf19b8a3bb4ceb9`:
+  https://github.com/jpark14j/Soccer-ev-scanner/actions/runs/38843575101 .
+- APIs/costs: no new paid services. The user confirmed no paid data subscriptions
+  and requested free-first work. Free archives and current result collection were
+  added; free feed credentials/access are needed for additional current history.
+  Player/live/historical market evidence remains unavailable.
+- Next: review this branch, verify free refresh credentials/rights, train/test
+  candidates on new
   untouched data, then verify deployment and notifications before merging.

@@ -20,7 +20,7 @@ The live smoke evidence is separately recorded with actual response/source times
 | Stale quotes | Source/receipt/future/suspension and publication-time expiration checks pass; cache never resets source time. |
 | Telegram | Message formatting, token-redaction, schedule, pending-state/delivery claims, no-duplicate mechanics tested. Actual send not tested: Telegram secrets unavailable in this environment. |
 | Conversational model | Local grounded mode and disabled paid router, budget/approval and strict-output checks tested. No actual paid API call or free-form factual generation verified. |
-| GitHub Actions | YAML, branch guard, archive-before-send and pinned actions inspected/tested. Remote CI outcome must be observed on the pushed branch/PR. Daily production job not invoked. |
+| GitHub Actions | YAML, branch guard, archive-before-send and pinned actions inspected/tested. Remote CI succeeded on implementation commit `86197da`, run [38843575101](https://github.com/jpark14j/Soccer-ev-scanner/actions/runs/38843575101), including dependency install, pytest and compilation. Daily production job not invoked. |
 | Streamlit | All ten sections plus missing-key startup pass AppTest; local server `/_stcore/health` returned HTTP 200 `ok`. Existing production deployment not changed/tested. |
 | Credential security | Secrets excluded from Git, no literal credentials added, sanitized provider/Telegram errors tested. Existing production secrets not read/changed. |
 | History accuracy | Append-only publication/settlement triggers, deduplication, real-source requirement, losing record metrics, archive restore/tamper checks pass. No actual settled forward predictions exist. |
