@@ -305,12 +305,13 @@ def test_ranking_selector_switches_views_without_scans(tmp_path,quote,monkeypatc
     monkeypatch.setenv('PREDICTION_LEDGER_DIR',str(tmp_path/'empty-ledger'))
     with patch('intelligence.pipeline.run_analysis',return_value=a) as scans:
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
+        navigate(app,'AI Dashboard')
         for name in RANKINGS:
             next(s for s in app.selectbox if s.key=='dashboard_ranking').set_value(name).run()
             assert not app.exception
         navigate(app,'Best Picks & Parlays')
         assert list(next(s for s in app.selectbox if s.key=='picks_ranking').options)==list(RANKINGS)
-        assert len(app.sidebar.radio[0].options)==4 and scans.call_count==1
+        assert len(app.sidebar.radio[0].options)==5 and scans.call_count==1
 
 
 def test_cache_only_recheck_cannot_download_even_an_opted_in_legacy_personal_feed(store,quote,monkeypatch):

@@ -267,7 +267,7 @@ def test_preview_cards_keep_opponents_collapsed_and_filters_never_scan(tmp_path,
     monkeypatch.setenv('PREDICTION_LEDGER_DIR',str(tmp_path/'empty-ledger'));monkeypatch.setenv('PAID_ANALYST_APPROVED','0')
     with patch('intelligence.pipeline.run_analysis',return_value=a) as scans,patch('openai.OpenAI',side_effect=AssertionError('No paid AI')):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run();navigate(app,'Best Picks & Parlays')
-        assert not app.exception and len(app.sidebar.radio[0].options)==4
+        assert not app.exception and len(app.sidebar.radio[0].options)==5
         assert [t.label for t in app.tabs]==['Singles','Parlays']
         assert any(s.value=='AI Parlay Intelligence' for s in app.subheader)
         assert all(any(s.value.startswith(str(i)+'.') for s in app.subheader) for i in (1,2,3))

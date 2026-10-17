@@ -13,7 +13,7 @@ initial reader path, not independently observed reboot persistence or worker
 operation. The development environment has no Supabase credentials and cannot
 operate the owner's hosted UI. No hosted success is inferred from offline tests.
 
-In preview, Settings & Research Tools → Research Operations now displays the
+In preview, Settings → Admin / Developer Tools → Research Operations now displays the
 committed snapshot SHA-256, store identity, generation and checkpoint type.
 Bootstrap/storage checkpoints are distinguished from actual research runs.
 **Verify fresh Supabase reads · no sports requests** performs two independently
@@ -116,9 +116,12 @@ desired. All CLI failures use sanitized error codes and a nonzero exit status.
 
 ### Research activation remains blocked until account review
 
-The owner is currently unsure whether production/Telegram share the same Odds
-API account and whether a football-data.org account exists. These are unresolved
-gates, not permission to assume independent accounts or current results.
+The owner has now confirmed that production and development share the same
+Odds API account and reports open-only production refreshes and a disabled
+Telegram digest. Actual account usage, permitted data use, and current-results
+access remain unverified. Closing a tab does not establish account-wide usage.
+See [the current hosted evidence and readiness note](EVERYDAY_RESEARCH.md);
+generation-2 storage/read checks have succeeded, without any research run.
 
 * Inspect the existing production and development credential/account assignments
   privately and check The Odds API dashboard. Do not create another free account

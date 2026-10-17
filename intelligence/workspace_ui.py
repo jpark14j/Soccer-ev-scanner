@@ -78,6 +78,14 @@ def render_tools(w):
     if tool=='operations':
         from intelligence.operations_ui import render_operations
         render_operations(w.analysis,w.store,w.secret)
+    elif tool=='detailed_picks':
+        render_picks(w)
+    elif tool=='detailed_performance':
+        from intelligence.performance_ui import render_performance
+        render_performance(w.store)
+    elif tool=='dashboard':
+        from intelligence.research_views import render_daily_dashboard
+        render_daily_dashboard(w.analysis,w.store,w.settings,w.book_keys,w.secret)
     elif tool=='markets':
         from intelligence.market_ui import render_markets
         render_markets(w.analysis,w.store,w.leagues,w.book_keys,w.key,w.settings,w.refresh,w.secret)
@@ -88,7 +96,8 @@ def render_tools(w):
         w.markets(live=True)
     elif tool=='assistant':
         from intelligence.chat_ui import render_assistant
-        render_assistant(w.analysis,w.store,w.secret)
+        if not st.session_state.get('consumer_assistant_open'):
+            render_assistant(w.analysis,w.store,w.secret)
     elif tool=='diagnostics':
         from intelligence.quant_ui import render_evaluation
         render_evaluation()

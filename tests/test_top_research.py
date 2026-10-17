@@ -134,12 +134,13 @@ def test_top_cards_are_prominent_unapproved_and_navigation_never_scans(tmp_path,
     monkeypatch.setenv('PAID_ANALYST_APPROVED','0');monkeypatch.setenv('PREDICTION_LEDGER_DIR',str(tmp_path/'empty-ledger'))
     with patch('intelligence.pipeline.run_analysis',return_value=a) as scans,patch('openai.OpenAI',side_effect=AssertionError('No paid calls')):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
+        navigate(app,'AI Dashboard')
         labels=[s.value for s in app.subheader]
         assert labels.index("AI's Top Research Pick — Experimental")<labels.index("Today's Best-Supported Bet")
         assert any(s.value=="AI's Top Research Parlay" for s in app.subheader)
         assert any('NO QUALIFYING BET' in s.value for s in app.info)
         navigate(app,'Best Picks & Parlays');navigate(app,'AI Dashboard')
-        assert scans.call_count==1 and not app.exception and len(app.sidebar.radio[0].options)==4
+        assert scans.call_count==1 and not app.exception and len(app.sidebar.radio[0].options)==5
 
 
 def test_model_only_card_never_displays_its_old_odds_or_price_comparison(tmp_path,quote,estimate,monkeypatch):

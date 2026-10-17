@@ -14,12 +14,17 @@ from intelligence.analyst_config import load_config
 
 def quota_banner(store,settings):
     info=quota_details(store,settings.daily_limit)
-    st.caption(f'Local odds reservations: {info["used"]}/{info["limit"]}; {info["remaining"]} remaining. '
+    st.caption(f'Saved local odds reservations: {info["used"]}/{info["limit"]}; {info["local_remaining"]} below the local cap. '
         f'Next local reset {info["next_reset_toronto"]} · {info["next_reset_utc"]}. This is not the provider account reset.')
+    if info.get('read_only_replica'):
+        st.info('This dashboard is read-only: provider retrieval is disabled here, not evidence of an exhausted account. The worker uses the remote budget authority; external account credits are unknown.')
     if info.get('recovery_hold'):
         st.info('Restored-store provider requests remain held until explicit usage review. A daily reset does not release this hold.')
-    elif info['remaining']==0:
+    elif info.get('remote_provider_hold') is True:
+        st.info('The remote provider budget hold is active. No local reset releases it.')
+    elif info['local_exhausted']:
         st.info('The local odds budget is exhausted. Refresh is disabled; cached observations remain available for inspection. No spending cap is raised automatically.')
+    st.caption(info['scope_note'])
     return info
 
 

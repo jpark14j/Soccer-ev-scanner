@@ -37,11 +37,11 @@ def workspace_app(tmp_path,monkeypatch,quote):
         yield app,store,result,scans
 
 
-def test_exactly_four_top_level_destinations_and_every_tool_accessible(workspace_app):
+def test_exactly_five_top_level_destinations_and_every_tool_accessible(workspace_app):
     app,_,_,_=workspace_app
     assert list(app.sidebar.radio[0].options)==[p.name for p in PAGES]==[
-        'AI Dashboard','Best Picks & Parlays','Performance Tracker','Settings & Research Tools']
-    assert app.sidebar.radio[0].value=='AI Dashboard'
+        'Home','Best Picks & Parlays','Upcoming Games','Performance Tracker','Settings']
+    assert app.sidebar.radio[0].value=='Home'
     assert not app.dataframe
     navigate(app,'Settings & Research Tools')
     selector=next(s for s in app.selectbox if s.key=='research_tool')

@@ -232,6 +232,7 @@ def test_independent_worker_runs_real_research_publication_and_replica_ui(remote
         'RESEARCH_REPLICA_DIR':str(directory),'INTELLIGENCE_DB':str(tmp_path/'fallback.sqlite3')}.items():monkeypatch.setenv(name,value)
     with patch('intelligence.shared_state.requests.Session',return_value=remote),patch('intelligence.providers.OddsAPI._fetch',side_effect=AssertionError('No sportsbook requests on pages')),patch('openai.OpenAI',side_effect=AssertionError('Paid AI disabled')):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run();assert not app.exception
+        navigate(app,'Research Operations')  # Refresh controls moved out of everyday pages.
         assert next(b for b in app.button if b.label=='Refresh analysis').disabled
         for page in ('Best Picks & Parlays','Performance Tracker','Research Operations','AI Assistant','AI Dashboard'):
             navigate(app,page);assert not app.exception,page

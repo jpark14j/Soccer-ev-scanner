@@ -9,13 +9,17 @@ class Destination:
 
 
 PAGES = (
-    Destination('AI Dashboard','dashboard'),
+    Destination('Home','home'),
     Destination('Best Picks & Parlays','picks'),
+    Destination('Upcoming Games','games'),
     Destination('Performance Tracker','performance'),
-    Destination('Settings & Research Tools','tools'),
+    Destination('Settings','settings'),
 )
 TOOLS = (
-    Destination('Settings','settings'),
+    Destination('Connections & Data Settings','settings'),
+    Destination('Detailed Picks & Parlays','detailed_picks'),
+    Destination('Detailed Performance','detailed_performance'),
+    Destination('Daily Research Audit','dashboard'),
     Destination('Research Operations','operations'),
     Destination('Advanced Markets','markets'),
     Destination('NBA Analytics','sport'),

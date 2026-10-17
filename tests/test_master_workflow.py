@@ -85,6 +85,7 @@ def test_actual_app_pages_and_filters_use_saved_data_without_provider_calls(tmp_
         competitions=next(m for m in app.sidebar.multiselect if m.label=='Competitions')
         competitions.set_value(['Premier League','Bundesliga']).run()
         assert not app.exception and app.session_state['_research_snapshot']['analysis'].slate['cached_only']
+        navigate(app,'AI Dashboard')  # Preserved detailed rankings now live in Admin.
         assert any(s.value=='Best Risk-Adjusted Research Opportunity' for s in app.subheader)
         assert any(s.value=='Model Reliability' for s in app.subheader)
         for page in ('Best Picks & Parlays','Performance Tracker','Research Operations','AI Assistant','AI Dashboard'):

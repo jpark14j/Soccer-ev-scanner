@@ -306,7 +306,7 @@ def test_results_and_export_controls_preserve_four_pages_without_external_calls(
     with patch('intelligence.current_results.requests.Session.get',side_effect=AssertionError('No network')):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=30).run()
         navigate(app,'Settings')
-        assert not app.exception and len(app.sidebar.radio[0].options)==4
+        assert not app.exception and len(app.sidebar.radio[0].options)==5
         assert next(b for b in app.button if b.label=='Refresh soccer results only').disabled
         next(b for b in app.button if b.label=='Prepare paper research export').click().run()
         assert not app.exception and len(app.get('download_button'))==1

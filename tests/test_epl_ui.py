@@ -22,6 +22,7 @@ def test_preview_pages_show_calibrated_research_and_source_gap(tmp_path,monkeypa
     with patch('intelligence.pipeline.run_analysis',return_value=result):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
         assert not app.exception
+        navigate(app,'AI Dashboard')
         assert any('Model estimate' in t.value for t in app.markdown)
         assert any('epl-goal-strength-1' in t.value and 'prediction' in t.value for t in app.caption)
         assert any('No credible high-probability' in t.value for t in app.caption)
@@ -46,6 +47,7 @@ def test_source_gap_cards_explain_missing_probability(tmp_path,monkeypatch,quote
     with patch('intelligence.pipeline.run_analysis',return_value=result):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
     assert not app.exception
+    navigate(app,'AI Dashboard')
     assert any(s.value=='Data & Model Health' for s in app.subheader)
     assert any('past EPL fixtures have no source score' in t.value for t in app.markdown)
     navigate(app,'Best Picks & Parlays')

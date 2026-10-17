@@ -143,10 +143,11 @@ def test_preview_best_bet_and_offline_report_keep_four_pages_and_no_requests(tmp
     monkeypatch.setenv('PREDICTION_LEDGER_DIR',str(tmp_path/'empty-ledger'))
     with patch('intelligence.pipeline.run_analysis',return_value=Analysis()) as scan,patch('openai.OpenAI',side_effect=AssertionError('Paid disabled')):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
+        navigate(app,'AI Dashboard')
         assert any(s.value=="Today's Best-Supported Bet" for s in app.subheader)
         assert any('NO QUALIFYING BET' in i.value for i in app.info)
         navigate(app,'Best Picks & Parlays')
-        assert len(app.sidebar.radio[0].options)==4 and [t.label for t in app.tabs]==['Singles','Parlays']
+        assert len(app.sidebar.radio[0].options)==5 and [t.label for t in app.tabs]==['Singles','Parlays']
         navigate(app,'Model & Data Diagnostics')
         assert any(e.label.startswith('Quantitative model challengers') and not e.proto.expanded for e in app.expander)
         assert any('Method' in t.value.columns and 'dixon_coles' in set(t.value['Method']) for t in app.dataframe)

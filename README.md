@@ -5,7 +5,13 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
-Latest: [Phase 10 operational readiness and one-time setup](docs/PHASE10_OPERATIONS.md)
+Latest: [Everyday research screens and current readiness](docs/EVERYDAY_RESEARCH.md)
+documents the five-page interface, corrected read-only budget explanation, and
+successful hosted generation-2 storage/read checks. Live research and scheduling
+remain disabled; provider usage and permissions still require review. Earlier
+phase reports below describe their implementation-time evidence.
+
+[Phase 10 operational readiness and one-time setup](docs/PHASE10_OPERATIONS.md)
 adds the optional fenced background worker, shared budget authority, published
 research/paper ledger and prospective calibration challengers. All activation
 flags remain disabled; real hosted operation still needs configuration.
@@ -22,7 +28,7 @@ experimental top single/parlay summaries, read-only zero-odds audit and saved-pr
 session repairs. It also reports the additional beta-calibration/annual-refit and
 joint-settlement backtests. No credible independent model improvement, approved
 joint probability or executable SGP is claimed; no frozen model is replaced.
-The four pages, approval gates, paid-AI default and data budgets are preserved.
+The existing tools, approval gates, paid-AI default and data budgets are preserved. See the [everyday research guide](docs/EVERYDAY_RESEARCH.md) for the five-page navigation and current activation blockers.
 
 The [Phase 5 quantitative research guide](docs/PHASE5_QUANTITATIVE_RESEARCH.md)
 documents repaired results retention/session visibility, the new **Today's
@@ -63,10 +69,10 @@ updates and current data blockers. These are research models, not approved betti
 edges. The bundled OpenFootball scores remain stale/incomplete; no current opportunity or
 profit is invented. The [source audit](docs/PHASE2_DATA_AUDIT.md) explains selection.
 
-The [four-page workspace guide](docs/FOUR_PAGE_WORKSPACE.md) is the current navigation
-and preview guide: AI Dashboard, Best Picks & Parlays, Performance Tracker, and
-Settings & Research Tools. The advanced sport, market, operations and assistant
-modules remain accessible through Research tool. Pages/filters reuse the session
+The [everyday research guide](docs/EVERYDAY_RESEARCH.md) is the current navigation
+and preview guide: Home, Best Picks & Parlays, Upcoming Games, Performance Tracker,
+and Settings. The advanced sport, market, operations and assistant
+modules remain accessible through Settings → Admin / Developer Tools. Pages/filters reuse the session
 scan; explicit refreshes still obey the existing cache and credit cap. See the
 [free-results readiness review](docs/FREE_RESULTS_READINESS.md) for current gaps.
 

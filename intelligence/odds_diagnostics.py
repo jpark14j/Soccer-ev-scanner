@@ -55,7 +55,9 @@ def inspect_odds(analysis,store,books=None,now=None,cap=9,retrieval_cache_second
     else:
         code='no_saved_prices';message='No usable individual-price observations are saved in this store/session.'
         action='Check store identity and the last query audit. A new store, an empty provider response or an unrun scan are different causes; a healthy database alone does not establish saved odds.'
-    if quota.get('recovery_hold'):
+    if quota.get('read_only_replica'):
+        action='This dashboard is read-only; it cannot retrieve odds. Zero usable dashboard credits does not mean the local or external account budget is exhausted. Inspect the remote hold and reviewed worker setup.'
+    elif quota.get('recovery_hold'):
         action='Restored-store requests are held. Inspect records and obtain an explicit provider-usage review before refresh; a UTC reset does not release the hold.'
     elif quota['remaining']==0 and code!='current_prices_available':
         action+=' Local odds allowance exhausted; wait until '+quota['next_reset_toronto']+'. The provider account quota is separate.'

@@ -20,7 +20,14 @@ def quota_details(store,limit,now=None):
         held=blocked(db)
     used=row['used'] if row else 0
     replica=getattr(store,'read_replica',False)
-    return {'used':used,'limit':limit,'remaining':0 if held or replica else max(0,limit-used),'recovery_hold':held,
+    local_remaining=max(0,limit-used)
+    remote=getattr(store,'shared_status',{}).get('envelope',{})
+    return {'used':used,'limit':limit,'remaining':0 if held or replica else local_remaining,'recovery_hold':held,
+        'local_remaining':local_remaining,'local_exhausted':local_remaining==0,
+        'availability_reason':'read_only_replica' if replica else 'recovery_hold' if held else 'local_cap' if not local_remaining else 'locally_available',
+        'remote_provider_hold':remote.get('held'),
+        'external_account_remaining':None,
+        'scope_note':'Local reservations describe this saved store only. Production and other consumers of the same account are outside this ledger; external provider credits are unknown.',
         'read_only_replica':replica,**reset_info(now)}
 
 
