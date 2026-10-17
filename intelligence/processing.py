@@ -56,6 +56,8 @@ def record_shadow_forecasts(analysis,store,now=None):
         with store.connect() as db:
             n+=db.execute('INSERT OR IGNORE INTO shadow_forecasts VALUES(?,?,?)',
                 (identifier,now.isoformat(),json.dumps(payload,allow_nan=False))).rowcount
+    from intelligence.forward_testing import update
+    analysis.processing['forward_evaluation']=update(analysis,store,now)
     return n
 
 

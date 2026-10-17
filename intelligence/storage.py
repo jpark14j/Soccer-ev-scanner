@@ -72,6 +72,8 @@ class Store:
         day = (now or utcnow()).date().isoformat()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
+            from intelligence.request_guard import blocked
+            if blocked(db):return False
             row = db.execute('SELECT used FROM budget WHERE day=?', (day,)).fetchone()
             used = row['used'] if row else 0
             if used + cost > daily_limit:

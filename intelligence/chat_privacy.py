@@ -6,8 +6,9 @@ from intelligence.domain import utcnow, parse_time
 
 PATTERNS = (
     r'\bsk-[A-Za-z0-9_-]{8,}',
+    r'\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}',
     r'\b\d{6,}:[A-Za-z0-9_-]{15,}',
-    r'(?i)\b(?:OPENAI_API_KEY|ODDS_API_KEY|TELEGRAM_BOT_TOKEN|TELEGRAM_CHAT_ID)\s*[=:]\s*[\"\']?[^\s\"\']+',
+    r'(?i)\b(?:OPENAI_API_KEY|ODDS_API_KEY|TELEGRAM_BOT_TOKEN|TELEGRAM_CHAT_ID|RESEARCH_BACKUP_SERVICE_KEY)\s*[=:]\s*[\"\']?[^\s\"\']+',
     r'(?i)\bBearer\s+[^\s,;\"\']+',
 )
 

@@ -16,11 +16,15 @@ def quota_details(store,limit,now=None):
     now=now or utcnow()
     with store.connect() as db:
         row=db.execute('SELECT used FROM budget WHERE day=?',(now.date().isoformat(),)).fetchone()
+        from intelligence.request_guard import blocked
+        held=blocked(db)
     used=row['used'] if row else 0
-    return {'used':used,'limit':limit,'remaining':max(0,limit-used),**reset_info(now)}
+    return {'used':used,'limit':limit,'remaining':0 if held else max(0,limit-used),'recovery_hold':held,**reset_info(now)}
 
 
 def refresh_reason(*,key_configured,selection_count,cost,quota,cooldown=False):
+    if quota.get('recovery_hold'):
+        return 'Restored-store requests are held until explicit provider-usage review. A daily reset does not release this hold.'
     if not key_configured:
         return 'The existing ODDS_API_KEY is not configured.'
     if not selection_count:

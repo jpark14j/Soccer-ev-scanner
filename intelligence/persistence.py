@@ -1,5 +1,6 @@
 """Check local storage and create consistent private SQLite backups, never keys."""
 from pathlib import Path
+from contextlib import closing
 import os
 import sqlite3
 from intelligence.domain import utcnow
@@ -11,9 +12,12 @@ def storage_status(store):
         tables={r['name'] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         shadow_n=db.execute('SELECT count(*) FROM shadow_forecasts').fetchone()[0] if 'shadow_forecasts' in tables else 0
         identity=dict(db.execute('SELECT instance,created_at FROM store_identity WHERE id=1').fetchone()) if 'store_identity' in tables else None
+        from intelligence.request_guard import blocked
+        held=blocked(db)
     return {'database_healthy':healthy,'local_disk_writable':os.access(Path(store.path).parent,os.W_OK),
         'store_identity':identity,'database_file':Path(store.path).name,
         'shadow_forecasts':shadow_n,'redeployment_persistence_verified':False,
+        'provider_requests_held_for_recovery_review':held,
         'background_worker':'Disabled: requires a separate scheduler and verified durable shared storage',
         'note':'SQLite survives process restarts on the same disk. Community Cloud redeploy/reboot persistence is not established. A backup on that same disk is not off-host protection.'}
 
@@ -28,8 +32,9 @@ def backup_store(store,target):
         os.close(descriptor)
     except FileExistsError:
         raise ValueError('Choose a new backup path; existing backups are never overwritten') from None
-    with store.connect() as source,sqlite3.connect(target) as destination:
+    with closing(store.connect()) as source,closing(sqlite3.connect(target)) as destination:
         source.backup(destination)
+        destination.commit()
         if destination.execute('PRAGMA quick_check').fetchone()[0]!='ok':
             raise ValueError('Backup consistency check failed')
     target.chmod(0o600)

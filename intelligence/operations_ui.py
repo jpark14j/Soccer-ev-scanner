@@ -3,7 +3,7 @@ from intelligence.persistence import storage_status
 from intelligence.lifecycle import registry_status
 
 
-def render_operations(analysis,store):
+def render_operations(analysis,store,secret=None):
     st.subheader('Research Operations')
     storage=storage_status(store);registry=registry_status(store)
     a,b,c=st.columns(3)
@@ -17,3 +17,13 @@ def render_operations(analysis,store):
     with st.expander('Processing, durability and model audit'):
         st.json({'storage':storage,'model_lifecycle':registry,'latest_processing':analysis.processing})
     st.caption('Manual offline worker checks and private SQLite backups are available through the documented CLI. Retraining creates candidates only; activation/rollback requires reviewed fresh evidence. No chat action can train, promote, purchase or place a wager.')
+    with st.expander('Optional private off-host backup · disabled until configured'):
+        from intelligence.remote_backup import configuration,status,upload,BackupError
+        from intelligence.analyst_config import load_config
+        from intelligence.chat_privacy import redact_data
+        config=configuration(secret);remote=status(store,config)
+        st.json(redact_data(remote,load_config(secret).sensitive_values))
+        st.caption('Manual snapshot only: at most one attempt per UTC day, 20 MiB, three requests for private-bucket check/upload/readback. No continuous persistence or shared-budget scheduler is enabled. Restore uses a new file with a provider-request hold.')
+        if st.button('Create private off-host snapshot · explicit upload',disabled=not remote['configured'],key='explicit_remote_backup'):
+            try:st.json(upload(store,config))
+            except BackupError as error:st.info(str(error))

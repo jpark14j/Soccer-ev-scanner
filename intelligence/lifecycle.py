@@ -90,7 +90,7 @@ def promotion_blockers(report,evidence,now=None):
 
 def change_champion(store,artifact_id,evidence,review_reference,action='promote',now=None):
     ensure_registry(store);now=now or utcnow()
-    if action not in ('promote','rollback') or not review_reference.startswith('https://'):
+    if action not in ('promote','rollback','suspend') or not review_reference.startswith('https://'):
         raise ValueError('Explicit reviewed promotion/rollback reference required')
     with store.connect() as db:
         row=db.execute('SELECT payload FROM model_artifacts WHERE id=?',(artifact_id,)).fetchone()
@@ -99,22 +99,53 @@ def change_champion(store,artifact_id,evidence,review_reference,action='promote'
         report=json.loads(row['payload'])['report']
         if action=='rollback' and not db.execute("SELECT 1 FROM model_actions WHERE artifact_id=? AND action='promote'",(artifact_id,)).fetchone():
             raise ValueError('Rollback requires a previously approved artifact')
-        blockers=promotion_blockers(report,evidence,now)
+        blockers=promotion_blockers(report,evidence,now) if action!='suspend' else []
         if blockers:
             raise ValueError('Model activation blocked: '+'; '.join(blockers))
         db.execute('INSERT INTO model_actions(at,artifact_id,action,review_reference,evidence) VALUES(?,?,?,?,?)',
             (now.isoformat(),artifact_id,action,review_reference,json.dumps(evidence,allow_nan=False)))
 
 
-def active_champion(store,sport,market):
+def active_champion(store,sport,market,league=None):
     ensure_registry(store)
     with store.connect() as db:
-        rows=db.execute('SELECT a.payload FROM model_actions m JOIN model_artifacts a ON a.id=m.artifact_id ORDER BY m.id DESC').fetchall()
+        rows=db.execute('SELECT a.payload,m.action FROM model_actions m JOIN model_artifacts a ON a.id=m.artifact_id ORDER BY m.id DESC').fetchall()
+    matches={}
     for row in rows:
         report=json.loads(row['payload'])['report']
-        if (report.get('sport'),report.get('market'))==(sport,market):
-            return report
+        if (report.get('sport'),report.get('market'))==(sport,market) and (league is None or report.get('league')==league):
+            matches.setdefault(report.get('league'),None if row['action']=='suspend' else report)
+    return next(iter(matches.values())) if len(matches)==1 else None
+
+
+def suspension_reason(store,sport,league,market,version):
+    with store.connect() as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='model_actions'").fetchone():return None
+        rows=db.execute('SELECT a.payload,m.action FROM model_actions m JOIN model_artifacts a ON a.id=m.artifact_id ORDER BY m.id DESC').fetchall()
+    for row in rows:
+        r=json.loads(row['payload'])['report']
+        if (r.get('sport'),r.get('league'),r.get('market'),r.get('model_version'))==(sport,league,market,version):
+            return 'Model has a reviewed suspension; no active forecast approval' if row['action']=='suspend' else None
     return None
+
+
+def research_hold(store,quote,estimate):
+    reason=suspension_reason(store,quote.sport,quote.league,quote.market,estimate.model_version)
+    if reason:return reason
+    with store.connect() as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE name='forward_issues'").fetchone():return None
+        rows=db.execute('SELECT f.payload FROM forward_forecasts f WHERE EXISTS(SELECT 1 FROM forward_issues i WHERE i.forecast_id=f.id)').fetchall()
+    for row in rows:
+        s=json.loads(row['payload'])['scope']
+        if (s['sport'],s['league'],s['market'],s['point'],s['model_version'],s['evidence_id'])==(quote.sport,quote.league,quote.market,quote.point,estimate.model_version,estimate.evidence_id):
+            return 'Forward result-proof conflict requires review; this contract/model is on a research hold'
+    return None
+
+
+def apply_hold(store,quote,estimate,detail):
+    reason=research_hold(store,quote,estimate) if estimate else None
+    if reason:return None,detail|{'suspended':True,'blockers':list(detail.get('blockers',[]))+[reason]}
+    return estimate,detail
 
 
 def drift_report(records):

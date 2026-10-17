@@ -70,7 +70,7 @@ def render_tools(w):
     st.caption('Tools share the current scan. Switching tools does not retrieve prices; request buttons remain explicit and quota-limited.')
     if tool=='operations':
         from intelligence.operations_ui import render_operations
-        render_operations(w.analysis,w.store)
+        render_operations(w.analysis,w.store,w.secret)
     elif tool=='markets':
         from intelligence.market_ui import render_markets
         render_markets(w.analysis,w.store,w.leagues,w.book_keys,w.key,w.settings,w.refresh,w.secret)

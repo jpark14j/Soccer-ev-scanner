@@ -14,7 +14,7 @@ from intelligence.parlay_research import ResearchLeg,quote_problem
 
 
 class SourceChecks:
-    def __init__(self,store,now):self.store,self.now,self.cache=store,now,{}
+    def __init__(self,store,now):self.store,self.now,self.cache,self.holds=store,now,{},{}
 
     def check(self,leg,model_only=False):
         try:return self._check(leg,model_only)
@@ -23,6 +23,11 @@ class SourceChecks:
 
     def _check(self,leg,model_only=False):
         d=leg.model_details;e=leg.estimate;q=leg.quote
+        if self.store:
+            from intelligence.lifecycle import research_hold
+            key=(q.sport,q.league,q.market,q.point,e.model_version,e.evidence_id)
+            if key not in self.holds:self.holds[key]=research_hold(self.store,q,e)
+            if self.holds[key]:return self.holds[key]
         if d.get('inputs_complete') is False or d.get('input_gates_passed') is False:
             return 'Required current model inputs are incomplete'
         if d.get('results_provider')!='football-data.org':

@@ -46,6 +46,14 @@ def main():
     cycle.add_argument('--leagues',default='NBA,Premier League,MLB')
     backup=sub.add_parser('backup')
     backup.add_argument('--output',required=True,help='New private SQLite destination, never Git')
+    sub.add_parser('backup-remote',help='Explicit optional private off-host snapshot and readback; disabled until configured')
+    recover=sub.add_parser('restore-remote',help='Restore to a NEW private file with all provider requests held')
+    recover.add_argument('--object',required=True)
+    recover.add_argument('--output',required=True)
+    recovery_review=sub.add_parser('review-recovery-budget',help='Operator-only usage review; never a chat action')
+    recovery_review.add_argument('--odds-used',required=True,type=int)
+    recovery_review.add_argument('--results-used',required=True,type=int)
+    recovery_review.add_argument('--reference',required=True)
     challenger=sub.add_parser('train-challenger')
     challenger.add_argument('--league',choices=list(LEAGUES),required=True)
     challenger.add_argument('--history-directory',default='data/research/history')
@@ -53,7 +61,7 @@ def main():
     review.add_argument('--artifact-id',required=True)
     review.add_argument('--evidence-file',required=True)
     review.add_argument('--review-reference',required=True)
-    review.add_argument('--action',choices=['promote','rollback'],required=True)
+    review.add_argument('--action',choices=['promote','rollback','suspend'],required=True)
     args = parser.parse_args()
     store = configured_store()
     if args.command=='import-multi-history':
@@ -93,6 +101,16 @@ def main():
     elif args.command=='backup':
         from intelligence.persistence import backup_store
         print(json.dumps(backup_store(store,args.output),indent=2))
+    elif args.command=='backup-remote':
+        from intelligence.remote_backup import upload
+        print(json.dumps(upload(store),indent=2))
+    elif args.command=='restore-remote':
+        from intelligence.remote_backup import restore
+        print(json.dumps(restore(args.object,args.output),indent=2))
+    elif args.command=='review-recovery-budget':
+        from intelligence.request_guard import reviewed_release
+        reviewed_release(store,args.odds_used,args.results_used,args.reference)
+        print('Recovery usage review recorded; provider account and shared-budget limitations still apply')
     elif args.command=='train-challenger':
         from intelligence.history import load_licensed
         from intelligence.lifecycle import train_challenger

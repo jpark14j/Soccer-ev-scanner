@@ -157,6 +157,8 @@ def _reserve(store, now):
     with store.connect() as db:
         db.execute('CREATE TABLE IF NOT EXISTS football_data_requests(at TEXT NOT NULL)')
         db.execute('BEGIN IMMEDIATE')
+        from intelligence.request_guard import blocked
+        if blocked(db):return False
         rows = db.execute('SELECT at FROM football_data_requests WHERE at>=?',
                           ((now-timedelta(days=1)).isoformat(),)).fetchall()
         times = [parse_time(r['at']) for r in rows]

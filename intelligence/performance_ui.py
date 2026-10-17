@@ -82,6 +82,8 @@ def render_evaluations(store):
 def render_performance(store):
     paper,published,evaluations=st.tabs(['Prospective paper research','Published hypothetical records','Held-out model evaluations'])
     with paper:
+        from intelligence.forward_ui import render_forward
+        render_forward(store)
         from intelligence.processing import shadow_statistics
         summary=shadow_statistics(store)
         a,b=st.columns(2);c,d=st.columns(2)

@@ -16,6 +16,8 @@ def run_cycle(store,leagues,*,offline=True):
     if not offline and not all(os.getenv(name)=='1' for name in
             ('RESEARCH_WORKER_ENABLED','RESEARCH_DURABLE_STORAGE_VERIFIED','RESEARCH_DATA_RIGHTS_VERIFIED')):
         raise ValueError('Online worker disabled: explicit worker, durable-storage and permitted-data configuration are required')
+    if not offline:
+        raise ValueError('Online worker disabled: a shared transactional budget store and verified scheduler are not implemented; remote snapshot configuration is insufficient')
     # These attestations are deployment requirements, not proof obtained by code.
     owner=uuid.uuid4().hex
     if not store.claim_fetch('autonomous-worker-cycle',owner,now):

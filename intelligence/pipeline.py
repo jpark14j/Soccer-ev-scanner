@@ -108,6 +108,10 @@ def evaluate_quotes(result,store,*,allow_results_fetch=True):
     excluded=Counter(result.exclusions)
     now = utcnow()
     result.evaluated_at=now.isoformat()
+    from intelligence.forward_testing import lock_protocol
+    import sqlite3
+    try:lock_protocol(store,now)
+    except (sqlite3.Error,OSError,ValueError):result.warnings.append('Forward evaluation protocol unavailable; research is not independent forward evidence')
     from intelligence.epl_forecasts import supported
     from intelligence.current_soccer import prepare_epl as prepare,forecast
     focused=None
@@ -125,6 +129,8 @@ def evaluate_quotes(result,store,*,allow_results_fetch=True):
                 focused=prepare(store,now) if allow_results_fetch else prepare(store,now,allow_fetch=False)
                 result.focused_model=focused
             estimate,detail=forecast(q,focused,now)
+            from intelligence.lifecycle import apply_hold
+            estimate,detail=apply_hold(store,q,estimate,detail)
             result.research.append(detail)
             result.advanced_details[q.id]=detail
             if estimate:
@@ -139,6 +145,8 @@ def evaluate_quotes(result,store,*,allow_results_fetch=True):
                 result.expanded_models[q.league]=(expanded_prepare(q.league,store,now) if allow_results_fetch else
                     expanded_prepare(q.league,store,now,allow_fetch=False))
             estimate,detail=expanded_forecast(q,result.expanded_models[q.league],now)
+            from intelligence.lifecycle import apply_hold
+            estimate,detail=apply_hold(store,q,estimate,detail)
             result.research.append(detail);result.advanced_details[q.id]=detail
             if estimate:
                 result.estimates[q.id]=estimate;result.advanced_estimates[q.id]=estimate
@@ -161,7 +169,7 @@ def evaluate_quotes(result,store,*,allow_results_fetch=True):
                         report_directory=os.getenv('RESEARCH_MODEL_DIR','data/research/models')
                 reports[league] = load_report(league,report_directory)
                 from intelligence.lifecycle import active_champion
-                champions[league]=active_champion(store,q.sport,'h2h')
+                champions[league]=active_champion(store,q.sport,'h2h',league=league)
                 if reports[league] and reports[league].get('data_sha256') != digest(histories[league].to_json(orient='records',date_format='iso')):
                     reports[league] = None
                     result.warnings.append(f'{league}: evaluation dataset differs from loaded history; calibration and validation are disabled')

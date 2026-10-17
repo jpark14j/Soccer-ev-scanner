@@ -62,7 +62,15 @@ def synchronize(snapshot, store):
         if restored_changed:snapshot['analysis']=restored
     revision = results_revision(store)
     old = snapshot.get('results_revision')
-    changed = restored_changed or old is not None and old != revision
+    with store.connect() as db:
+        reviews=[]
+        for name in ('model_actions','forward_issues'):
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name=?",(name,)).fetchone():
+                reviews.append((name,db.execute('SELECT count(*) FROM '+name).fetchone()[0]))
+    from intelligence.domain import digest
+    review_revision=digest(reviews)
+    review_changed=snapshot.get('review_revision')!=review_revision and any(n for _,n in reviews)
+    changed = restored_changed or review_changed or old is not None and old != revision
     if old is None:
         from intelligence.diagnostics import competition_diagnostics
         changed = changed or any(r['cached_snapshot_differs_from_used'] or
@@ -72,4 +80,5 @@ def synchronize(snapshot, store):
         snapshot['analysis'] = recheck(snapshot['analysis'],store)
     snapshot['results_revision'] = results_revision(store)
     snapshot['market_revision'] = market_revision
+    snapshot['review_revision'] = review_revision
     return snapshot['analysis']
