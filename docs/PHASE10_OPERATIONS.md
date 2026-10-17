@@ -233,6 +233,7 @@ data/protocol. No real learning improvement has yet been established.
    preview. A real pregame forecast/publication and later exact result are needed
    to verify the full live cycle. Re-run the same hourly slot to confirm no
    duplicate work. No automatic recurring schedule is inferred from this run.
+   GitHub documents [manual dispatch and selecting a non-default ref](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 8. **Schedule only after that verification**. GitHub cron uses the default
    branch; changing main is not authorized. The included
    `deploy/research.crontab.example` instead dispatches the development ref from
@@ -262,7 +263,7 @@ independent-process SQLite readback, provider/HTTP mocks, synthetic publication
 losses and prospective challenger data. These are software integration tests,
 not proof of hosted Supabase, a recurring schedule, real new forward results or
 profitable models. Exact final local/CI counts are recorded after verification in
-the PR/checkpoint. The final local run passed **557 tests**, including **23 new
+the PR/checkpoint. The final local run passed **559 tests**, including **25 new
 tests**. The 38 pre-existing test files and seven frozen research asset files
 are byte-for-byte unchanged. Compilation, dependency consistency, whitespace
 and configured-secret scans pass. Isolated Streamlit startup returned HTTP 200

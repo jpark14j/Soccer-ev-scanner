@@ -30,6 +30,9 @@ def ensure(store):
 
 def overall(top):
     single=top.get('recommended') or top.get('pick');parlay=top.get('parlay')
+    if parlay is None:
+        linked=[p for values in top.get('format_candidates',{}).values() for p in values]
+        if linked:parlay=min(linked,key=lambda p:p.evidence_rank)
     if single and parlay:return {'winner':None,'single':single,'parlay':parlay,
         'reason':'A single has a supported marginal estimate. The parlay lacks a validated joint estimate and an observed combined ticket price, so an overall probability/value comparison is not defensible.'}
     if single:return {'winner':'single','single':single,'parlay':None,

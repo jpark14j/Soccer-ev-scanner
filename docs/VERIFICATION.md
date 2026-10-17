@@ -2,7 +2,7 @@
 
 ## Phase 10 — October 17, 2026
 
-**557 local tests pass** (23 new). Real local Postgres executes the shipping
+**559 local tests pass** (25 new). Real local Postgres executes the shipping
 migration for fencing, concurrent reservations, immutable head/readback and
 crash behavior. Deterministic clock tests cover UTC rollover/expiry. The actual
 worker/model/publication/read-replica dashboard path is replayed with synthetic

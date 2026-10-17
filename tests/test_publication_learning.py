@@ -151,3 +151,25 @@ def test_local_assistant_reads_saved_learning_without_training_or_paid_requests(
     response=PaidAnalyst(store,AnalystConfig()).respond('What is the AI learning status?',Analysis())
     assert '0 calibration challengers' in response.content and 'Independent improvement is not established' in response.content
     assert response.mode=='Local · rule-based' and not response.paid_attempted
+
+
+def test_worker_cli_unknown_failure_exits_nonzero_without_secret_traceback(monkeypatch,capsys):
+    from intelligence import background
+    import sys
+    secret='synthetic_transport_secret_never_logged'
+    monkeypatch.setattr(sys,'argv',['background','--run'])
+    def fail():raise RuntimeError(secret)
+    monkeypatch.setattr(background,'run_background',fail)
+    with pytest.raises(SystemExit) as e:background.main()
+    output=capsys.readouterr();assert e.value.code==1
+    assert secret not in output.out+output.err and 'Traceback' not in output.out+output.err
+    assert json.loads(output.out)['status']=='blocked or failed'
+
+
+def test_linked_only_parlay_still_prevents_unsupported_overall_winner(store,quote,monkeypatch):
+    a=research_slate(store,quote,monkeypatch)
+    a.quotes=[q for q in a.quotes if q.league=='Premier League']
+    top=select_top(a,store)
+    assert top['recommended'] and top['parlay'] is None and top['format_candidates']['Same-game parlay']
+    result=overall(top)
+    assert result['winner'] is None and result['parlay'] and 'not defensible' in result['reason']

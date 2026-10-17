@@ -2,9 +2,9 @@
   "baseline_commit": "f3b69232e85e26b08f141ce2cf6a5a3682a0d200",
   "branch": "development/verified-sports-intelligence",
   "local_tests": {
-    "passed": 557,
-    "new": 23,
-    "duration_seconds": 28.43,
+    "passed": 559,
+    "new": 25,
+    "duration_seconds": 28.07,
     "old_test_files_unchanged": 38
   },
   "local_postgres": {
@@ -36,5 +36,13 @@
   "actual_sports_or_remote_service_requests": 0,
   "recurring_scheduler_configured": false,
   "main_or_production_modified": false,
-  "github_CI": "Check Draft PR #1 after publication; not known at evidence-file creation"
+  "github_CI": {
+    "implementation_commit": "1367f4fdb5590cc6aa6ed60f3f2ba8bb0d152e1b",
+    "run_id": 39047130791,
+    "conclusion": "success",
+    "passed": 556,
+    "skipped": 1,
+    "skip_reason": "Pinned raw archive is local/private, not bundled with CI; its reproduction test passes locally",
+    "final_delivery_commit": "CI checked after publication in Draft PR #1"
+  }
 }

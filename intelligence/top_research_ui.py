@@ -71,11 +71,13 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
 
     st.subheader("AI's Top Research Parlay")
     st.caption('TOP AI PARLAY · supported marginal evidence; joint success remains unvalidated')
-    item=result['parlay']
+    item=result['parlay'] or overall_pick['parlay']
     if item:
         c=item.research
         with st.container(border=True):
-            st.write(f'**{len(c.legs)}-leg multi-game research · experimental / unapproved**')
+            from intelligence.quant_decision import selection_format
+            kind=selection_format([l.quote for l in c.legs])
+            st.write(f'**{len(c.legs)}-leg {kind.lower()} research · experimental / unapproved**')
             for l in c.legs:
                 q,e=l.quote,l.estimate
                 st.text(safe(f'{q.sport} · {q.league} · {q.event} · {selection_label(q)}'))
@@ -85,7 +87,7 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
             with st.expander('Why this parlay? Dependencies and missing evidence'):
                 st.write(result['parlay_method'])
                 for line in (*item.dependence['known_links'],*c.blockers):st.text(safe(line))
-                st.caption('Same-game and mixed formats require independently tested joint evidence; they are excluded from this default summary.')
+                st.caption('Same-game and mixed formats remain unpriced joint research. Supported marginal estimates and score scenarios do not establish an independently calibrated joint probability or an executable ticket.')
     else:
         st.info('No supported top research parlay: at least two compatible, current model-backed favored selections at one sportsbook are required. Known shared-game/team/player links stay outside this summary.')
 

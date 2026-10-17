@@ -13,13 +13,19 @@ Baseline: 534 tests passed. Initial recovery: 92 relevant old tests passed.
 New integration: real local Postgres migration/concurrency/readback, deterministic
 UTC rollover/lease tests, worker→publication→read-replica UI, and prospective
 challenger tests pass. A full run found three compatibility/UI-label regressions;
-fixed implementation without changing old tests. Final local result: **557 passed**
-(23 new), 28.43 seconds, one benign local pgserver runtime-directory warning.
+fixed implementation without changing old tests. Final local result: **559 passed**
+(25 new), 28.07 seconds, one benign local pgserver runtime-directory warning.
 Compilation, dependency consistency, whitespace, configured-secret scan and an
 isolated credential-free Streamlit health check (HTTP 200, port 8516) pass.
 38 old test files and seven frozen research asset files are unchanged.
-GitHub publication and CI are checked after committing; inspect the PR/current
-Git history for the resulting commit and remote checks.
+Implementation commit: `1367f4fdb5590cc6aa6ed60f3f2ba8bb0d152e1b`.
+Its CI run `39047130791` succeeded: 556 passed, one existing private-archive skip.
+Final hardening sanitizes unexpected CLI failures and includes linked-only
+parlay research in the overall-comparison guard, avoiding an unsupported single
+winner. Its additional regressions pass in the 559-test suite. The follow-up
+delivery commit/CI is checked after publication; inspect current Git history and
+Draft PR #1. Hosted preview access was attempted but unavailable to the web
+reader; this is not evidence the preview is down.
 
 Next instruction if interrupted: **Continue Phase 10 delivery from the current
 working tree/HEAD. Read docs/PHASE10_OPERATIONS.md and this checkpoint, preserve
