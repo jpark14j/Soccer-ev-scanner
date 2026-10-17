@@ -8,6 +8,7 @@ def render(w):
     st.subheader('Current soccer results')
     st.caption('Optional football-data.org delayed results. A configured account is not proof of current coverage. No live in-game forecasts are enabled here.')
     st.json(status(w.store, config))
+    st.caption('Last attempt and last accepted success are separate. Failed refreshes retain accepted results for inspection; expired verification never activates forecasts. A missing snapshot can also mean a new local store. Compare store identity below after a restart; same-disk history is not off-host persistence.')
     st.caption('Existing OpenFootball data remains the default. Set FOOTBALL_DATA_ENABLED and FOOTBALL_DATA_USE_REVIEWED only after reviewing the account terms; store FOOTBALL_DATA_TOKEN in preview Secrets. Never paste tokens into chat.')
     leagues = st.multiselect('Results competitions', list(CODES), default=list(CODES)[:3], key='current_results_leagues')
     if st.button('Refresh soccer results only', disabled=bool(config.problem), help='At most one cached results request per selected league; six/day/store. Does not fetch odds.'):
@@ -15,7 +16,7 @@ def render(w):
             for league in leagues:
                 _, meta = current(w.store, league, config=config)
                 st.write(league)
-                st.json({k: v for k, v in meta.items() if k in ('ok', 'problem', 'checked_at', 'coverage', 'sha256', 'source_url')})
+                st.json({k: v for k, v in meta.items() if k in ('ok', 'problem', 'failure_code','checked_at', 'coverage', 'sha256', 'source_url')})
         from intelligence.cached_research import recheck
         from intelligence.diagnostics import results_revision
         fresh=recheck(w.analysis,w.store)

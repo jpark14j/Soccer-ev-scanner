@@ -35,10 +35,12 @@ class Analysis:
     evaluated_at: str = ''
 
 
-def configured_store():
+def configured_store(secret_getter=None):
     from intelligence.ledger import restore
-    store = Store(os.getenv('INTELLIGENCE_DB', 'data/intelligence.sqlite3'))
-    restore(store,os.getenv('PREDICTION_LEDGER_DIR','ledger'))
+    def setting(name,default):
+        return os.getenv(name) or (secret_getter(name) if secret_getter else '') or default
+    store = Store(setting('INTELLIGENCE_DB','data/intelligence.sqlite3'))
+    restore(store,setting('PREDICTION_LEDGER_DIR','ledger'))
     return store
 
 

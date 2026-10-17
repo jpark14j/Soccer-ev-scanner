@@ -6,6 +6,7 @@ not a permanent ledger. An external SQLite backup or database is a rollout gate.
 import json
 from pathlib import Path
 import sqlite3
+from uuid import uuid4
 from datetime import timedelta
 from intelligence.domain import digest, parse_time, utcnow
 
@@ -43,6 +44,8 @@ class Store:
             for column in ('closing_source','closing_observed_at'):
                 if column not in columns:
                     db.execute('ALTER TABLE settlements ADD COLUMN ' + column + ' TEXT')
+            db.execute('CREATE TABLE IF NOT EXISTS store_identity(id INTEGER PRIMARY KEY CHECK(id=1),instance TEXT NOT NULL,created_at TEXT NOT NULL)')
+            db.execute('INSERT OR IGNORE INTO store_identity VALUES(1,?,?)',(uuid4().hex,utcnow().isoformat()))
 
     def connect(self):
         db = sqlite3.connect(self.path, timeout=20)

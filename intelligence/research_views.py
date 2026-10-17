@@ -94,6 +94,8 @@ def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
     d.metric('Qualified singles',sum(state==APPROVED for state,_ in rows))
     st.caption(f'{len(current)} current Ontario individual-price observations across {len({q.bookmaker for q in current})} books and {len({(q.event_id,q.market) for q in current})} event/market groups. Coverage is partial, not the full sports calendar.')
     st.subheader("Today's Research")
+    from intelligence.quant_ui import render_best
+    render_best(analysis,books,secret_getter)
     st.caption('Approved = publication gates pass; experimental = an unapproved model estimate; price-only = observed selection with no supported forecast; blocked = missing or invalid inputs. Break-even percentages are not predicted win probabilities.')
     st.write('**Singles**')
     render_rankings(analysis,books,secret_getter)

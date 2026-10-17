@@ -84,7 +84,7 @@ def competition_diagnostics(analysis=None, store=None, now=None):
             provider = 'football-data.org'
             health = available.get('coverage',{})
             latest = health.get('latest_completed')
-            checked = available.get('checked_at')
+            checked = (available.get('last_success') or {}).get('checked_at') or available.get('checked_at')
             source_problem = config.problem or available.get('problem')
             if not available.get('ok') or not available.get('fresh'):
                 source_problem = source_problem or 'No fresh verified results snapshot is available'
@@ -147,7 +147,12 @@ def competition_diagnostics(analysis=None, store=None, now=None):
             'historical_training_cutoff':bundle.get('policy',{}).get('train_end') if bundle else None,
             'current_source':provider,'latest_result':latest,'past_unresolved':missing,
             'current_completed':health.get('completed'),'source_check':checked,
+            'current_completed_basis':'Fresh accepted snapshot' if source_fresh else 'Last accepted/bundled coverage for inspection; not new verification',
             'current_source_verification_fresh':source_fresh,'source_problem':source_problem,
+            'source_failure_code':available.get('failure_code'),
+            'last_source_attempt':available.get('last_attempt'),
+            'last_successful_source_snapshot':available.get('last_success'),
+            'retained_normalized_source_observations':available.get('retained_normalized'),
             'available_current_snapshot_sha256':available.get('sha256'),
             'prepared_current_snapshot':used,'used_current_snapshot':used if details or estimated else None,
             'cached_snapshot_differs_from_used':switched,

@@ -10,7 +10,9 @@ def storage_status(store):
         healthy=db.execute('PRAGMA quick_check').fetchone()[0]=='ok'
         tables={r['name'] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         shadow_n=db.execute('SELECT count(*) FROM shadow_forecasts').fetchone()[0] if 'shadow_forecasts' in tables else 0
+        identity=dict(db.execute('SELECT instance,created_at FROM store_identity WHERE id=1').fetchone()) if 'store_identity' in tables else None
     return {'database_healthy':healthy,'local_disk_writable':os.access(Path(store.path).parent,os.W_OK),
+        'store_identity':identity,'database_file':Path(store.path).name,
         'shadow_forecasts':shadow_n,'redeployment_persistence_verified':False,
         'background_worker':'Disabled: requires a separate scheduler and verified durable shared storage',
         'note':'SQLite survives process restarts on the same disk. Community Cloud redeploy/reboot persistence is not established. A backup on that same disk is not off-host protection.'}

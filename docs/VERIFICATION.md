@@ -1,5 +1,45 @@
 # Verification matrix
 
+## Phase 5 results recovery and quantitative research — October 16, 2026 (Toronto)
+
+**456 local offline tests pass** (39 added). All existing tests are retained.
+Coverage adds accepted-success retention after failed transport/HTTP/schema/
+credential reflection, legacy cache migration, append-only history, same-disk
+reopen/consistent backup and cache loss, original receipt expiry, newly past-due
+fixtures, storage/private-error distinctions, Secrets/path ordering, new-session
+cache-only inference, coherent score mass/tail/dependence, quarter/integer/half
+settlement states, training leakage, actual report integrity/reproducibility,
+format-neutral qualification/value and four-page Streamlit rendering without
+paid requests. The archive reproduction test runs locally; it explicitly skips
+in CI when pinned raw archives are absent. Numerical/provider fixtures are not
+genuine current forecasts or evidence of accuracy.
+
+Three challenger methods were fitted/evaluated separately in three competitions with
+strict training/calibration/test chronology and matched frozen/baseline comparisons.
+Common 2024–25 test n: EPL 342, Bundesliga 210, Ligue 1 272. Every challenger-versus-
+frozen binary Brier interval includes zero; no replacement or approval follows.
+The test period was inspected earlier in this project, so independent confirmation
+remains absent. The full coherent score model and two same-game event definitions
+have retrospective diagnostics only, without validated joint probabilities, real
+ticket prices, operator settlement or parlay EV. La Liga/Serie A modeling stops at
+incomplete seasons; new current NBA/MLB/prop predictions remain unavailable.
+
+Compilation, dependency consistency, whitespace, configured-secret and protected
+model/policy/hash checks pass. Isolated Streamlit health returns HTTP 200 `ok` on
+port 8513, credentials removed, cap zero and refresh/paid AI disabled. Existing
+navigation, workflows, dependencies and all model approval/calibration gates are
+unchanged. Three public archive/license GETs confirm that the La Liga/Serie A
+gaps remain; no result was invented. Added odds/authenticated results/paid AI
+requests: zero. The actual local October 16 odds ledger remains 9/9, with no new
+genuine current paper forecasts or outcome labels.
+
+Same-disk journal recovery/backup is tested, while hosted token/store/rebuild and
+off-host persistence remain unverified. See [root causes, all model scores,
+limitations and preview steps](PHASE5_QUANTITATIVE_RESEARCH.md) and
+[evidence](evidence/phase5-verification.json). The actual existing Python 3.11 CI
+result is linked on Draft PR #1 after the development commit. No main, production,
+paid-service activation or merge is included.
+
 ## Phase 4 model-first parlay intelligence — 2026-10-16
 
 **417 offline tests pass** (34 new), including model-favored binary grouping,

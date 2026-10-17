@@ -9,6 +9,7 @@ from hashlib import sha256
 from uuid import uuid4
 import json
 import os
+import sqlite3
 import requests
 from intelligence.domain import utcnow, parse_time, digest
 from intelligence.competitions import COMPETITIONS, expected_games
@@ -28,7 +29,7 @@ STATUSES = {'SCHEDULED', 'TIMED', 'IN_PLAY', 'PAUSED', 'FINISHED',
 
 def secret(name):
     value = os.getenv(name)
-    if value is not None:
+    if value:
         return value
     try:
         import streamlit as st
@@ -166,6 +167,17 @@ def _reserve(store, now):
 
 
 def current(store, league, now=None, config=None, session=None, allow_fetch=True):
+    now=now or utcnow()
+    try:return _current(store,league,now,config,session,allow_fetch)
+    except (sqlite3.Error,OSError):
+        return [],{'ok':False,'provider':'football-data.org','failure_code':'storage',
+            'problem':'Results storage unavailable; check database path, permissions and disk. No readiness inferred.'}
+    except ValueError:
+        return [],{'ok':False,'provider':'football-data.org','failure_code':'storage_integrity',
+            'problem':'Saved results integrity failed; inspection/reconciliation required'}
+
+
+def _current(store, league, now=None, config=None, session=None, allow_fetch=True):
     """One bounded GET/cache miss; six requests/day/store, six-hour failure cache.
 
     A 429 blocks this adapter for 24 hours; no redirects, automatic retries or
@@ -173,9 +185,10 @@ def current(store, league, now=None, config=None, session=None, allow_fetch=True
     """
     now = now or utcnow()
     config = config or configuration()
-    failure = lambda reason: ([], {'ok': False, 'problem': reason, 'provider': 'football-data.org'})
+    failure = lambda reason,code='unavailable': ([], {'ok': False, 'problem': reason, 'provider': 'football-data.org','failure_code':code})
     if config.problem:
-        return failure(config.problem)
+        code='disabled' if not config.enabled else 'missing_credential' if not config.token else 'use_not_reviewed' if not config.use_reviewed else 'invalid_credential'
+        return failure(config.problem,code)
     if league not in CODES:
         return failure('Competition not in reviewed provider allowlist')
     season = season_at(now)
@@ -183,19 +196,31 @@ def current(store, league, now=None, config=None, session=None, allow_fetch=True
     cached = store.cached(key, TTL, now)
     if cached is not None:
         return _restore(cached, store, league, now)
+    from intelligence.results_journal import latest
+    accepted=latest(store,league,season)
+    # Migrate a successful pre-journal cache before a failed attempt can replace
+    # it. Restoration validates bindings/conflicts; no receipt time is reset.
+    with store.connect() as db:
+        old=db.execute('SELECT payload FROM cache WHERE key=?',(key,)).fetchone()
+    previous=json.loads(old['payload']) if old else None
+    if not accepted and previous and previous.get('ok'):
+        _restore(previous,store,league,now)
+        accepted=latest(store,league,season)
+    if accepted and 0 <= (now-parse_time(accepted['checked_at'])).total_seconds()<TTL:
+        return _restore(accepted,store,league,now)
     if not allow_fetch:
-        return failure('No fresh cached results; use Refresh soccer results only to verify the source')
+        return failure('No fresh cached results; use Refresh soccer results only to verify the source','missing_fresh_snapshot')
     if store.cached('football-data-cooldown', 86400, now):
-        return failure('Provider rate limit: results refresh paused for 24 hours')
+        return failure('Provider rate limit: results refresh paused for 24 hours','provider_rate_limit')
     owner = uuid4().hex
     if not store.claim_fetch(key, owner, now):
-        return failure('Results refresh already in progress')
+        return failure('Results refresh already in progress','refresh_in_progress')
     owned = session is None
     result = {'ok': False, 'problem': 'Results connection unavailable; no new current coverage verified',
-              'provider': 'football-data.org', 'checked_at': now.isoformat()}
+              'provider': 'football-data.org', 'checked_at': now.isoformat(),'failure_code':'transport_connection'}
     try:
         if not _reserve(store, now):
-            return failure('Results request limit reached; no HTTP request made')
+            return failure('Results request limit reached; no HTTP request made','quota')
         # Crash-safe failure entry before I/O. Never persist authentication data.
         store.cache(key, result, now)
         session = session or requests.Session()
@@ -203,6 +228,7 @@ def current(store, league, now=None, config=None, session=None, allow_fetch=True
             headers={'X-Auth-Token': config.token}, timeout=(5, 10), allow_redirects=False, stream=True)
         try:
             if response.status_code != 200:
+                result['failure_code']='http_'+str(response.status_code)
                 result['problem'] = {401: 'Provider authentication failed; check preview Secrets',
                     403: 'Provider account does not permit this competition/season',
                     429: 'Provider rate limit: results refresh paused for 24 hours'}.get(response.status_code, 'Results provider returned an unavailable response')
@@ -224,11 +250,22 @@ def current(store, league, now=None, config=None, session=None, allow_fetch=True
                 result.update(ok=True, problem=None, events=[asdict(e) for e in events], coverage=health,
                     sha256=sha256(raw).hexdigest(), source_url=BASE+CODES[league]+'/matches?season='+season[:4],
                     license_reference=TERMS, provider_statuses=statuses, team_bindings=bindings)
+                result.pop('failure_code',None)
         finally:
             response.close()
-    except (ValueError, KeyError, TypeError, OverflowError, AttributeError):
+    except (ValueError, KeyError, TypeError, OverflowError, AttributeError) as error:
         result['ok'] = False
+        # Only fixed codes, never response/exception text, enter UI/cache/logs.
+        message=str(error)
+        result['failure_code']=('schema_identity' if 'identity' in message.lower() or 'team name' in message.lower() else
+            'schema_coverage' if any(word in message.lower() for word in ('season','fixture','count','schedule')) else 'schema')
         result['problem'] = 'Results schema, identity or full-season coverage failed; review required'
+    except requests.Timeout:
+        result['failure_code']='transport_timeout'
+        result['problem']='Results provider timed out; previous accepted results retained for inspection'
+    except requests.exceptions.SSLError:
+        result['failure_code']='transport_tls'
+        result['problem']='Results secure connection failed; no source verification inferred'
     except (requests.RequestException, OSError):
         pass  # Never surface exception strings, headers or response bodies.
     finally:
@@ -244,6 +281,7 @@ def _restore(result, store, league, now):
     if not result['ok']:
         return [], meta
     events = [EventObservation(**e).validate(now) for e in result['events']]
+    meta['coverage']=coverage(events,COMPETITIONS[league],season_at(now),now)
     bindings = [('team', str(k), v) for k, v in result['team_bindings'].items()]
     bindings += [('fixture', e.source_event_id, e.fixture_id) for e in events]
     binding_problem = False
@@ -258,8 +296,8 @@ def _restore(result, store, league, now):
         if not binding_problem:
             db.executemany('INSERT OR IGNORE INTO football_data_bindings VALUES(?,?,?)', bindings)
     if binding_problem:
-        meta.update(ok=False, problem='Provider team or fixture ID changed identity; manual review required')
-        store.cache(cache_key(league, season_at(now)), result | {'ok': False, 'problem': meta['problem']}, parse_time(result['checked_at']))
+        meta.update(ok=False, failure_code='reconciliation',problem='Provider team or fixture ID changed identity; manual review required')
+        store.cache(cache_key(league, season_at(now)), result | {'ok': False, 'problem': meta['problem'],'failure_code':'reconciliation'}, parse_time(result['checked_at']))
         return [], meta
     ingest(store, events, meta, now)
     conflicts = [r for r in reconciled(store, COMPETITIONS[league].id, now) if r['conflicts']]
@@ -269,8 +307,11 @@ def _restore(result, store, league, now):
     withdrawn = any(r['observation']['season'] == season_at(now) and r['observation']['status'] == 'completed'
                     and r['fixture_id'] not in actual for r in reconciled(store, COMPETITIONS[league].id, now))
     if conflicts or withdrawn:
-        meta.update(ok=False, problem='Conflicting scores, dates, bindings or withdrawn results require reconciliation')
-        store.cache(cache_key(league, season_at(now)), result | {'ok': False, 'problem': meta['problem']}, parse_time(result['checked_at']))
+        meta.update(ok=False, failure_code='reconciliation',problem='Conflicting scores, dates, bindings or withdrawn results require reconciliation')
+        store.cache(cache_key(league, season_at(now)), result | {'ok': False, 'problem': meta['problem'],'failure_code':'reconciliation'}, parse_time(result['checked_at']))
+    if meta['ok']:
+        from intelligence.results_journal import accept
+        accept(store,league,season_at(now),result)
     return events if meta['ok'] else [], meta
 
 
@@ -282,29 +323,44 @@ def status(store, config=None, now=None):
             'credential_configured': bool(config.token), 'use_reviewed': config.use_reviewed,
             'problem': config.problem, 'maximum_requests_per_UTC_day_per_store': DAILY_LIMIT,
             'cache_hours': TTL//3600, 'live_results': False,
-            'leagues': {league: store.cached(cache_key(league, season_at(now)), TTL, now) and
-                {k: v for k, v in store.cached(cache_key(league, season_at(now)), TTL, now).items()
-                 if k in ('ok', 'problem', 'checked_at', 'coverage', 'sha256')}
-                for league in CODES}}
+            'leagues': {league:cached_status(store,league,now) for league in CODES}}
 
 
 def cached_status(store, league, now=None):
     """Read metadata, including expired receipt dates, without fetching/ingesting."""
     now = now or utcnow()
-    key = cache_key(league, season_at(now))
-    with store.connect() as db:
-        row = db.execute('SELECT payload FROM cache WHERE key=?', (key,)).fetchone()
-    if not row:
-        return {'provider':'football-data.org','available':False,'fresh':False,
-                'problem':'No current-season results snapshot has been observed in this store'}
     try:
-        data = json.loads(row['payload'])
+        from intelligence.results_journal import latest,retained_observations
+        key=cache_key(league,season_at(now))
+        with store.connect() as db:
+            row=db.execute('SELECT payload FROM cache WHERE key=?',(key,)).fetchone()
+        attempt=json.loads(row['payload']) if row else None
+        accepted=latest(store,league,season_at(now))
+        if not accepted and attempt and attempt.get('ok'):accepted=attempt
+        data=attempt or accepted
+        retained=retained_observations(store,COMPETITIONS[league].id)
+        if not data:
+            return {'provider':'football-data.org','available':False,'fresh':False,
+                'failure_code':'missing_snapshot','retained_normalized':retained,
+                'problem':'No current-season results snapshot has been observed in this store'}
         checked = parse_time(data['checked_at'])
         fresh = 0 <= (now-checked).total_seconds() < TTL
-        result = {k:data[k] for k in ('ok','checked_at','coverage','sha256','problem','source_url') if k in data}
-        result.update(provider='football-data.org',available=True,fresh=fresh)
+        result = {k:data[k] for k in ('ok','checked_at','coverage','sha256','problem','source_url','failure_code') if k in data}
+        result.update(provider='football-data.org',available=True,fresh=fresh,retained_normalized=retained,
+            last_attempt={k:attempt[k] for k in ('ok','checked_at','problem','failure_code') if k in attempt} if attempt else None,
+            cache_recoverable_without_HTTP=not attempt and bool(accepted) and fresh)
+        if accepted:
+            events=[EventObservation(**e).validate(parse_time(accepted['checked_at'])) for e in accepted['events']]
+            health=coverage(events,COMPETITIONS[league],season_at(now),now)
+            result['last_success']={'checked_at':accepted['checked_at'],'sha256':accepted['sha256'],'coverage':health,
+                'fresh':0<=(now-parse_time(accepted['checked_at'])).total_seconds()<TTL}
+            result['coverage']=health
+        else:result['last_success']=None
         if not fresh:
             result['problem'] = 'Results verification expired; a download timestamp is not a completed-result date'
+            result['failure_code']='expired_verification'
+            if checked>now:
+                result.update(problem='Results receipt is future-dated; no current readiness inferred',failure_code='future_verification')
         # Reconciliation failures cannot be hidden by an otherwise valid cache.
         with store.connect() as db:
             has_events = bool(db.execute("SELECT name FROM sqlite_master WHERE name='event_observations'").fetchone())
@@ -313,4 +369,8 @@ def cached_status(store, league, now=None):
         return result
     except (ValueError,TypeError,KeyError):
         return {'provider':'football-data.org','available':False,'fresh':False,
+                'failure_code':'storage_integrity',
                 'problem':'Cached source metadata is invalid; no readiness inferred'}
+    except (sqlite3.Error,OSError):
+        return {'provider':'football-data.org','available':False,'fresh':False,'failure_code':'storage',
+            'problem':'Results storage unavailable; check database path, permissions and disk'}

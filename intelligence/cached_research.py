@@ -37,7 +37,9 @@ def synchronize(snapshot, store):
     changed = old is not None and old != revision
     if old is None:
         from intelligence.diagnostics import competition_diagnostics
-        changed = any(r['cached_snapshot_differs_from_used'] for r in competition_diagnostics(snapshot['analysis'],store))
+        changed = any(r['cached_snapshot_differs_from_used'] or
+            (r['current_source_verification_fresh'] and r['current_supported_prices']>0 and not r['used_current_snapshot'])
+            for r in competition_diagnostics(snapshot['analysis'],store))
     if changed:
         snapshot['analysis'] = recheck(snapshot['analysis'],store)
     snapshot['results_revision'] = results_revision(store)

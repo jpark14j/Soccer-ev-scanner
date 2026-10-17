@@ -19,7 +19,6 @@ st.markdown('''<style>
 </style>''',unsafe_allow_html=True)
 from intelligence.navigation import PAGES,destination
 registry = load_registry()
-store = configured_store()
 
 
 def secret(name):
@@ -32,6 +31,7 @@ def secret(name):
         return ''
 
 
+store = configured_store(secret)
 from intelligence.data_settings import load_settings
 data_settings=load_settings(secret)
 from intelligence.current_results import configuration as results_configuration
@@ -53,7 +53,8 @@ with st.sidebar:
 @st.cache_data(ttl=1800,show_spinner=False)
 def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours,results_scope):
     from intelligence.providers import OddsAPI
-    data_store=configured_store()
+    from intelligence.storage import Store
+    data_store=Store(db_path)
     provider=OddsAPI(api_key,data_store,daily_limit=cap,ttl=ttl)
     return run_analysis(api_key,list(competitions),store=data_store,provider=provider,collect_results=collect_results,autonomous=True,window_hours=window_hours)
 

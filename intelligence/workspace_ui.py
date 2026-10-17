@@ -22,6 +22,8 @@ class Workspace:
 
 
 def render_picks(w):
+    from intelligence.quant_ui import render_best
+    render_best(w.analysis,w.book_keys,w.secret)
     from intelligence.parlay_intelligence_ui import render_intelligence
     render_intelligence(w.analysis,w.store,w.book_keys,w.secret)
     singles,parlays=st.tabs(['Singles','Parlays'])
@@ -75,6 +77,8 @@ def render_tools(w):
         from intelligence.chat_ui import render_assistant
         render_assistant(w.analysis,w.store,w.secret)
     elif tool=='diagnostics':
+        from intelligence.quant_ui import render_evaluation
+        render_evaluation()
         from intelligence.research_views import render_health
         from intelligence.slate_views import render_focused_model
         render_health(w.analysis,w.store,w.secret)
