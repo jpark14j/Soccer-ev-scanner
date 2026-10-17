@@ -81,10 +81,13 @@ def render_rankings(analysis,books,secret_getter=None,widget_key='dashboard_rank
 
 
 def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
+    from intelligence.top_research_ui import active_analysis,render_summary
+    analysis=active_analysis(analysis,store)
     from intelligence.book_optimizer import best_by_game,scoped_quotes
     from intelligence.epl_forecasts import high_probability_research
     now=utcnow();quotes=[q for q in scoped_quotes(analysis,now) if q.bookmaker in books]
-    current=[q for q in quotes if q.status(now)=='current' and q.jurisdiction=='CA-ON']
+    from intelligence.parlay_research import quote_problem
+    current=[q for q in quotes if not quote_problem(q,now)]
     games=best_by_game(analysis,books,now)
     rows=singles(analysis,books,now=now)
     a,b=st.columns(2);c,d=st.columns(2)
@@ -94,6 +97,7 @@ def render_daily_dashboard(analysis,store,settings,books,secret_getter=None):
     d.metric('Qualified singles',sum(state==APPROVED for state,_ in rows))
     st.caption(f'{len(current)} current Ontario individual-price observations across {len({q.bookmaker for q in current})} books and {len({(q.event_id,q.market) for q in current})} event/market groups. Coverage is partial, not the full sports calendar.')
     st.subheader("Today's Research")
+    render_summary(analysis,store,books,secret_getter,settings.daily_limit)
     from intelligence.quant_ui import render_best
     render_best(analysis,books,secret_getter)
     st.caption('Approved = publication gates pass; experimental = an unapproved model estimate; price-only = observed selection with no supported forecast; blocked = missing or invalid inputs. Break-even percentages are not predicted win probabilities.')

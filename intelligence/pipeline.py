@@ -90,34 +90,8 @@ def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',),
 
 def restore_market_snapshots(result,store,leagues):
     """Restore private cached featured/event observations without resetting age."""
-    import json
-    from datetime import timedelta
-    by_id={q.id:q for q in result.quotes}
-    for q in result.quotes:
-        result.quote_origins.setdefault(q.id,{'origin':'analysis input','received_at':q.received_at})
-    now=utcnow()
-    with store.connect() as db:
-        for league in leagues:
-            if league not in LEAGUES:
-                continue
-            rows=db.execute('SELECT at,payload FROM cache WHERE key LIKE ? OR key LIKE ?',
-                ('last-success-'+league+'-%','event-snapshot-'+league+'-%')).fetchall()
-            for row in rows:
-                try:
-                    age=now-parse_time(row['at'])
-                    if not timedelta(0)<=age<=timedelta(days=7):
-                        continue
-                    response=json.loads(row['payload'])
-                    quotes,_=normalize(response['data'],league,response['received_at'],now)
-                    for q in quotes:
-                        old=by_id.get(q.id)
-                        if old is None or (parse_time(q.source_updated_at),parse_time(q.received_at))>(parse_time(old.source_updated_at),parse_time(old.received_at)):
-                            by_id[q.id]=q
-                            result.quote_origins[q.id]={'origin':'restored private cache','cache_recorded_at':row['at'],'received_at':q.received_at}
-                except (ValueError,KeyError,TypeError):
-                    result.warnings.append('A malformed cached market snapshot was ignored')
-    result.quotes=list(by_id.values())
-    return result
+    from intelligence.odds_snapshots import restore
+    return restore(result,store,leagues,utcnow())
 
 
 def evaluate_quotes(result,store,*,allow_results_fetch=True):

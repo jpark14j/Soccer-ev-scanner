@@ -16,7 +16,7 @@ def render_best(analysis,books,secret=None):
     best=result['best']
     if not best:
         st.info('NO QUALIFYING BET — the available evidence does not support an approved selection or ticket.')
-        st.caption('Experimental research remains below. A high estimated win probability alone never triggers this result.')
+        st.caption('Experimental research is shown separately. A high estimated win probability alone never triggers this result.')
     else:
         st.write('**'+best['format']+'**')
         for q in best['quotes']:st.text(safe(q.event+' · '+q.league+' · '+q.commence_time+' · '+selection_label(q)))
@@ -52,3 +52,30 @@ def render_evaluation():
         st.caption('Lower Brier/log loss is better. ECE depends on binning and sample size; score improvements do not imply betting profit. Difference intervals that include zero do not establish improvement.')
         with st.expander('Full reproducible evidence, joint-event diagnostics and limitations'):
             st.json(report)
+    render_phase6_evaluation()
+
+
+def render_phase6_evaluation():
+    with st.expander('Phase 6 calibration, annual refit and joint settlement research'):
+        from intelligence.phase6_evaluation import DESTINATION,POLICY
+        from intelligence.data_adapters import ROOT
+        try:
+            r=json.loads(DESTINATION.read_text());checksum=r.pop('sha256')
+            p=json.loads(POLICY.read_text())
+            code=digest({name:(ROOT/'intelligence'/name).read_text() for name in ('phase6_evaluation.py','quant_models.py','score_distribution.py','quant_evaluation.py')})
+            if digest(r)!=checksum or digest(p)!=r['policy_sha256'] or code!=r['code_sha256']:raise ValueError()
+        except (ValueError,KeyError,OSError):
+            st.info('No matching Phase 6 evaluation report is available; no model is activated.');return
+        st.caption('Additional calibration and annual-refit challengers use prior data only. Reused project test dates and incomplete later seasons prevent independent approval; no frozen model changes.')
+        rows=[]
+        for league,v in r['leagues'].items():
+            if v.get('blocked'):st.text(league+': '+v['blocked'])
+            for market,t in v.get('markets',{}).items():
+                for method,m in t['methods'].items():
+                    rows.append({'League':league,'Market':market,'Method':method,'Test n':t['test_n'],
+                        'Brier':m['metrics']['binary_brier']['value'],'Log loss':m['metrics']['log_loss']['value'],'ECE':m['ece'],
+                        'Brier difference interval vs frozen':m['minus_frozen']['binary_brier']['interval']})
+        st.dataframe(rows,hide_index=True)
+        st.caption('Approval blockers remain separate: uncertain predictive gains; calibration/sample limits; per-event current inputs; eligible market coverage; unverified operator settlement; and missing actual combined prices. Research estimates do not satisfy these publication requirements automatically.')
+        with st.expander('Joint-state calibration, partial settlements and complete Phase 6 evidence'):
+            st.json(r)

@@ -1,0 +1,163 @@
+{
+  "phase": "6 quantitative research and Phase 5B integration",
+  "starting_commit": "565aacfe6983fd4e8101ef367404ec2c59107dce",
+  "branch": "development/verified-sports-intelligence",
+  "draft_pr": 1,
+  "initial_working_tree": "clean; existing committed Phase 5 work preserved",
+  "review_date_UTC": "2026-10-17",
+  "review_date_Toronto": "2026-10-16",
+  "local_tests_passed": 485,
+  "new_tests": 29,
+  "old_tests_removed_or_weakened": false,
+  "test_networks": "External Requests/HTTPX blocked by existing autouse fixture; new UI test rejects OpenAI construction",
+  "compilation": "passed",
+  "dependency_consistency": "passed",
+  "whitespace_check": "passed",
+  "configured_secret_scan": "passed; actual values never printed",
+  "protected_files_unchanged": 31,
+  "frozen_models_policies_sources_workflows_dependencies_unchanged": true,
+  "local_Streamlit_startup": {
+    "port": 8514,
+    "HTTP_status": 200,
+    "body": "ok",
+    "credentials_removed": true,
+    "paid_AI_enabled": false,
+    "isolated_odds_cap": 0,
+    "results_refresh_enabled": false,
+    "existing_processes_replaced": false
+  },
+  "actual_external_provider_requests_this_phase": {
+    "odds": 0,
+    "football_data": 0,
+    "OpenAI": 0
+  },
+  "default_caps_preserved": {
+    "odds_credits_per_UTC_day_per_store": 9,
+    "results_requests_per_UTC_day_per_store": 6,
+    "paid_analyst_approved": "0"
+  },
+  "actual_local_odds_ledger_after_checks": [
+    {
+      "day": "2026-10-16",
+      "used": 9
+    }
+  ],
+  "odds_diagnosis": {
+    "verified_local_only_at": "2026-10-17T03:35:03.199415+00:00",
+    "saved_market_snapshot_rows": 8,
+    "malformed_snapshots": 0,
+    "inspection_truncated": false,
+    "old_restorable_observations": 394,
+    "after_legacy_key_fix_restorable_unique_observations": 910,
+    "all_restored_prices_stale": true,
+    "current_eligible_observations": 0,
+    "upcoming_in_window_stale_observations": 880,
+    "started_or_outside_window_observations": 30,
+    "original_timestamps_retained": true,
+    "local_zero_price_reason": "expiry",
+    "hosted_zero_price_reason_independently_verified": false,
+    "fixes": [
+      "Legacy featured-key restoration",
+      "Cross-session saved-odds revision invalidation and cache-only inference",
+      "Newer scoped withdrawals including empty responses",
+      "Conflicting simultaneous saved offers fail closed"
+    ],
+    "audit": [
+      "Raw/unique stored observations",
+      "Current versus model-evidence eligibility",
+      "View/scope exclusions",
+      "Store identity and storage failures",
+      "Retention/expiry/original receipts",
+      "Query errors, quota and safe next action"
+    ]
+  },
+  "top_research": {
+    "prominent_experimental_single_and_parlay": true,
+    "approved_decision_separate_and_unchanged": true,
+    "uses_existing_favored_side_rankings_and_parlay_generator": true,
+    "default_priority": "verified inputs, uncertainty width, calibration/test support, known risks, lower bound, model-versus-price difference, probability, freshness",
+    "model_only": "Genuine retained pregame frozen soccer forecasts with unchanged fresh complete source/model proof; no stale price or implied value",
+    "forced_candidates": false,
+    "generative_AI_requests": 0
+  },
+  "offline_model_evaluation": {
+    "artifact": "research_assets/quantitative/phase6.json",
+    "predeclared_policy": "config/phase6_research_policy.json",
+    "new_methods": [
+      "Monotone ridge beta calibration",
+      "Prior-season annual Dixon-Coles refit with prior out-of-sample calibration"
+    ],
+    "comparators": [
+      "Frozen model",
+      "Static Dixon-Coles/Platt",
+      "Calibration-period constant"
+    ],
+    "static_training_end": "2023-06-30",
+    "annual_refit_training_end": "2024-06-30",
+    "calibration_period": "2023-07-01 to 2024-06-30",
+    "candidate_held_out_test_period": "2024-07-01 to 2025-06-30",
+    "project_independent_confirmation": false,
+    "matched_test_n": {
+      "Premier League": 342,
+      "Bundesliga": 210,
+      "Ligue 1": 272
+    },
+    "bootstrap": "1000 UTC-day blocks; paired score intervals; model-search and cross-day dependence not fully captured",
+    "all_new_binary_method_Brier_difference_intervals_vs_frozen_include_zero": true,
+    "metrics": [
+      "Brier",
+      "Log loss",
+      "ECE",
+      "Calibration bins",
+      "Paired uncertainty intervals"
+    ],
+    "La_Liga_and_Serie_A": "Incomplete required seasons; no fit",
+    "full_offline_reproduction": "Identical results except generation timestamp/checksum",
+    "raw_archive_in_CI": false,
+    "models_replaced": 0,
+    "models_approved": 0,
+    "historical_market_baseline": null,
+    "profitability_claim": false
+  },
+  "joint_settlement_research": {
+    "tasks": [
+      "BTTS Yes + Over 2.25",
+      "Home +0.25 + Under 3.0",
+      "Home win + BTTS Yes + Under 3.5"
+    ],
+    "coherent_score_grid": true,
+    "states": [
+      "win",
+      "push",
+      "half-win",
+      "half-loss",
+      "loss"
+    ],
+    "evaluation": [
+      "Proper multiclass settlement scores and intervals",
+      "All-full-win binary scores, ECE and bins",
+      "Prior calibration bins"
+    ],
+    "current_joint_probabilities_approved": 0,
+    "actual_combined_price": null,
+    "parlay_EV": null,
+    "operator_settlement_verified": false,
+    "cross_game_independence_assumed": false
+  },
+  "actual_local_records_after_checks": {
+    "shadow_forecasts": 0,
+    "shadow_outcomes": 0,
+    "accepted_keyed_results_snapshots": 0
+  },
+  "Community_Cloud_off_host_durability_verified": false,
+  "preview": {
+    "url": "https://soccer-ev-scanner-preview-jp.streamlit.app/",
+    "hosted_browser_verified": false,
+    "access_attempt": "Web reader reports URL inaccessible from this environment; not proof the app is down",
+    "local_app_pages_and_new_cards_verified": true,
+    "instructions": "docs/PHASE6_TOP_RESEARCH.md"
+  },
+  "CI": "Inspect the development commit's existing test workflow after publication. Raw-archive reproduction explicitly skips when the private source archive is absent.",
+  "main_production_or_deployment_configuration_changed": false,
+  "PR_merged": false
+}

@@ -1,0 +1,92 @@
+"""Short experimental answers with expandable technical evidence. No paid AI."""
+import streamlit as st
+from intelligence.domain import utcnow
+from intelligence.analyst_config import load_config
+from intelligence.chat_privacy import redact,redact_data
+from intelligence.markets import selection_label
+from intelligence.research_top import select_top,value_status,risk_tags
+from intelligence.research_ranking import comparison,RANKINGS
+from intelligence.parlay_intelligence import explain_leg
+from intelligence.odds_diagnostics import inspect_odds
+
+
+def active_analysis(analysis,store):
+    from intelligence.cached_research import synchronize
+    saved=st.session_state.get('_research_snapshot')
+    return synchronize(saved,store) if saved else analysis
+
+
+def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
+    now=utcnow();sensitive=load_config(secret).sensitive_values
+    safe=lambda value:redact(str(value),sensitive)
+    result=select_top(analysis,store,books,now,leagues)
+    audit=inspect_odds(analysis,store,books,now,cap)
+    st.subheader("AI's Top Research Pick — Experimental")
+    st.caption('Local statistical-model and rule-based research summary; no generative AI request.')
+    leg=result['pick'];model_only=result['model_only']
+    if leg:
+        q,e=leg.quote,leg.estimate;gap=comparison(leg)
+        with st.container(border=True):
+            st.write('**'+safe(q.event)+'** · '+safe(q.sport+' · '+q.league))
+            st.text(safe(selection_label(q)))
+            st.write(f'Model estimate **{e.probability:.1%}** · calibration range {e.lower:.1%}–{e.upper:.1%}')
+            st.write(safe(q.bookmaker_name)+f' · observed individual decimal **{q.odds:.2f}**')
+            st.write(f"Sportsbook break-even {gap['sportsbook_break_even']:.1%} · model difference {100*gap['difference']:+.1f} percentage points")
+            st.caption(value_status(leg)+'. This comparison is not approved betting EV.')
+            st.text(safe(explain_leg(leg)[0]))
+            st.caption('Selected for evidence quality and supported uncertainty. Experimental / unapproved; no proven betting advantage.')
+            st.caption(safe('Kickoff UTC '+q.commence_time+' · odds source '+q.source_updated_at+' · received '+q.received_at))
+            with st.expander('Why this research pick? Evidence, alternatives and risks'):
+                for line in explain_leg(leg)[1:]:st.text(safe(line))
+                st.json(redact_data({'model_version':e.model_version,'calibration_bucket':leg.model_details.get('calibration_bin_n'),
+                    'calibration_n':leg.model_details.get('calibration_n'),'test_n':leg.model_details.get('test_n'),
+                    'known_risk_categories':risk_tags(leg),'comparison':gap,'blockers':leg.blockers,'ranking':result['method']},sensitive))
+    elif model_only:
+        q,e=model_only.quote,model_only.estimate
+        with st.container(border=True):
+            st.write('**Model-only research forecast · previously computed · unapproved**')
+            st.write(safe(q.event)+' · '+safe(q.sport+' · '+q.league))
+            st.text(safe(selection_label(q)))
+            st.write(f'Model estimate {e.probability:.1%} · calibration range {e.lower:.1%}–{e.upper:.1%}')
+            st.caption(safe('Forecast recorded '+model_only.model_details['prediction_at']+' · kickoff UTC '+q.commence_time))
+            st.caption('The same verified model inputs and fixture still match. A current sportsbook price is unavailable, so no odds, break-even comparison, value or betting recommendation is shown.')
+            with st.expander('Model-only evidence and limitations'):
+                st.json(redact_data({'model':e.model_version,'data_sha256':model_only.model_details.get('data_sha256'),
+                    'source_checked_at':model_only.model_details.get('source_checked_at'),'blockers':model_only.blockers},sensitive))
+    else:
+        reasons=result['input_blockers'] or result['exclusions'] or result['model_only_exclusions']
+        reason=next(iter(reasons),'No supported, calibrated current model estimate and eligible observed price are available')
+        st.info('No eligible experimental top pick: '+safe(reason)+'.')
+        if not analysis.quotes:st.caption('Fresh football results alone do not supply an event-specific prediction or current odds. Saved verified forecasts are checked separately.')
+
+    st.subheader("AI's Top Research Parlay")
+    item=result['parlay']
+    if item:
+        c=item.research
+        with st.container(border=True):
+            st.write(f'**{len(c.legs)}-leg multi-game research · experimental / unapproved**')
+            for l in c.legs:
+                q,e=l.quote,l.estimate
+                st.text(safe(f'{q.sport} · {q.league} · {q.event} · {selection_label(q)}'))
+                st.caption(safe(f'{q.bookmaker_name} · decimal {q.odds:.2f} · model {e.probability:.1%} ({e.lower:.1%}–{e.upper:.1%}) · kickoff {q.commence_time} · source {q.source_updated_at}'))
+            st.write(f'Individual-odds product {c.theoretical_odds:.2f} · **theoretical; combined ticket unverified**')
+            st.caption('Joint win probability and parlay EV unavailable. Different games do not establish independence.')
+            with st.expander('Why this parlay? Dependencies and missing evidence'):
+                st.write(result['parlay_method'])
+                for line in (*item.dependence['known_links'],*c.blockers):st.text(safe(line))
+                st.caption('Same-game and mixed formats require independently tested joint evidence; they are excluded from this default summary.')
+    else:
+        st.info('No supported top research parlay: at least two compatible, current model-backed favored selections at one sportsbook are required. Known shared-game/team/player links stay outside this summary.')
+
+    if audit.get('code')!='current_prices_available':
+        st.caption(safe(audit['message']))
+        st.caption('Next action: '+safe(audit['next_action']))
+    with st.expander('Odds availability, distinct rankings and selection exclusions'):
+        st.json(redact_data(audit,sensitive))
+        st.write(result['method'])
+        for name in RANKINGS:
+            st.write('**'+name+'**')
+            for _,l in result['shared_rankings']['rankings'][name][:3]:
+                st.text(safe(f'{l.quote.event} · {selection_label(l.quote)} · model {l.estimate.probability:.1%}'))
+        st.json(redact_data({'input_requirements':result['input_blockers'],'research':result['exclusions'],'model_only':result['model_only_exclusions'],'parlays':result['parlay_exclusions']},sensitive))
+    return result

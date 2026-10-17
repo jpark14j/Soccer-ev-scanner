@@ -1,5 +1,38 @@
 # Verification matrix
 
+## Phase 6 top research and quantitative evaluation — October 16, 2026 (Toronto)
+
+**485 local offline tests pass** (29 added); existing tests are unchanged.
+Regressions cover legacy odds restoration, newer scoped empty withdrawals,
+cross-session cached-odds updates, source-proof mismatches, storage failures,
+experimental/approved separation, model-only evidence retention without stale
+prices, four-page navigation and blocked paid-AI calls. Statistical tests check
+constrained beta-calibration convergence/monotonicity, report hashes/matched
+samples and coherent joint settlement states including pushes and half outcomes.
+Compilation, dependency consistency, whitespace and configured-secret checks
+pass; 31 protected source/model/policy/workflow/dependency files are unchanged.
+
+The isolated port-8514 Streamlit process returned HTTP 200 `ok`, with credentials
+removed, odds cap zero and results refresh/paid AI disabled. Actual provider
+calls this phase: **zero**. Local named snapshot inspection restores 910 genuine
+saved observations after the legacy-key fix (394 previously); every price is
+stale and current eligible count remains zero. The local nine-credit October 16
+ledger is unchanged. Hosted preview zero-odds causes remain independently
+unverified; user-reported results coverage is not represented as a local check.
+
+The additional real archive evaluation reproduces exactly apart from generation
+time/checksum. No new method's paired Brier interval excludes zero versus frozen;
+the project has reused these test dates and later seasons are incomplete. No
+model is replaced/approved. New held-out dependent settlement diagnostics do not
+establish approved joint probabilities, operator rules, executable combined
+prices, parlay EV or profitability. Genuine new local paper forecasts/outcomes
+remain zero. The cloud URL is inaccessible via this environment's web reader;
+its rebuilt browser UI and off-host persistence remain unverified. Use the
+[Phase 6 guide](PHASE6_TOP_RESEARCH.md) for exact preview steps and limits, and
+[evidence JSON](evidence/phase6-verification.json) for the checked facts. Existing
+CI is run and inspected on the development commit; its archive reproduction test
+explicitly skips when unbundled raw files are absent.
+
 ## Phase 5 results recovery and quantitative research — October 16, 2026 (Toronto)
 
 **456 local offline tests pass** (39 added). All existing tests are retained.

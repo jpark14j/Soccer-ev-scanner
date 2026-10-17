@@ -69,7 +69,9 @@ def render_intelligence(analysis, store, books, secret_getter=None):
 
     @st.fragment(run_every='60s')
     def show():
-        scoped=replace(analysis,quotes=[q for q in analysis.quotes if q.sport in sports])
+        from intelligence.top_research_ui import active_analysis
+        active=active_analysis(analysis,store)
+        scoped=replace(active,quotes=[q for q in active.quotes if q.sport in sports])
         report=generate(scoped,books,include_linked=linked,max_per_size=1)
         group_map={g.id:g for g in report.groups}
         st.caption(f'{report.eligible_model_groups} favored markets pass existing research evidence checks; {report.searched_model_groups} markets searched. Prices are rechecked for expiry without API requests.')

@@ -1,0 +1,16 @@
+{
+  "version": "soccer-phase6-1",
+  "base_policy": "config/quant_research_policy.json",
+  "beta_calibration_ridge": 3.0,
+  "annual_refit_training_end": "2024-06-30",
+  "annual_refit_anchor": "2024-07-01",
+  "bootstrap_seed": 61741,
+  "bootstrap_resamples": 1000,
+  "settlement_tasks": {
+    "BTTS_yes_and_over_2.25": [["btts", "Yes", null], ["totals", "Over", 2.25]],
+    "home_plus_0.25_and_under_3": [["spreads", "HOME", 0.25], ["totals", "Under", 3.0]],
+    "home_win_BTTS_yes_under_3.5": [["h2h", "HOME", null], ["btts", "Yes", null], ["totals", "Under", 3.5]]
+  },
+  "activation": false,
+  "note": "Predeclared before these new comparisons. Beta calibration and annual-refit challengers use only prior training/calibration labels. No tuning on the reused 2024-25 test period; no independent confirmation or market baseline exists. Settlement tasks are hypothetical research contracts, not observed sportsbook tickets."
+}

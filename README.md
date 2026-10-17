@@ -5,6 +5,13 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [Phase 6 research guide](docs/PHASE6_TOP_RESEARCH.md) documents the new
+experimental top single/parlay summaries, read-only zero-odds audit and saved-price
+session repairs. It also reports the additional beta-calibration/annual-refit and
+joint-settlement backtests. No credible independent model improvement, approved
+joint probability or executable SGP is claimed; no frozen model is replaced.
+The four pages, approval gates, paid-AI default and data budgets are preserved.
+
 The [Phase 5 quantitative research guide](docs/PHASE5_QUANTITATIVE_RESEARCH.md)
 documents repaired results retention/session visibility, the new **Today's
 Best-Supported Bet** gate, chronological Poisson/Dixon-Coles challenger scores,
@@ -15,8 +22,8 @@ Current SGP tickets, NBA/MLB model readiness and Cloud off-host durability remai
 blocked. Failed refreshes now preserve accepted results without refreshing their
 timestamps or bypassing eligibility gates.
 
-The [Phase 4 parlay intelligence guide](docs/PHASE4_PARLAY_INTELLIGENCE.md) is the
-latest feature and preview guide. Open **Best Picks & Parlays** for model-favored
+The [Phase 4 parlay intelligence guide](docs/PHASE4_PARLAY_INTELLIGENCE.md) explains
+the existing generator. Open **Best Picks & Parlays** for model-favored
 binary selections and automatic evidence-ranked 2/3-leg research. Opposing outcomes
 stay in details; price-only combinations remain separate. Individual estimates,
 uncertainty and observed Ontario prices are distinct. No validated joint win
