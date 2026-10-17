@@ -28,8 +28,6 @@ def render_picks(w):
     def top_research():
         render_summary(active_analysis(w.analysis,w.store),w.store,w.book_keys,w.secret,w.settings.daily_limit,w.leagues)
     top_research()
-    from intelligence.quant_ui import render_best
-    render_best(w.analysis,w.book_keys,w.secret)
     from intelligence.parlay_intelligence_ui import render_intelligence
     render_intelligence(w.analysis,w.store,w.book_keys,w.secret)
     singles,parlays=st.tabs(['Singles','Parlays'])

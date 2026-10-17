@@ -67,6 +67,7 @@ def test_forward_records_label_exact_final_and_keep_both_hits_and_misses(store,q
     card=scorecards(store,later)['groups'][0]
     assert card['scores']['n']==1 and card['scores']['metrics']['binary_brier']['value']==pytest.approx(row['payload']['estimate']['probability']**2)
     assert card['scores']['metrics']['binary_brier']['interval'] is None
+    assert card['completed_cohort_review']['n']==0  # Running cohort cannot trigger review.
     assert card['state']=='Under forward evaluation' and card['review_blockers'] and not card['automatic_approval']
 
 

@@ -51,36 +51,39 @@ with st.sidebar:
 
 
 @st.cache_data(ttl=1800,show_spinner=False)
-def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours,results_scope):
-    from intelligence.providers import OddsAPI
+def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours,results_scope,store_instance):
     from intelligence.storage import Store
     data_store=Store(db_path)
-    provider=OddsAPI(api_key,data_store,daily_limit=cap,ttl=ttl)
-    return run_analysis(api_key,list(competitions),store=data_store,provider=provider,collect_results=collect_results,autonomous=True,window_hours=window_hours)
+    return run_analysis(api_key,list(competitions),store=data_store,collect_results=False,autonomous=True,window_hours=window_hours,cached_only=True)
 
 
 st.title(page)
 st.caption('Real market observations · transparent model evidence · no forced recommendations')
 results_scope=(results_config.enabled,results_config.use_reviewed,digest(results_config.token))
-snapshot_scope=(tuple(leagues),digest(key),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope)
+with store.connect() as identity_db:store_instance=identity_db.execute('SELECT instance FROM store_identity WHERE id=1').fetchone()[0]
+snapshot_scope=(tuple(leagues),digest(key),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope,store_instance)
 snapshot=st.session_state.get('_research_snapshot')
 if snapshot and snapshot.get('scope')==snapshot_scope:
     result=snapshot['analysis']
-elif not key:
-    st.info('Add ODDS_API_KEY in Streamlit Secrets or the environment to retrieve markets. Credentials are never stored in the repository.')
-    result = Analysis()
 else:
-    with st.spinner('Loading available markets and checking model evidence…'):
-        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope)
+    if not key:st.info('ODDS_API_KEY is not configured. Saved data remains inspectable; configure keys only in Secrets when you choose to retrieve markets.')
+    with st.spinner('Checking saved markets and model evidence · no provider requests…'):
+        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope,store_instance)
 
 if not snapshot or snapshot.get('scope')!=snapshot_scope:
     st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':result,'stored_at':utcnow().isoformat()}
 from intelligence.cached_research import synchronize
 result=synchronize(st.session_state['_research_snapshot'],store)
-st.caption('Pages and filters reuse this session’s scan. Prices still expire after five minutes; use Refresh analysis to request an updated capped scan.')
+st.caption('Opening pages and changing filters use saved data without provider requests. Prices expire after five minutes; Refresh analysis is an explicit capped retrieval.')
 
-if st.button('Refresh analysis',help='Uses the shared provider cache and daily credit cap; does not force chargeable polling.'):
-    st.session_state.pop('_research_snapshot',None)
+from intelligence.quota import quota_details
+refresh_quota=quota_details(store,data_settings.daily_limit)
+if st.button('Refresh analysis',help='Explicit provider retrieval using the shared cache and existing cap.',disabled=not key or bool(data_settings.errors) or refresh_quota['remaining']==0):
+    from intelligence.providers import OddsAPI
+    with st.spinner('Explicit retrieval within the existing credit cap…'):
+        fresh=run_analysis(key,list(leagues),store=store,provider=OddsAPI(key,store,daily_limit=data_settings.daily_limit,ttl=data_settings.cache_seconds),
+            collect_results=data_settings.collect_results,autonomous=True,window_hours=data_settings.window_hours)
+    st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':fresh,'stored_at':utcnow().isoformat()}
     load_analysis.clear()
     st.rerun()
 

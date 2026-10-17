@@ -132,13 +132,13 @@ class PaidAnalyst:
         question = validate_input(question,config)
         evaluations = model_evaluations() if evaluations is None else evaluations
         focus=question_sport(question,history)
-        context = build_context(analysis,performance,evaluations,now,config.sensitive_values,focus)
+        context = build_context(analysis,performance,evaluations,now,config.sensitive_values,focus,store=self.store)
         plan = select_local(question,context,history)
         def reply(warning='',attempted=False,remote_plan=None):
             chosen, evidence = remote_plan or plan, context
             if attempted:
                 evidence = build_context(analysis,performance,evaluations,
-                    now+timedelta(seconds=monotonic()-started),config.sensitive_values,focus)
+                    now+timedelta(seconds=monotonic()-started),config.sensitive_values,focus,store=self.store)
                 if any(id not in evidence.by_id() for id in chosen['fact_ids']):
                     chosen = select_local(question,evidence,history)
                     remote_plan = None

@@ -62,6 +62,7 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
         if not analysis.quotes:st.caption('Fresh football results alone do not supply an event-specific prediction or current odds. Saved verified forecasts are checked separately.')
 
     st.subheader("AI's Top Research Parlay")
+    st.caption('TOP AI PARLAY · supported marginal evidence; joint success remains unvalidated')
     item=result['parlay']
     if item:
         c=item.research
@@ -94,7 +95,18 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
     else:
         st.info('Risk-adjusted value is not established. The top single falls back to supported model probability when available; no value selection is forced.')
 
-    st.caption('MODEL RELIABILITY · Experimental unless separately reviewed; research rankings never approve a model or ticket.')
+    from intelligence.quant_ui import render_best
+    render_best(analysis,books,secret)
+    st.subheader('Model Reliability')
+    reference=leg or model_only
+    if reference:
+        from intelligence.model_reliability import status_for
+        q,e=reference.quote,reference.estimate
+        reliability=status_for(store,q.sport,q.league,q.market,e.model_version,now,point=q.point,evidence_id=e.evidence_id)
+        st.write(reliability['state']+' · '+safe(q.league+' · '+q.market+' · '+e.model_version))
+        st.caption('Research rankings never approve a model or ticket. Forward records: '+str(reliability.get('recorded','unavailable'))+'.')
+        with st.expander('Selected model reliability and missing evidence'):st.json(redact_data(reliability,sensitive))
+    else:st.caption('No current research model is selected. Inspect scoped forward scorecards in Performance Tracker; no reliability or approval is inferred from missing data.')
     with st.expander('Three research rankings and compatible parlay formats'):
         from intelligence.risk_research import MOST_LIKELY,RISK_ADJUSTED,PARLAY
         st.write('**'+MOST_LIKELY+'**')

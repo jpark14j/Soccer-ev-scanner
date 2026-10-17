@@ -1,0 +1,271 @@
+{
+  "phase": "Coordinated remaining engineering phases 7\u20139",
+  "baseline_commit": "26ec3869f4aeddccce49a42d21176c43c5430fc5",
+  "branch": "development/verified-sports-intelligence",
+  "draft_PR": 1,
+  "initial_working_tree": "clean; existing committed work preserved",
+  "milestones": [
+    {
+      "phase": 7,
+      "commit": "9512af153610f3a0affbfd8342a040128062a2a6",
+      "local_tests": 498,
+      "CI_run": 39000501566,
+      "CI": "497 passed, 1 documented raw-archive skip"
+    },
+    {
+      "phase": 8,
+      "commit": "96e97dafccbc6da555ef75e306b5b3c09bde0f76",
+      "local_tests": 528,
+      "CI_run": 39001351737,
+      "CI": "527 passed, 1 documented raw-archive skip"
+    },
+    {
+      "phase": 9,
+      "local_tests": 534,
+      "CI": "Run and inspect existing workflow on final published development commit; PR records exact SHA/result"
+    }
+  ],
+  "new_tests_since_phase6": 49,
+  "existing_tests_unchanged": true,
+  "checks": {
+    "compilation": "passed",
+    "dependencies": "No broken requirements",
+    "whitespace": "passed",
+    "configured_secrets": "absent from changed files; values never printed",
+    "protected_files_unchanged": 34,
+    "frozen_models_and_approval_policies_unchanged": true,
+    "local_startup": {
+      "port": 8515,
+      "HTTP_status": 200,
+      "body": "ok",
+      "credentials_removed": true,
+      "isolated_odds_cap": 0,
+      "paid_AI_enabled": false,
+      "results_refresh": false,
+      "remote_backup_enabled": false,
+      "existing_processes_replaced": false
+    },
+    "end_to_end": "Actual model/application functions with synthetic provider fixtures; immutable recording, ranking, every format, exact result labels, losses, scorecards and grounded local chat",
+    "ordinary_rendering": "First load, four pages, filters and saved rechecks exercise real saved-data loader with provider/OpenAI clients blocked; budget remains unchanged",
+    "joint_report_reproduction": "identical except generation timestamp/checksum"
+  },
+  "risk_engine": {
+    "version": "risk-research-1",
+    "rankings": [
+      "MOST LIKELY TO WIN",
+      "BEST RISK-ADJUSTED RESEARCH OPPORTUNITY",
+      "BEST SUPPORTED RESEARCH PARLAY"
+    ],
+    "price_sensitivity": "(lower supplied calibration endpoint \u2212 observed break-even) / range width; positive entire-range support required; not validated EV, Sharpe or event confidence",
+    "fallback": "Probability-based research when robust price support unavailable",
+    "model_disagreement": "Unavailable unless genuinely supported; not assumed zero",
+    "approved_decision_separate": true
+  },
+  "joint_research": {
+    "formats": [
+      "2/3-leg same-game",
+      "2/3-leg multi-game",
+      "3-leg mixed"
+    ],
+    "current_coherent_joint_forecast_approved": false,
+    "matched_historical_n": {
+      "Premier League": 342,
+      "Bundesliga": 210,
+      "Ligue 1": 272
+    },
+    "baseline": "Training-only coherent league-Poisson joint states",
+    "sensitivity": "\u00b110% home/away rates, zero-rho, temperature-one; deterministic scenarios",
+    "settlement_states": [
+      "win",
+      "push",
+      "half-win",
+      "half-loss",
+      "loss"
+    ],
+    "all_new_binary_Brier_difference_intervals_include_zero": true,
+    "test_dates_previously_inspected": true,
+    "independent_confirmation": false,
+    "cross_game_independence_assumed": false,
+    "executable_combined_price": null,
+    "parlay_EV": null
+  },
+  "model_accuracy": {
+    "models_replaced": 0,
+    "models_approved": 0,
+    "new_independent_accuracy_improvement": false,
+    "additional_tuning_on_reused_test": "None; existing fitted parameters replayed for joint diagnostics",
+    "next_evidence": "Actually recorded untouched future outcomes under frozen prospective protocol"
+  },
+  "forward_testing": {
+    "version": "forward-evaluation-1",
+    "immutable_protocol_before_inference": true,
+    "first_record_key": "event/contract/model/evidence/protocol across books, opposing sides and input refreshes",
+    "historical_backfill": false,
+    "exact_provider_fixture_and_kickoff": true,
+    "conflict_behavior": "Append quarantine/hold; never rewrite forecast or prior label",
+    "metrics": [
+      "Brier",
+      "Log loss",
+      "Calibration",
+      "Paired constant-baseline comparisons",
+      "Day-cluster intervals",
+      "Completed-cohort stability",
+      "Distinct hypothetical score-contract returns"
+    ],
+    "review": "Only completed and fully labeled fixed cohorts; pending outcomes block settled-only review; no automatic promotion",
+    "planning": {
+      "confidence": 0.95,
+      "target_calibration_half_width": 0.05,
+      "IID_worst_case_calibration_n": 385,
+      "paired_Brier_planning_n": 4906,
+      "paired_SD_assumption": 0.25,
+      "detectable_Brier_difference": 0.01,
+      "power": 0.8,
+      "sample_requirement": "Planning approximations, not approval cutoffs. Dependence increases required information; actual block-interval precision and calibration must pass. Existing gates still apply."
+    },
+    "states": [
+      "Experimental",
+      "Under forward evaluation",
+      "Eligible for approval review",
+      "Approved",
+      "Suspended"
+    ],
+    "scoped_registry": true,
+    "expiry_and_suspension_enforced": true,
+    "accepted_ticket_profitability_claim": false
+  },
+  "storage": {
+    "provider_option": "Supabase private Storage REST",
+    "default_enabled": false,
+    "actual_account_created": false,
+    "actual_remote_roundtrip_verified": false,
+    "actual_redeploy_restore_verified": false,
+    "fake_transport_tests_pass": true,
+    "privacy_check_before_upload": true,
+    "no_redirects": true,
+    "max_snapshot_bytes": 20971520,
+    "manual_attempts_per_UTC_day_per_store": 1,
+    "successful_backup_requests": 3,
+    "restore_requests": 2,
+    "preserved": [
+      "Immutable forecasts/results",
+      "Registry/audits",
+      "Provider budgets",
+      "Frozen models/policies/evaluations"
+    ],
+    "WAL_assets_checkpoint_and_handle_close_tested": true,
+    "restore_to_new_file_only": true,
+    "restored_request_hold_survives_UTC_reset": true,
+    "shared_transactional_budget_store": false,
+    "online_worker_enabled": false,
+    "scheduler_enabled": false,
+    "free_plan_documentation": "https://supabase.com/pricing",
+    "free_plan_limitations": "Published 1 GB file storage / 5 GB egress; inactivity pausing, no free automatic database backups; user must verify own plan/terms"
+  },
+  "actual_provider_requests_this_workflow": {
+    "odds": 0,
+    "football_data": 0,
+    "OpenAI": 0,
+    "remote_storage": 0
+  },
+  "default_constraints": {
+    "odds_credits_per_UTC_day_per_store": 9,
+    "results_requests_per_UTC_day_per_store": 6,
+    "PAID_ANALYST_APPROVED": "0"
+  },
+  "genuine_local_audit": {
+    "at": "2026-10-17T04:13:56.000609+00:00",
+    "counts": {
+      "shadow_forecasts": 0,
+      "shadow_outcomes": 0,
+      "forward_forecasts": 0,
+      "forward_labels": 0,
+      "model_actions": 0,
+      "accepted_soccer_snapshots": 0,
+      "remote_backup_receipts": 0,
+      "football_data_requests": 0
+    },
+    "odds_budget": [
+      {
+        "day": "2026-10-16",
+        "used": 9
+      }
+    ],
+    "price_reason": "expired_prices",
+    "saved_prices": 910,
+    "current_eligible_prices": 0
+  },
+  "coverage": {
+    "EPL": "Experimental BTTS / exactly-2.5 total goals; all input/evidence/current-price gates remain",
+    "Bundesliga": "Experimental BTTS only",
+    "Ligue1": "Experimental exactly-2.5 total goals only",
+    "LaLiga_SerieA": "No ready model; required archives incomplete",
+    "NBA_MLB": "Observed-price/archive tools, no ready current sport-specific prediction or player model"
+  },
+  "preview": {
+    "url": "https://soccer-ev-scanner-preview-jp.streamlit.app/",
+    "branch": "development/verified-sports-intelligence",
+    "entrypoint": "app.py",
+    "hosted_browser_verified": false,
+    "web_reader_attempt": "URL inaccessible from this environment; not proof the app is down",
+    "instructions": "docs/PHASES7_9_READINESS.md"
+  },
+  "remaining_blockers": [
+    "Untouched future outcomes and independent review",
+    "Permitted complete new-sport/player inputs",
+    "Joint calibration and real combined tickets",
+    "User-configured optional storage/private Secrets and actual restore verification",
+    "Shared durable budgets and scheduler"
+  ],
+  "main_production_or_deployment_configuration_changed": false,
+  "PR_merged": false,
+  "files_changed": [
+    "README.md",
+    "app.py",
+    "config/forward_research_policy.json",
+    "docs/CONTINUATION.md",
+    "docs/PHASE7_RESEARCH_ENGINE.md",
+    "docs/PHASE8_FORWARD_DURABILITY.md",
+    "docs/PHASES7_9_READINESS.md",
+    "docs/VERIFICATION.md",
+    "docs/evidence/master-phases-verification.json",
+    "intelligence/analyst_config.py",
+    "intelligence/analyst_context.py",
+    "intelligence/cached_research.py",
+    "intelligence/chat_privacy.py",
+    "intelligence/cli.py",
+    "intelligence/current_results.py",
+    "intelligence/forward_testing.py",
+    "intelligence/forward_ui.py",
+    "intelligence/joint_research.py",
+    "intelligence/joint_validation.py",
+    "intelligence/lifecycle.py",
+    "intelligence/llm.py",
+    "intelligence/market_ui.py",
+    "intelligence/model_reliability.py",
+    "intelligence/odds_diagnostics.py",
+    "intelligence/operations_ui.py",
+    "intelligence/parlay_intelligence.py",
+    "intelligence/performance_ui.py",
+    "intelligence/persistence.py",
+    "intelligence/pipeline.py",
+    "intelligence/processing.py",
+    "intelligence/quant_ui.py",
+    "intelligence/quota.py",
+    "intelligence/remote_backup.py",
+    "intelligence/request_guard.py",
+    "intelligence/research_top.py",
+    "intelligence/research_views.py",
+    "intelligence/risk_research.py",
+    "intelligence/slate.py",
+    "intelligence/storage.py",
+    "intelligence/top_research_ui.py",
+    "intelligence/worker.py",
+    "intelligence/workspace_ui.py",
+    "research_assets/quantitative/joint_validation.json",
+    "tests/test_forward_evaluation.py",
+    "tests/test_master_risk_joint.py",
+    "tests/test_master_workflow.py",
+    "tests/test_remote_backup.py"
+  ]
+}

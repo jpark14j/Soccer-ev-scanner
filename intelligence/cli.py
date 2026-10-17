@@ -102,11 +102,13 @@ def main():
         from intelligence.persistence import backup_store
         print(json.dumps(backup_store(store,args.output),indent=2))
     elif args.command=='backup-remote':
-        from intelligence.remote_backup import upload
-        print(json.dumps(upload(store),indent=2))
+        from intelligence.remote_backup import upload,BackupError
+        try:print(json.dumps(upload(store),indent=2))
+        except BackupError as error:parser.error(str(error))
     elif args.command=='restore-remote':
-        from intelligence.remote_backup import restore
-        print(json.dumps(restore(args.object,args.output),indent=2))
+        from intelligence.remote_backup import restore,BackupError
+        try:print(json.dumps(restore(args.object,args.output),indent=2))
+        except BackupError as error:parser.error(str(error))
     elif args.command=='review-recovery-budget':
         from intelligence.request_guard import reviewed_release
         reviewed_release(store,args.odds_used,args.results_used,args.reference)

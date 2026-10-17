@@ -44,9 +44,28 @@ def configured_store(secret_getter=None):
     return store
 
 
-def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',), collect_results=None, autonomous=False, window_hours=48):
+def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',), collect_results=None, autonomous=False, window_hours=48,cached_only=False):
     store = store or configured_store()
     leagues = list(LEAGUES) if leagues is None else leagues
+    if cached_only:
+        from datetime import timedelta
+        if not 1<=window_hours<=168 or any(l not in LEAGUES for l in leagues):raise ValueError('Invalid cached inspection scope')
+        now=utcnow();end=now+timedelta(hours=window_hours)
+        result=restore_market_snapshots(Analysis(checked_at=now.isoformat()),store,leagues)
+        saved=store.cached('saved-slate-audit-v1',604800,now) or {}
+        events={}
+        for q in result.quotes:
+            if now<parse_time(q.commence_time)<=end:
+                events[(q.league,q.event_id)]={'league':q.league,'sport':q.sport,'event_id':q.event_id,
+                    'home':q.home,'away':q.away,'event':q.event,'start':q.commence_time,'discovered_at':q.received_at,'live_discovery':False}
+        result.slate={'window_start':now.isoformat(),'window_end':end.isoformat(),'window_hours':window_hours,
+            'events':list(events.values()),'discovery':[],'queries':[r for r in saved.get('queries',[]) if r.get('league') in leagues],
+            'prior_query_audit_at':saved.get('audit_recorded_at'),'last_successful_update':max((q.received_at for q in result.quotes),default=None),
+            'coverage':'Saved observations only; no current event discovery or provider request',
+            'gaps':saved.get('gaps',[]),'cached_only':True,'network_requests':0}
+        result=evaluate_quotes(result,store,allow_results_fetch=False)
+        from intelligence.cached_research import record_and_label
+        return record_and_label(result,store)
     provider = provider or OddsAPI(key, store, daily_limit=int(os.getenv('ODDS_DAILY_CREDITS','9')),
                                    ttl=int(os.getenv('ODDS_CACHE_SECONDS','1800')))
     if autonomous:

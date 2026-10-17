@@ -161,5 +161,6 @@ def run_slate(key,leagues,store,provider,*,window_hours=48,collect_results=False
     from intelligence.data_adapters import provider_results
     result.processing['normalized_existing_results']=provider_results(store,recorded_at)
     result.processing['published_predictions']=len(__import__('intelligence.pipeline',fromlist=['publish_current']).publish_current(result,store,recorded_at))
+    store.cache('saved-slate-audit-v1',result.slate|{'audit_recorded_at':recorded_at.isoformat()},recorded_at)
     LOG.info('slate_scan_complete',extra={'discovered_events':len(discovered),'query_statuses':dict(Counter(q['status'] for q in queries))})
     return result

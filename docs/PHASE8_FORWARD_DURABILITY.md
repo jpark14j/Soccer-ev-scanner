@@ -68,7 +68,10 @@ The predeclared `forward-evaluation-1` policy includes:
   across those bins; no gap interval when dated support or outcome variation is
   inadequate. Nominal bootstrap coverage still has limitations.
 - Fixed 30-day prospective cohorts and at least two completed calendar cohorts
-  for stability review. Cohort outcomes are never invented before time elapses.
+  for stability review. Eligibility uses only fully labeled completed cohorts;
+  pending outcomes block settled-only review. Cohort outcomes are never invented
+  before time elapses. Multiple cohort looks still need independent review of
+  sequential-testing effects; this diagnostic never automatically approves.
 
 The IID worst-case proportion plan is 385 observations for ±5 points. The paired
 Brier plan is approximately 4,906 observations with the stated variance/effect.

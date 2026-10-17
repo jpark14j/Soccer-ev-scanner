@@ -58,11 +58,23 @@ def model_evaluations(directory='docs/evidence'):
     return result
 
 
-def build_context(analysis, performance=None, evaluations=(), now=None, sensitive=(),focus_sport='all'):
+def build_context(analysis, performance=None, evaluations=(), now=None, sensitive=(),focus_sport='all',store=None):
     now = now or utcnow()
     facts = []
     def add(id,kind,sport,text):
         facts.append(Fact(id,kind,sport,redact(text,sensitive)))
+    if store is not None:
+        from intelligence.model_reliability import scorecards
+        import sqlite3
+        try:
+            forward=scorecards(store,now)
+            add('forward_evaluation','performance','all',f"Prospective contract evaluation: {forward['recorded']} first pregame contract/model/protocol records, {forward['labeled']} verified target labels, {forward['quarantined']} quarantined. Books and opposing sides are deduplicated. Source-target scoring, legacy paper logs and published betting records are separate; counts must not be added. No accepted-ticket ROI or proven profitability is established.")
+            for index,card in enumerate(forward['groups'][:6]):
+                scope=card['scope'];scores=card['scores'];text=f"{scope['league']} {scope['market']} {scope['model_version']}: {card['state']}; {scores['n']} scored prospective contracts. "
+                if scores['metrics']:text+=f"Binary Brier {scores['metrics']['binary_brier']['value']:.6f}; log loss {scores['metrics']['log_loss']['value']:.6f}. "
+                text+='Missing review evidence: '+'; '.join(card['review_blockers'])+'. No automatic model or betting approval.'
+                add('reliability_'+str(index),'models',scope['sport'],text)
+        except (sqlite3.Error,OSError,ValueError,KeyError,TypeError):add('forward_evaluation','performance','all','Forward evaluation storage/protocol proof is unavailable. No score or reliability is inferred.')
     from intelligence.book_optimizer import best_by_game,optimize_by_book
     games=best_by_game(analysis,now=now)
     add('slate_summary','coverage','all',f'{len(games)} upcoming games discovered or observed in the configured slate; '
@@ -95,7 +107,7 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
             f'{len(quotes)-len(ontario)} quotes have unverified Ontario eligibility. '
             'Absence in this feed does not establish that a sportsbook lacks a market.')
     if performance is not None:
-        text = (f'Forward ledger: {performance.get("published",0)} published, {performance.get("settled",0)} settled, '
+        text = (f'Published betting ledger: {performance.get("published",0)} published, {performance.get("settled",0)} settled, '
                 f'{performance.get("pending",0)} pending predictions. ')
         if performance.get('settled',0):
             for label,key in [('one-unit ROI','roi'),('P&L in hypothetical units','pnl_units'),
@@ -245,7 +257,7 @@ def select_local(question, context, history=()):
         kind = 'limitations'
     elif any(word in lower for word in ('perform','profit','roi','win rate','results')):
         kind = 'performance'
-    elif any(word in lower for word in ('model','validat','calibrat','backtest','historical','confidence','why','forecast','probabilit','prediction')):
+    elif any(word in lower for word in ('model','reliabil','validat','calibrat','backtest','historical','confidence','why','forecast','probabilit','prediction')):
         kind = 'models'
     elif any(word in lower for word in ('stale','update','timestamp','changed','change','fresh')):
         kind = 'freshness'
@@ -262,6 +274,9 @@ def select_local(question, context, history=()):
     chosen = [f.id for f in context.facts if f.kind==kind and f.sport in ('all',sport)]
     if sport=='all':
         chosen = [f.id for f in context.facts if f.kind==kind]
+    if 'reliabil' in lower or 'forward' in lower:
+        first=[id for id in chosen if id.startswith(('forward_','reliability_'))]
+        chosen=first+[id for id in chosen if id not in first]
     if kind=='coverage' and any(word in lower for word in ('games','slate')):
         chosen=['slate_summary',*[f.id for f in context.facts if f.id.startswith('games_')]]
     if kind=='parlays':

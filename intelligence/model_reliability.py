@@ -81,38 +81,46 @@ def scorecards(store,now=None):
             and not r['quarantined']]
         settled=[r for r in independent if r['label'] and r['label']['outcome'] in ('win','loss')]
         report=scored_report(settled,p);cohorts=defaultdict(list)
-        for r in settled:cohorts[int((parse_time(r['payload']['forecast_at'])-locked).total_seconds()//(30*86400))].append(r)
-        stability=[]
+        for r in independent:cohorts[int((parse_time(r['payload']['forecast_at'])-locked).total_seconds()//(30*86400))].append(r)
+        stability=[];review_rows=[]
         for i,values in sorted(cohorts.items()):
-            end=locked+timedelta(days=30*(i+1));s=scored_report(values,p)
+            labeled=[r for r in values if r['label'] and r['label']['outcome'] in ('win','loss')]
+            end=locked+timedelta(days=30*(i+1));s=scored_report(labeled,p)
+            fully_labeled=len(labeled)==len(values)
+            if end<=now and fully_labeled:review_rows.extend(labeled)
             stability.append({'index':i,'cohort_end':end.isoformat(),'complete_calendar_period':end<=now,
-                'n':s['n'],'mean_Brier_minus_constant':s['minus_recorded_constant']['binary_brier']['value']})
+                'fully_labeled':fully_labeled,'pending':len(values)-len(labeled),
+                'n':s['n'],'mean_Brier_minus_constant':s['minus_recorded_constant']['binary_brier']['value'] if s['n'] else None})
+        review=scored_report(review_rows,p)
         blockers=[]
         if not integrity:blockers.append('Forward protocol integrity failed')
         if config.get('reliability_code_sha256')!=digest(Path(__file__).read_text()):blockers.append('Reliability analysis code differs from the prospective lock; a matching reviewed analysis is required')
         if len(independent)!=len(group):blockers.append('Some records are pre-lock or quarantined and cannot count as independent confirmation')
-        if report['n']<100:blockers.append('Existing minimum 100 forward decisions has not been reached; count alone cannot establish precision')
-        diff=report['minus_recorded_constant'];interval=diff['binary_brier']['interval'] if diff else None
+        if review['n']<100:blockers.append('Existing minimum 100 fully evaluated forward decisions has not been reached; count alone cannot establish precision')
+        diff=review['minus_recorded_constant'];interval=diff['binary_brier']['interval'] if diff else None
         if not interval:blockers.append('Insufficient UTC-day blocks for paired uncertainty')
         elif interval[1]>=0 or (interval[1]-interval[0])/2>p['minimum_relevant_brier_improvement']:
             blockers.append('Paired improvement/precision versus pre-recorded constant baseline is not sufficient')
-        calibration=report['calibration']
+        calibration=review['calibration']
         if not calibration or any(not b['model_minus_frequency_interval'] or max(abs(v) for v in b['model_minus_frequency_interval'])>p['calibration_precision_half_width'] for b in calibration):
             blockers.append('Observed calibration buckets lack adequate precision or acceptable gap')
         closed=[s for s in stability if s['complete_calendar_period']]
-        if len(closed)<2:blockers.append('Fewer than two completed 30-day evaluation cohorts; stability is unestablished')
-        deterioration=bool(closed and closed[-1]['mean_Brier_minus_constant']>0)
+        if any(not s['fully_labeled'] for s in closed):blockers.append('Completed calendar cohorts still have missing outcomes; no selective settled-only review')
+        completed=[s for s in closed if s['fully_labeled']]
+        if len(completed)<2:blockers.append('Fewer than two completed and fully labeled 30-day cohorts; stability is unestablished')
+        deterioration=bool(completed and completed[-1]['mean_Brier_minus_constant']>0)
         if deterioration:blockers.append('Latest completed cohort is worse than recorded baseline; investigate deterioration')
         state='Eligible for approval review' if not blockers else 'Under forward evaluation' if group else 'Experimental'
         if not integrity or any(r['quarantined'] for r in group):state='Suspended'
         from intelligence.lifecycle import active_champion,suspension_reason
-        reviewed=active_champion(store,scope['sport'],scope['market'],league=scope['league'])
+        reviewed=active_champion(store,scope['sport'],scope['market'],league=scope['league'],now=now)
         suspension=suspension_reason(store,scope['sport'],scope['league'],scope['market'],scope['model_version'])
         if suspension:state='Suspended';blockers.append(suspension)
         elif state!='Suspended' and reviewed and reviewed.get('evidence_id')==scope['evidence_id'] and reviewed.get('model_version')==scope['model_version']:
             if scope['point'] is None or reviewed.get('contract_point')==scope['point']:state='Approved'
         cards.append({'scope':scope,'state':state,'recorded':len(group),'independent_pregame_records':len(independent),
             'quarantined':sum(r['quarantined'] for r in group),'protocol_locked_at':protocol['at'],'scores':report,
+            'completed_cohort_review':review,
             'stability':stability,'monitoring':'Review deterioration at completed cohort boundary' if deterioration else 'No eligible deterioration conclusion',
             'planning':sample_plan(p),'review_blockers':blockers,'automatic_approval':False,
             'prediction_model_review':'External verification and explicit reviewed registry action remain required',
@@ -130,6 +138,8 @@ def status_for(store,sport,league,market,model_version,now=None,point=None,evide
             and (evidence_id is None or c['scope']['evidence_id']==evidence_id)]
         states={c['state'] for c in found}
         state='Suspended' if 'Suspended' in states else 'Approved' if states=={'Approved'} else 'Eligible for approval review' if states=={'Eligible for approval review'} else 'Under forward evaluation' if found else 'Experimental'
+        from intelligence.lifecycle import suspension_reason
+        if suspension_reason(store,sport,league,market,model_version):state='Suspended'
         return {'state':state,'recorded':sum(c['recorded'] for c in found),'groups':found,'betting_approved':False}
     except (sqlite3.Error,OSError,ValueError,KeyError):
         return {'state':'Experimental','recorded':None,'problem':'Forward reliability evidence unavailable; no approval inferred','betting_approved':False}

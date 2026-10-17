@@ -38,7 +38,7 @@ class Config:
         if u.scheme!='https' or not re.fullmatch(r'[a-z0-9]{20}\.supabase\.co',u.netloc) or u.path not in ('','/') or u.query or u.fragment:
             return 'Only a configured official HTTPS Supabase project origin is supported'
         if not re.fullmatch(r'[a-z0-9][a-z0-9._-]{2,62}',self.bucket):return 'Invalid private bucket name'
-        if not re.fullmatch(r'[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}',self.key):
+        if len(self.key)>4096 or not re.fullmatch(r'[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}',self.key):
             return 'Configure the legacy server-only service_role JWT in Secrets; no key is requested in chat'
         return None
 

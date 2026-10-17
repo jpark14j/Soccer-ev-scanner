@@ -1,5 +1,38 @@
 # Verification matrix
 
+## Coordinated phases 7–9 — October 17, 2026 UTC
+
+**534 local tests pass** (49 added since Phase 6). Existing tests are unchanged.
+New coverage exercises defined research ranking/probability fallback, supported
+format compatibility, no correlated probability multiplication, baseline/joint
+report integrity, immutable first-pregame recording across books/sides, exact
+final reconciliation, postponed/conflicting sources, precision/power/block
+scorecards, completed-cohort review, scoped and expiring approvals/suspension,
+restored-budget holds and disabled remote backup/scheduler behavior.
+
+The full synthetic-provider replay runs actual model functions, records/ranks
+research, retains losses, reconciles outcomes and answers local forward queries
+without promoting a model. Actual app first loads, all four pages, filters and
+saved rechecks run with provider/OpenAI clients blocked. Store generation changes
+invalidate cache at the same path. Remote transport/restore tests use only an
+in-memory fake service; they do not establish real hosted durability.
+
+Compilation, dependency consistency, whitespace and configured-secret checks
+pass. Thirty-four frozen model/source/policy/registry/workflow/dependency files
+match Phase 6. The new joint report exactly reproduces except generation time/
+checksum. Port-8515 isolated startup returned HTTP 200 `ok` with credentials
+removed, cap zero, paid AI/results refresh/remote backup disabled. No actual
+odds/results/OpenAI/remote-storage request was made. Local genuine new forecasts,
+labels, reviewed approvals and remote receipts remain zero.
+
+Milestone 7 CI: 497 passed, one documented private-archive skip; milestone 8 CI:
+527 passed, the same skip. Final existing CI runs on the final development
+commit. Full facts and preview instructions:
+[readiness report](PHASES7_9_READINESS.md),
+[evidence JSON](evidence/master-phases-verification.json).
+Hosted preview browsing and off-host recovery remain unverified; no production
+readiness or independent forecasting advantage is claimed.
+
 ## Phase 6 top research and quantitative evaluation — October 16, 2026 (Toronto)
 
 **485 local offline tests pass** (29 added); existing tests are unchanged.

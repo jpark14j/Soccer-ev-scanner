@@ -106,15 +106,19 @@ def change_champion(store,artifact_id,evidence,review_reference,action='promote'
             (now.isoformat(),artifact_id,action,review_reference,json.dumps(evidence,allow_nan=False)))
 
 
-def active_champion(store,sport,market,league=None):
+def active_champion(store,sport,market,league=None,now=None):
+    now=now or utcnow()
     ensure_registry(store)
     with store.connect() as db:
-        rows=db.execute('SELECT a.payload,m.action FROM model_actions m JOIN model_artifacts a ON a.id=m.artifact_id ORDER BY m.id DESC').fetchall()
+        rows=db.execute('SELECT a.payload,m.action,m.at FROM model_actions m JOIN model_artifacts a ON a.id=m.artifact_id ORDER BY m.id DESC').fetchall()
     matches={}
     for row in rows:
         report=json.loads(row['payload'])['report']
+        if parse_time(row['at'])>now:continue
         if (report.get('sport'),report.get('market'))==(sport,market) and (league is None or report.get('league')==league):
-            matches.setdefault(report.get('league'),None if row['action']=='suspend' else report)
+            try:valid=parse_time(report['generated_at'])<=now<=parse_time(report['expires_at'])
+            except (KeyError,ValueError,TypeError):valid=False
+            matches.setdefault(report.get('league'),report if valid and row['action']!='suspend' else None)
     return next(iter(matches.values())) if len(matches)==1 else None
 
 

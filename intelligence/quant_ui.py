@@ -13,6 +13,7 @@ def render_best(analysis,books,secret=None):
     sensitive=load_config(secret).sensitive_values;safe=lambda s:redact(str(s),sensitive)
     result=decide(analysis,books)
     st.subheader("Today's Best-Supported Bet")
+    st.caption('APPROVED OPPORTUNITY · evaluated separately from experimental research')
     best=result['best']
     if not best:
         st.info('NO QUALIFYING BET — the available evidence does not support an approved selection or ticket.')

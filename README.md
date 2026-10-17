@@ -5,6 +5,13 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [Phases 7–9 readiness report](docs/PHASES7_9_READINESS.md) covers the defined
+risk/probability rankings, dependent-format research, immutable prospective
+evaluation, scoped reliability and disabled optional private recovery. Page
+loads now inspect saved data without provider calls; retrieval remains explicit
+and capped. No independent accuracy gain, approved model, executable parlay EV
+or hosted durable storage is claimed. Start with its exact preview instructions.
+
 The [Phase 6 research guide](docs/PHASE6_TOP_RESEARCH.md) documents the new
 experimental top single/parlay summaries, read-only zero-odds audit and saved-price
 session repairs. It also reports the additional beta-calibration/annual-refit and

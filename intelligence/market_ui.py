@@ -16,7 +16,9 @@ def quota_banner(store,settings):
     info=quota_details(store,settings.daily_limit)
     st.caption(f'Local odds reservations: {info["used"]}/{info["limit"]}; {info["remaining"]} remaining. '
         f'Next local reset {info["next_reset_toronto"]} · {info["next_reset_utc"]}. This is not the provider account reset.')
-    if info['remaining']==0:
+    if info.get('recovery_hold'):
+        st.info('Restored-store provider requests remain held until explicit usage review. A daily reset does not release this hold.')
+    elif info['remaining']==0:
         st.info('The local odds budget is exhausted. Refresh is disabled; cached observations remain available for inspection. No spending cap is raised automatically.')
     return info
 
