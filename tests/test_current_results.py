@@ -168,10 +168,12 @@ def test_request_cap_is_atomic_shared_and_navigation_status_is_read_only(store):
 
 @pytest.mark.parametrize('change',['score','date','withdraw','team_id','fixture_id'])
 def test_cross_snapshot_conflicts_are_not_silently_replaced(store,change):
-    now=utcnow();p=payload(now=now)
+    # Exercise six-hour expiry within one UTC date at every wall-clock hour.
+    # Falling back to `later=now` left the accepted journal fresh after 18 UTC,
+    # so no changed provider payload was ever fetched or tested.
+    now=utcnow().replace(hour=8,minute=0,second=0,microsecond=0);p=payload(now=now)
     assert current(store,'Bundesliga',now,CONFIG,Session(Response(p)))[1]['ok']
     later=now+timedelta(seconds=21601)
-    if later.date()!=now.date():later=now  # Explicitly expire the cache only, never reset quota.
     with store.connect() as db:db.execute('DELETE FROM cache WHERE key=?',(cache_key('Bundesliga','2026-27'),))
     p=payload(now=later);m=p['matches'][0]
     if change=='score':m['score']['fullTime']['home']+=1

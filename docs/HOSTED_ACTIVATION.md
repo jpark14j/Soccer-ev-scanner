@@ -87,6 +87,27 @@ generation fence and write-ahead budgets remain the provider authority.
    sports-provider requests. Confirm it in preview, then perform the preview
    restart check above. Leave worker/schedule variables absent or zero.
 
+### Safe configuration diagnostics
+
+Prefer the project origin `https://<project-ref>.supabase.co` in
+`RESEARCH_STATE_URL`. The adapter also accepts the same official origin with a
+trailing slash or the exact `/rest/v1` / `/rest/v1/` suffix copied from Supabase's
+REST API panel. Those forms are normalized before the RPC path is appended.
+Arbitrary paths, queries, fragments, credentials, ports and other hosts remain
+blocked before any network call. This does not relax key-role or host checks.
+
+The CLI prints allowlisted codes such as `supabase_origin_invalid`,
+`state_key_missing`, `state_key_format_invalid` or `state_key_role_mismatch`
+without credential values, raw URLs, exception text or tracebacks. Unknown
+transport/storage failures retain `configuration_storage_or_provider`.
+The workflow prints a constant selected-operation message before verification.
+
+After an application/workflow fix, use **Actions → Development research worker
+→ Run workflow**, select the private repository's **main** and **verify**.
+Do not use **Re-run failed jobs** on the older run: GitHub reuses that run's old
+workflow/commit and its old immutable application pin. No research activation,
+budget release or odds/results credentials are required for verify.
+
 The job is completely skipped until the free-minutes review flag is set. Manual
 dispatch defaults to **verify**. State-check modes receive no odds/results token.
 The service-role key necessarily permits writes, but **verify** invokes only

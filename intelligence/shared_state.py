@@ -19,7 +19,33 @@ MAX_COMPRESSED=4*1024*1024
 MAX_RESPONSE=7*1024*1024
 
 
-class StateError(ValueError):pass
+CONFIG_FAILURES={
+    'shared_state_disabled':'RESEARCH_SHARED_STATE_ENABLED must be 1 for this explicit state operation.',
+    'shared_state_review_required':'Review shared snapshot use before setting RESEARCH_STATE_USE_REVIEWED=1.',
+    'supabase_origin_invalid':'Set RESEARCH_STATE_URL to the official HTTPS project origin; arbitrary paths, queries, ports and other hosts are refused.',
+    'state_key_missing':'Configure the required state key in server-side Secrets. Never paste credentials into chat or logs.',
+    'state_key_format_invalid':'This adapter requires the existing project legacy JWT key in server-side Secrets, not a new-format key.',
+    'state_key_role_mismatch':'The worker requires the legacy service_role JWT; the preview reader requires the anon JWT. Keep the writer key out of the preview.',
+    'state_reader_token_invalid':'Configure the original private reader token in preview Secrets; do not print or share it.',
+    'state_configuration_invalid':'Inspect private shared-state settings. No credential values are logged.',
+    'shared_state_access_denied':'Supabase denied state access. Privately check the project/key match, legacy JWT role and RPC permissions; do not share credentials.',
+    'shared_state_rpc_unavailable':'Check that the shipping migration and state RPC exist and the project Data API exposes public. Do not loosen table permissions.',
+    'shared_state_service_unavailable':'Supabase is unavailable or rate limited. Check project service health privately; no sports request is authorized.',
+    'shared_state_http_failure':'The state endpoint rejected the request. Inspect private service configuration; no response body or credentials are logged.',
+}
+
+
+class StateError(ValueError):
+    def __init__(self,message,*,code=None):
+        super().__init__(message);self.code=code
+
+
+def public_failure(error):
+    """Only allowlisted codes/actions; never echo arbitrary exception text."""
+    code=getattr(error,'code',None) if isinstance(error,StateError) else None
+    if isinstance(code,str) and code in CONFIG_FAILURES:return {'error_code':code,'action':CONFIG_FAILURES[code]}
+    return {'error_code':'configuration_storage_or_provider',
+        'action':'Inspect private configuration and saved heartbeat. No credentials or raw exception text are logged.'}
 
 
 @dataclass(frozen=True)
@@ -30,6 +56,13 @@ class Config:
     reader_key:str=field(default='',repr=False)
     reader_token:str=field(default='',repr=False)
     service_key:str=field(default='',repr=False)
+
+    def __post_init__(self):
+        # Supabase exposes both Project URL and REST API URL in its dashboard.
+        # Normalize only these exact forms on the already allowed official host.
+        # Never salvage a URL with credentials, ports, queries or arbitrary paths.
+        m=re.fullmatch(r'(https://[a-z0-9]{20}\.supabase\.co)(?:/|/rest/v1/?)?',self.url.strip())
+        if m:object.__setattr__(self,'url',m.group(1))
 
     def problem(self,writer=False):
         if not self.enabled:return 'Shared research state is disabled'
@@ -44,6 +77,18 @@ class Config:
         if role!=('service_role' if writer else 'anon'):return 'Use the service-role JWT only in the independent writer and the anon JWT only in the preview reader'
         if not writer and not re.fullmatch(r'[A-Za-z0-9_-]{32,128}',self.reader_token):return 'Configure a private high-entropy research reader token'
         return None
+
+    def problem_code(self,writer=False):
+        problem=self.problem(writer)
+        if not problem:return None
+        if not self.enabled:return 'shared_state_disabled'
+        if not self.reviewed:return 'shared_state_review_required'
+        if not re.fullmatch(r'https://[a-z0-9]{20}\.supabase\.co',self.url):return 'supabase_origin_invalid'
+        if not (self.service_key if writer else self.reader_key):return 'state_key_missing'
+        if problem=='Use the service-role JWT only in the independent writer and the anon JWT only in the preview reader':return 'state_key_role_mismatch'
+        if problem=='Configure a private high-entropy research reader token':return 'state_reader_token_invalid'
+        if problem in ('Invalid legacy project JWT format','Configure the server-only writer service-role or reader anon JWT in the appropriate Secrets'):return 'state_key_format_invalid'
+        return 'state_configuration_invalid'
 
 
 def configuration(getter=None):
@@ -63,7 +108,7 @@ class Client:
 
     def rpc(self,name,data):
         problem=self.config.problem(self.writer)
-        if problem:raise StateError(problem)
+        if problem:raise StateError(problem,code=self.config.problem_code(self.writer))
         if name not in ('research_state_read','research_control','research_state_view'):raise StateError('Unsupported state operation')
         if name!='research_state_read' and not self.writer:raise StateError('Read-only replica cannot write shared state')
         session=self.session or requests.Session();key=self.config.service_key if self.writer else self.config.reader_key
@@ -71,7 +116,12 @@ class Client:
             response=session.post(self.config.url+'/rest/v1/rpc/'+name,json=data,
                 headers={'apikey':key,'Authorization':'Bearer '+key},timeout=(5,30),allow_redirects=False,stream=True)
             try:
-                if response.status_code!=200:raise StateError('Shared-state request failed; check migration, access and service health privately')
+                if response.status_code!=200:
+                    status=response.status_code
+                    code=('shared_state_access_denied' if status in (401,403) else
+                        'shared_state_rpc_unavailable' if status==404 else
+                        'shared_state_service_unavailable' if status==429 or status>=500 else 'shared_state_http_failure')
+                    raise StateError('Shared-state request failed; check migration, access and service health privately',code=code)
                 chunks=[];size=0
                 for chunk in response.iter_content(65536):
                     size+=len(chunk)

@@ -117,8 +117,11 @@ def test_expired_source_revision_removes_estimates_without_refreshing_odds_or_re
 
 
 def test_cached_refresh_reports_newer_available_snapshot_until_re_evaluated(store,quote,monkeypatch):
-    enable(monkeypatch);now=utcnow();q,meta=supported_quote(store,quote,'Bundesliga',now)
-    a=evaluate_quotes(Analysis(quotes=[q]),store,allow_results_fetch=False)
+    # Isolate a newer receipt from fixture-date rollover. A late wall clock made
+    # the synthetic source finish 23:50 kickoffs just after midnight otherwise.
+    enable(monkeypatch);now=utcnow().replace(hour=8,minute=0,second=0,microsecond=0);q,meta=supported_quote(store,quote,'Bundesliga',now)
+    with patch('intelligence.pipeline.utcnow',return_value=now):
+        a=evaluate_quotes(Analysis(quotes=[q]),store,allow_results_fetch=False)
     later=now+timedelta(hours=6,seconds=1)
     # A genuine adapter call is exercised against a TEST transport after cache expiry.
     _,updated=cached_source(store,'Bundesliga',later)
@@ -128,7 +131,10 @@ def test_cached_refresh_reports_newer_available_snapshot_until_re_evaluated(stor
     assert row['available_current_snapshot_sha256']==updated['sha256']
     # Initial session also repairs a stale shared-analysis cache using saved data only.
     snapshot={'analysis':a}
-    with patch('intelligence.current_results.requests.Session.get',side_effect=AssertionError('No HTTP')):
+    with patch('intelligence.current_results.requests.Session.get',side_effect=AssertionError('No HTTP')),\
+         patch('intelligence.pipeline.utcnow',return_value=later),\
+         patch('intelligence.diagnostics.utcnow',return_value=later),\
+         patch('intelligence.cached_research.utcnow',return_value=later):
         fresh=synchronize(snapshot,store)
     assert fresh is not a
 

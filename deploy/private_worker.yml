@@ -66,8 +66,12 @@ jobs:
           COLLECT_RESULTS: '0'
         run: |
           case "$RESEARCH_OPERATION" in
-            verify) python -m intelligence.background --verify-shared ;;
-            storage-check) python -m intelligence.background --storage-check ;;
+            verify)
+              echo 'Selected operation: verify. Two state reads; no remote writes or sports-provider requests.'
+              python -m intelligence.background --verify-shared ;;
+            storage-check)
+              echo 'Selected operation: storage-check. Preservation checkpoint; no sports-provider requests.'
+              python -m intelligence.background --storage-check ;;
             research)
               if [[ "$RESEARCH_WORKER_ENABLED" != '1' ]]; then
                 echo 'Research mode is disabled. Configure and review its safety gates first.'

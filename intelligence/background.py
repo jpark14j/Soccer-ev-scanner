@@ -204,12 +204,12 @@ def main():
         elif args.run:result=run_background()
         else:result={'status':'disabled dry status; no network requests','activation_required':True}
         print(json.dumps(result,allow_nan=False,default=str))
-    except Exception:
+    except Exception as error:
         # CLI jobs must fail visibly without emitting an unknown exception's
         # text/traceback (which can contain credentials from a transport).
         # The integration seam still raises normally for deterministic tests.
-        print(json.dumps({'status':'blocked or failed','error_code':'configuration_storage_or_provider',
-            'action':'Inspect private configuration and saved heartbeat. No credentials or raw exception text are logged.'}));raise SystemExit(1) from None
+        from intelligence.shared_state import public_failure
+        print(json.dumps({'status':'blocked or failed',**public_failure(error)}));raise SystemExit(1) from None
 
 
 if __name__=='__main__':main()
