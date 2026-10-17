@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "sport": "Soccer",
+  "league": "Premier League",
+  "market": "h2h",
+  "model_version": "soccer-poisson-2",
+  "code_sha256": "7940541f7b0ed42dad087adfd98fa44a545234de46da37543d05e66f9cd80fcc",
+  "generated_at": "2026-10-16T03:00:28.559929+00:00",
+  "expires_at": "2026-11-15T03:00:28.559938+00:00",
+  "data_source": "https://www.football-data.co.uk/data.php",
+  "data_sha256": "889c9572283c0c1eef15bdf892028f6b4fd641aaafdad897847b4c6d17ebbb51",
+  "data_end": "2026-10-12T00:00:00+00:00",
+  "calibration_start": "2025-12-02 00:00:00",
+  "test_start": "2026-03-16 00:00:00",
+  "calibration_n": 161,
+  "test_n": 129,
+  "temperature": 1.6500000000000001,
+  "metrics": {
+    "brier": 0.6318606333147584,
+    "log_loss": 1.0499748603223957
+  },
+  "simple_baseline_metrics": {
+    "brier": 0.6617722964649031,
+    "log_loss": 1.094402523860163
+  },
+  "baseline_metrics": {
+    "brier": 0.6096897395517987,
+    "log_loss": 1.0184051082941399
+  },
+  "baseline_n": 129,
+  "baseline_timing_verified": false,
+  "beats_market_with_uncertainty": false,
+  "calibration_gap": 0.020803839019745966,
+  "calibration_bins": [
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "n": 3,
+      "wins": 0,
+      "interval": [
+        0.0,
+        0.5615060804490177
+      ]
+    },
+    {
+      "n": 216,
+      "wins": 62,
+      "interval": [
+        0.23084242580175715,
+        0.3506744481656813
+      ]
+    },
+    {
+      "n": 168,
+      "wins": 57,
+      "interval": [
+        0.2719958723588853,
+        0.41376124349664695
+      ]
+    },
+    {
+      "n": 76,
+      "wins": 32,
+      "interval": [
+        0.3164844262757472,
+        0.533217984497584
+      ]
+    },
+    {
+      "n": 20,
+      "wins": 10,
+      "interval": [
+        0.2992949144298199,
+        0.7007050855701801
+      ]
+    },
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "promotion_blockers": [
+    "At least 200 calibration and 200 untouched test events required",
+    "Market baseline observation timestamps unavailable/unverified",
+    "No statistically supported held-out improvement over market"
+  ],
+  "status": "research",
+  "evidence_id": "c9719e87b1bfa5b47611500fb954985576eb0e1e73029633e578dceee7456ed4"
+}

@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "sport": "NBA",
+  "league": "NBA",
+  "market": "h2h",
+  "model_version": "nba-margin-normal-1",
+  "code_sha256": "7940541f7b0ed42dad087adfd98fa44a545234de46da37543d05e66f9cd80fcc",
+  "generated_at": "2026-10-16T03:00:39.391277+00:00",
+  "expires_at": "2026-11-15T03:00:39.391295+00:00",
+  "data_source": "FiveThirtyEight Historical NBA Elo, CC BY 4.0; archived home-game final scores through 2015",
+  "data_sha256": "b59d921fc8f3965407f9c7751969afe2e4ee301edd832358765f53b04b8f085e",
+  "data_end": "2015-06-16T00:00:00+00:00",
+  "calibration_start": "2014-04-20 00:00:00",
+  "test_start": "2015-01-19 00:00:00",
+  "calibration_n": 681,
+  "test_n": 701,
+  "temperature": 0.8,
+  "metrics": {
+    "brier": 0.4092272148662286,
+    "log_loss": 0.5957517547798187
+  },
+  "simple_baseline_metrics": {
+    "brier": 0.4736828543259238,
+    "log_loss": 0.666613251328706
+  },
+  "baseline_metrics": null,
+  "baseline_n": 0,
+  "baseline_timing_verified": false,
+  "beats_market_with_uncertainty": false,
+  "calibration_gap": 0.03398563408237883,
+  "calibration_bins": [
+    {
+      "n": 6,
+      "wins": 0,
+      "interval": [
+        0.0,
+        0.3903430336530645
+      ]
+    },
+    {
+      "n": 59,
+      "wins": 11,
+      "interval": [
+        0.10742612239043585,
+        0.30379192425382523
+      ]
+    },
+    {
+      "n": 137,
+      "wins": 29,
+      "interval": [
+        0.1516209084819946,
+        0.28746527060145804
+      ]
+    },
+    {
+      "n": 218,
+      "wins": 84,
+      "interval": [
+        0.32323342451030324,
+        0.45138053427831004
+      ]
+    },
+    {
+      "n": 261,
+      "wins": 109,
+      "interval": [
+        0.3594113404371348,
+        0.4782274595097014
+      ]
+    },
+    {
+      "n": 261,
+      "wins": 152,
+      "interval": [
+        0.5217725404902988,
+        0.6405886595628653
+      ]
+    },
+    {
+      "n": 218,
+      "wins": 134,
+      "interval": [
+        0.54861946572169,
+        0.6767665754896969
+      ]
+    },
+    {
+      "n": 137,
+      "wins": 108,
+      "interval": [
+        0.712534729398542,
+        0.8483790915180054
+      ]
+    },
+    {
+      "n": 59,
+      "wins": 48,
+      "interval": [
+        0.6962080757461748,
+        0.8925738776095642
+      ]
+    },
+    {
+      "n": 6,
+      "wins": 6,
+      "interval": [
+        0.6096569663469354,
+        0.9999999999999999
+      ]
+    }
+  ],
+  "promotion_blockers": [
+    "Market baseline observation timestamps unavailable/unverified",
+    "No statistically supported held-out improvement over market",
+    "Historical dataset is too old for current publication"
+  ],
+  "status": "research",
+  "evidence_id": "dc07a8da4494950a7ff9a259508b90f7c5d83d499dfac596c24898958a0120a3"
+}

@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "sport": "NBA",
+  "model_version": "nba-paired-score-research-1",
+  "status": "research",
+  "data_source": "FiveThirtyEight, Historical NBA Elo dataset, CC BY 4.0. Game information credited by publisher to Basketball-Reference. Modified: retain home games and final scores from last three archived seasons; omit Elo forecasts.",
+  "data_sha256": "b59d921fc8f3965407f9c7751969afe2e4ee301edd832358765f53b04b8f085e",
+  "code_sha256": "350e44ee8f849cec08ba755f2c12668cf27895e85a8e4b1a7728d1ff86501e74",
+  "data_end": "2015-06-16T00:00:00+00:00",
+  "generated_at": "2026-10-16T17:05:45.554004+00:00",
+  "calibration_start": "2014-04-20 00:00:00",
+  "test_start": "2015-01-19 00:00:00",
+  "tasks": [
+    {
+      "market": "spreads",
+      "selection_rule": "Home",
+      "fixed_diagnostic_line": -5.5,
+      "calibration_n": 681,
+      "test_n": 701,
+      "temperature": 0.5,
+      "metrics": {
+        "brier": 0.45169825142398645,
+        "log_loss": 0.644714194307047
+      },
+      "simple_baseline_metrics": {
+        "brier": 0.5066795314788926,
+        "log_loss": 0.7001320278417771
+      },
+      "classification_accuracy": 0.6476462196861626,
+      "accuracy_interval": [
+        0.6115653092004194,
+        0.6821176970239577
+      ],
+      "baseline_classification_accuracy": 0.5392296718972895,
+      "test_positive_rate": 0.4607703281027104,
+      "calibration_gap": 0.08192737738628993,
+      "calibration_bins": [
+        {
+          "bin": 0,
+          "n": 5,
+          "mean_forecast": 0.0793599331939153,
+          "observed": 0.2,
+          "observed_frequency_interval": [
+            0.03622316096978745,
+            0.6244717358814613
+          ]
+        },
+        {
+          "bin": 1,
+          "n": 82,
+          "mean_forecast": 0.17032305025232558,
+          "observed": 0.2682926829268293,
+          "observed_frequency_interval": [
+            0.18435989365284994,
+            0.37296429415352833
+          ]
+        },
+        {
+          "bin": 2,
+          "n": 100,
+          "mean_forecast": 0.236794115784059,
+          "observed": 0.23,
+          "observed_frequency_interval": [
+            0.15843154746876406,
+            0.32154564856827694
+          ]
+        },
+        {
+          "bin": 3,
+          "n": 224,
+          "mean_forecast": 0.332838724220263,
+          "observed": 0.39285714285714285,
+          "observed_frequency_interval": [
+            0.33122142633515395,
+            0.4581058958044377
+          ]
+        },
+        {
+          "bin": 4,
+          "n": 102,
+          "mean_forecast": 0.45209531712418827,
+          "observed": 0.5588235294117647,
+          "observed_frequency_interval": [
+            0.4620686963178269,
+            0.6513082745518501
+          ]
+        },
+        {
+          "bin": 5,
+          "n": 148,
+          "mean_forecast": 0.5571312546213136,
+          "observed": 0.6891891891891891,
+          "observed_frequency_interval": [
+            0.6106302753584151,
+            0.7581751113076894
+          ]
+        },
+        {
+          "bin": 6,
+          "n": 38,
+          "mean_forecast": 0.6406855153695741,
+          "observed": 0.7368421052631579,
+          "observed_frequency_interval": [
+            0.5799084979362465,
+            0.8502853761029869
+          ]
+        },
+        {
+          "bin": 7,
+          "n": 2,
+          "mean_forecast": 0.7069792019760179,
+          "observed": 1.0,
+          "observed_frequency_interval": [
+            0.34237195288961925,
+            1.0
+          ]
+        }
+      ],
+      "betting_win_rate": null,
+      "roi": null,
+      "pnl_units": null,
+      "limitation": "Fixed threshold forecast diagnostic, not observed historical markets or a betting strategy"
+    },
+    {
+      "market": "totals",
+      "selection_rule": "Over",
+      "fixed_diagnostic_line": 220.5,
+      "calibration_n": 681,
+      "test_n": 701,
+      "temperature": 0.8500000000000001,
+      "metrics": {
+        "brier": 0.23254837469579445,
+        "log_loss": 0.3861347104544577
+      },
+      "simple_baseline_metrics": {
+        "brier": 0.24051333372571831,
+        "log_loss": 0.40460286961397834
+      },
+      "classification_accuracy": 0.8601997146932953,
+      "accuracy_interval": [
+        0.8325599396981602,
+        0.883913094810586
+      ],
+      "baseline_classification_accuracy": 0.8601997146932953,
+      "test_positive_rate": 0.1398002853067047,
+      "calibration_gap": 0.04583045859348971,
+      "calibration_bins": [
+        {
+          "bin": 0,
+          "n": 321,
+          "mean_forecast": 0.08057182907773915,
+          "observed": 0.06542056074766354,
+          "observed_frequency_interval": [
+            0.04318352383549717,
+            0.09793633273459729
+          ]
+        },
+        {
+          "bin": 1,
+          "n": 372,
+          "mean_forecast": 0.12917397275229225,
+          "observed": 0.20161290322580644,
+          "observed_frequency_interval": [
+            0.16398629457687888,
+            0.24533933622077628
+          ]
+        },
+        {
+          "bin": 2,
+          "n": 8,
+          "mean_forecast": 0.21046097450815696,
+          "observed": 0.25,
+          "observed_frequency_interval": [
+            0.07147768885802763,
+            0.5907301208974108
+          ]
+        }
+      ],
+      "betting_win_rate": null,
+      "roi": null,
+      "pnl_units": null,
+      "limitation": "Fixed threshold forecast diagnostic, not observed historical markets or a betting strategy"
+    }
+  ],
+  "score_convention": "Brier sums both class errors; binary Brier is half this value",
+  "interval_assumptions": "Wilson diagnostic intervals assume independent classification outcomes; shared-team/same-day dependence can invalidate nominal coverage",
+  "promotion_blockers": [
+    "No timestamped historical sportsbook lines/prices or accepted-parlay restrictions",
+    "Predeclared fixed thresholds do not validate every live market line",
+    "No held-out joint-market calibration or independently verified forward record",
+    "Injuries, confirmed lineups and player-level inputs are missing",
+    "Archive recency and distribution shift require review before current publication"
+  ],
+  "roi": null,
+  "profitable_edge_established": false,
+  "evidence_id": "df9db3fc2f86572c715f457d18409a8af9b70fe1a92cf406a712978046cf2667"
+}

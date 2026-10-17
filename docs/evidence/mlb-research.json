@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "sport": "MLB",
+  "league": "MLB",
+  "market": "h2h",
+  "model_version": "mlb-runs-poisson-1",
+  "code_sha256": "7940541f7b0ed42dad087adfd98fa44a545234de46da37543d05e66f9cd80fcc",
+  "generated_at": "2026-10-16T03:01:12.575479+00:00",
+  "expires_at": "2026-11-15T03:01:12.575495+00:00",
+  "data_source": "Retrosheet 2023-2025 game logs via pinned Chadwick official mirror; Retrosheet attribution applies",
+  "data_sha256": "e525f302a5cc09e37502b75dc49d691ddd2159b9b4cfce2319ac5adb210d78a6",
+  "data_end": "2025-09-28T00:00:00+00:00",
+  "calibration_start": "2024-08-25 00:00:00",
+  "test_start": "2025-06-06 00:00:00",
+  "calibration_n": 1402,
+  "test_n": 1494,
+  "temperature": 2.0,
+  "metrics": {
+    "brier": 0.4968886259809216,
+    "log_loss": 0.6900194099576266
+  },
+  "simple_baseline_metrics": {
+    "brier": 0.4978001293663011,
+    "log_loss": 0.6909461382768659
+  },
+  "baseline_metrics": null,
+  "baseline_n": 0,
+  "baseline_timing_verified": false,
+  "beats_market_with_uncertainty": false,
+  "calibration_gap": 0.021242741173254885,
+  "calibration_bins": [
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "n": 3,
+      "wins": 1,
+      "interval": [
+        0.0614903152761605,
+        0.7923450448735121
+      ]
+    },
+    {
+      "n": 36,
+      "wins": 7,
+      "interval": [
+        0.09752972019453349,
+        0.350283620635152
+      ]
+    },
+    {
+      "n": 325,
+      "wins": 140,
+      "interval": [
+        0.37805027373518124,
+        0.4851057259923471
+      ]
+    },
+    {
+      "n": 1038,
+      "wins": 470,
+      "interval": [
+        0.422741377049948,
+        0.4831944197160862
+      ]
+    },
+    {
+      "n": 1038,
+      "wins": 568,
+      "interval": [
+        0.5168055802839138,
+        0.5772586229500518
+      ]
+    },
+    {
+      "n": 325,
+      "wins": 185,
+      "interval": [
+        0.5148942740076529,
+        0.6219497262648187
+      ]
+    },
+    {
+      "n": 36,
+      "wins": 29,
+      "interval": [
+        0.6497163793648479,
+        0.9024702798054665
+      ]
+    },
+    {
+      "n": 3,
+      "wins": 2,
+      "interval": [
+        0.2076549551264879,
+        0.9385096847238394
+      ]
+    },
+    {
+      "n": 0,
+      "wins": 0,
+      "interval": [
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "promotion_blockers": [
+    "Market baseline observation timestamps unavailable/unverified",
+    "No statistically supported held-out improvement over market",
+    "Historical dataset is too old for current publication"
+  ],
+  "status": "research",
+  "evidence_id": "49fd23f4a9a823285823f25326f0edc499c0f33378b32236f05264e16ea23bcf"
+}

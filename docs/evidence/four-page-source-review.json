@@ -1,0 +1,23 @@
+{
+  "review_date_toronto": "2026-10-16",
+  "source_read_via": "GitHub connector; official current-season JSON",
+  "provider": "openfootball/football.json",
+  "source": "https://github.com/openfootball/football.json/blob/master/2026-27/en.1.json",
+  "completed": 45,
+  "latest": "2026-09-20",
+  "missing_past": 15,
+  "missing_dates": {
+    "2026-09-05": 2,
+    "2026-09-12": 2,
+    "2026-09-20": 1,
+    "2026-10-10": 6,
+    "2026-10-11": 3,
+    "2026-10-12": 1
+  },
+  "alternative_feed_enabled": false,
+  "account_created": false,
+  "paid_api_requests": 0,
+  "odds_requests": 0,
+  "frozen_evaluation_rebuilt": false,
+  "source_limitations": "No verified complete account-free alternative was activated. See FREE_RESULTS_READINESS.md."
+}

@@ -1,0 +1,11 @@
+{
+  "sport": "MLB",
+  "rows": 7276,
+  "data_through": "2025-09-28T00:00:00",
+  "path": "data/research/history/mlb.csv",
+  "source": [
+    "https://raw.githubusercontent.com/chadwickbureau/retrosheet/118094bb3fc2ca292c25fccf54e7541762887bf6/seasons/2023/GL2023.TXT",
+    "https://raw.githubusercontent.com/chadwickbureau/retrosheet/118094bb3fc2ca292c25fccf54e7541762887bf6/seasons/2024/gl2024.txt",
+    "https://raw.githubusercontent.com/chadwickbureau/retrosheet/118094bb3fc2ca292c25fccf54e7541762887bf6/seasons/2025/GL2025.TXT"
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "phase": "3A",
+  "checked_at": "2026-10-16T22:47:34.145105+00:00",
+  "starting_commit": "bbda4e3d0f8a5aca1d115cadb4a4758da8f26c48",
+  "branch": "development/verified-sports-intelligence",
+  "draft_pr": 1,
+  "offline_tests_passed": 353,
+  "new_tests": 50,
+  "local_python": "3.12",
+  "local_startup": {
+    "status": 200,
+    "body": "ok",
+    "paid_AI_enabled": false,
+    "odds_calls": 0,
+    "results_calls": 0
+  },
+  "compilation": "passed",
+  "pip_check": "passed",
+  "git_whitespace_check": "passed",
+  "security": {
+    "configured_secret_matches": false,
+    "no_new_dependencies": true,
+    "new_modules_no_arbitrary_code_execution": true,
+    "live_penetration_test": false
+  },
+  "source_audit": [
+    {
+      "league": "Premier League",
+      "file": "en.1",
+      "fixtures": 380,
+      "completed": 45,
+      "latest_completed": "2026-09-20",
+      "past_unscored": 15,
+      "checked_at": "2026-10-16T22:43:36.453Z",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/en.1.json"
+    },
+    {
+      "league": "Bundesliga",
+      "file": "de.1",
+      "fixtures": 306,
+      "completed": 33,
+      "latest_completed": "2026-09-20",
+      "past_unscored": 12,
+      "checked_at": "2026-10-16T22:43:36.454Z",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/de.1.json"
+    },
+    {
+      "league": "Ligue 1",
+      "file": "fr.1",
+      "fixtures": 306,
+      "completed": 41,
+      "latest_completed": "2026-09-20",
+      "past_unscored": 13,
+      "checked_at": "2026-10-16T22:43:36.454Z",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/fr.1.json"
+    }
+  ],
+  "manual_github_current_file_reads": 3,
+  "authenticated_football_data_requests": 0,
+  "additional_odds_requests": 0,
+  "paid_ai_requests": 0,
+  "actual_local_odds_usage": {
+    "day": "2026-10-16",
+    "used": 9,
+    "limit": 9
+  },
+  "actual_paper_forecasts": 0,
+  "actual_paper_outcome_labels": 0,
+  "current_forecast_leagues": [],
+  "current_gaps_resolved": 0,
+  "optional_results_defaults": {
+    "FOOTBALL_DATA_ENABLED": "0",
+    "FOOTBALL_DATA_USE_REVIEWED": "0",
+    "PAID_ANALYST_APPROVED": "0"
+  },
+  "required_secret": "FOOTBALL_DATA_TOKEN",
+  "new_provider_http_limits": {
+    "per_UTC_day_per_store": 6,
+    "rolling_minute": 10,
+    "cache_seconds": 21600,
+    "rate_limit_cooldown_seconds": 86400,
+    "retries": 0,
+    "redirects": false
+  },
+  "frozen_artifacts": {
+    "Premier League": {
+      "artifact_sha256": "619f931210080a3093a09a57290a62faaeba40c24b243789cbdc424ace8a78f3",
+      "model_code_sha256": "4e53249981c1a52ee599de4ee794703ffdfa80ef3aca2715bdfb2dd71498e76f",
+      "unchanged": true,
+      "approved": false
+    },
+    "Bundesliga": {
+      "artifact_sha256": "7306259c05f4ce1a418d019a7d9f1dd013e98f68794d0b10e5040e38e0c64542",
+      "model_code_sha256": "eae4ba4a4256c896c1af9a0b8f713d89d8d4d7c541949126a0e91b59cc985f9e",
+      "unchanged": true,
+      "approved": false
+    },
+    "Ligue 1": {
+      "artifact_sha256": "764e7e675a37c1a612978fae726c9f65a588560d3be25526aaaadee3dfc0aac6",
+      "model_code_sha256": "eae4ba4a4256c896c1af9a0b8f713d89d8d4d7c541949126a0e91b59cc985f9e",
+      "unchanged": true,
+      "approved": false
+    }
+  },
+  "redeployment_persistence_verified": false,
+  "hosted_preview_interactive_verified": false,
+  "unverified": [
+    "Authenticated current results and September/October recovery",
+    "Actual free-tier latency and account entitlements",
+    "New provider exact team aliases from a genuine payload",
+    "Hosted preview rebuild/interactive browser",
+    "Off-host backup restore",
+    "Commercial resale/transfer permissions"
+  ],
+  "ci": "Existing workflow retained; check commit-linked GitHub Actions after branch publication"
+}

@@ -1,0 +1,14 @@
+{
+  "version": "forward-evaluation-1",
+  "ranking_version": "risk-research-1",
+  "confidence": 0.95,
+  "calibration_precision_half_width": 0.05,
+  "minimum_relevant_brier_improvement": 0.01,
+  "paired_difference_planning_sd": 0.25,
+  "power": 0.8,
+  "minimum_time_blocks": 30,
+  "monitoring": "Fixed 30-UTC-day cohorts; no repeated significance testing for automatic promotion",
+  "independent_confirmation": "Only actual immutable records after a store-specific protocol lock; no imported legacy records or reconstructed backtests",
+  "approval": "Eligibility for human review only; never automatic promotion or lowered existing publication gates",
+  "scope": "Each sport, league, market contract and model/evidence version separately; shared game observations are dependent"
+}

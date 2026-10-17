@@ -1,0 +1,85 @@
+{
+  "checked_at": "2026-10-16T04:45:53.462762+00:00",
+  "development_base": "7d196b67648f401e0b475852346f5774ef57fecf",
+  "unit_integration_ui_tests": {
+    "passed": 162,
+    "failed": 0,
+    "real_network_blocked": true
+  },
+  "genuine_provider_check": {
+    "checked_at": "2026-10-16T04:39:07.597735+00:00",
+    "competitions_requested": [
+      "NBA",
+      "MLB",
+      "Premier League"
+    ],
+    "quote_count": 516,
+    "current_ontario_quote_count": 454,
+    "research_candidates_displayed": 3,
+    "compatible_candidates_in_pool": 13524,
+    "sports_in_candidates": [
+      "MLB",
+      "NBA"
+    ],
+    "model_status_counts": {
+      "research": 6
+    },
+    "probability_estimates_available": 204,
+    "errors": [],
+    "local_day_credits_used_and_cap": [
+      3,
+      16
+    ],
+    "paid_openai_requests": 0,
+    "research_exclusions": {
+      "Ontario provider provenance unavailable or registry expired": 62,
+      "Contradictory match winners in the same event": 276
+    },
+    "executable_candidates": 0
+  },
+  "captured_genuine_data_ui_check": {
+    "checked_at": "2026-10-16T04:42:01.318705+00:00",
+    "initial_exceptions": 0,
+    "current_displayed_candidates": 3,
+    "quotes_from_genuine_provider_snapshot": 516,
+    "paid_ai_enabled": false,
+    "external_requests_during_ui_test": 0,
+    "NBA": {
+      "exceptions": 0,
+      "candidate_tables": 3
+    },
+    "Soccer": {
+      "exceptions": 0,
+      "candidate_tables": 3
+    },
+    "MLB": {
+      "exceptions": 0,
+      "candidate_tables": 0
+    },
+    "three_legs": {
+      "exceptions": 0,
+      "candidate_tables": 3
+    },
+    "assistant": {
+      "exceptions": 0,
+      "mode": "Local \u00b7 rule-based"
+    }
+  },
+  "isolated_streamlit_health": {
+    "http": 200,
+    "body": "ok"
+  },
+  "preview": {
+    "url": "https://soccer-ev-scanner-preview-jp.streamlit.app/",
+    "remote_browser_verified": false,
+    "limitation": "This environment cannot reach the preview URL (ProxyError); the web reader also could not access it. No inference about app availability is made."
+  },
+  "qualification": {
+    "actual_combined_price_feed_connected": false,
+    "validated_joint_model_connected": false,
+    "research_candidates_published": 0,
+    "positive_parlay_ev_claimed": false
+  },
+  "main_production_paid_ai_changed": false,
+  "paid_openai_requests": 0
+}

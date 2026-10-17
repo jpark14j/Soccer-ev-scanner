@@ -1,0 +1,20 @@
+{
+  "version": "soccer-challengers-1",
+  "training_start": "2020-07-01",
+  "training_end": "2023-06-30",
+  "calibration_start": "2023-07-01",
+  "calibration_end": "2024-06-30",
+  "test_start": "2024-07-01",
+  "test_end": "2025-06-30",
+  "ridge": 10.0,
+  "half_life_days": 365,
+  "minimum_training_team_games": 16,
+  "rho_grid": [-0.15, -0.10, -0.05, 0.0, 0.05, 0.10, 0.15],
+  "score_temperature_grid": [0.85, 1.0, 1.15],
+  "joint_event_diagnostics": ["btts_and_over_2.5", "home_and_over_2.5"],
+  "score_limit": 40,
+  "bootstrap_resamples": 1000,
+  "seed": 51973,
+  "automatic_activation": false,
+  "note": "Fixed before this candidate comparison. Training fits Poisson attack/defence and training-only Dixon-Coles rho. Calibration-only Platt maps or coherent score temperature; no test-based tuning/selection. 2024-25 is unseen by candidate fitting but was examined earlier in this project, so it is not independent confirmation. All 2025-26 archives are incomplete; no fresh complete confirmation period or historical market prices are available. No model promotion."
+}

@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest>=8,<10
+PyYAML>=6,<7
+pgserver==0.1.4; sys_platform == 'linux' and platform_machine == 'x86_64'
+psycopg[binary]>=3.2,<4

@@ -1,0 +1,15 @@
+{
+  "version": "prospective-recalibration-1",
+  "training_minimum": 300,
+  "calibration_minimum": 200,
+  "partition_minimum_day_blocks": 30,
+  "test_days": 180,
+  "test_minimum": 200,
+  "test_minimum_day_blocks": 30,
+  "blend_grid": [0.0, 0.25, 0.5, 1.0],
+  "bootstrap_resamples": 1000,
+  "seed": 82913,
+  "promotion": "Human-reviewed existing registry gates only; no automatic activation or betting approval",
+  "test_isolation": "Candidate locked before test forecasts; one fixed 180-day future cohort, no test retuning or repeated significance looks",
+  "purpose": "A monotone calibration challenger to the frozen model, not an automatic claim of improved goal modeling"
+}

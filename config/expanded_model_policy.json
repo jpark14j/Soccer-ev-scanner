@@ -1,0 +1,21 @@
+{
+  "version": "venue-goals-1",
+  "targets": {"Bundesliga": "btts", "Ligue 1": "totals_2.5"},
+  "half_life_days": 365,
+  "prior_venue_games": 12,
+  "minimum_league_games": 300,
+  "minimum_team_games": 16,
+  "minimum_effective_team_games": 10,
+  "maximum_result_age_days": 21,
+  "minimum_calibration_bin": 50,
+  "train_end": "2022-06-30",
+  "calibration_start": "2022-07-01",
+  "calibration_end": "2023-06-30",
+  "validation_start": "2023-07-01",
+  "validation_end": "2024-06-30",
+  "test_start": "2024-07-01",
+  "test_end": "2025-06-30",
+  "bootstrap_resamples": 1000,
+  "bootstrap_seed": 42109,
+  "note": "Frozen before expanded-model scoring. Separate per-competition fits and venue strengths. Validation is diagnostic; no selection or tuning on validation/test metrics. Independent confirmation and market evidence are absent; research only. Existing EPL policy/artifact is untouched."
+}

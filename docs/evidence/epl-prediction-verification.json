@@ -1,0 +1,492 @@
+{
+  "verified_at": "2026-10-16T19:06:41.244692+00:00",
+  "model_version": "epl-goal-strength-1",
+  "model_code_sha256": "4e53249981c1a52ee599de4ee794703ffdfa80ef3aca2715bdfb2dd71498e76f",
+  "data_sha256": "9730e5630111e975214afd5db666402efe07e9d2b4b4629a3de8ada6ff5d0626",
+  "artifact_sha256": "619f931210080a3093a09a57290a62faaeba40c24b243789cbdc424ace8a78f3",
+  "status": "research_only",
+  "genuine_completed_results": 2298,
+  "calibration_eligible": 363,
+  "held_out_eligible": 368,
+  "public_current_results_check": {
+    "ok": true,
+    "checked_at": "2026-10-16T19:00:43.128433+00:00",
+    "source_url": "https://raw.githubusercontent.com/openfootball/football.json/master/2026-27/en.1.json",
+    "sha256": "bb91f0ab3e8359df163bb9ec98549bfed85e200dd4c32f3bd606b5890d932dd2",
+    "latest_result": "2026-09-20",
+    "unresolved_past_fixture_dates": {
+      "2026-09-05": 2,
+      "2026-09-12": 2,
+      "2026-09-20": 1,
+      "2026-10-10": 6,
+      "2026-10-11": 3,
+      "2026-10-12": 1
+    }
+  },
+  "chronological_test": {
+    "btts": {
+      "start": "2024-08-16",
+      "end": "2025-05-25",
+      "model": {
+        "binary_brier": {
+          "value": 0.24881624088017998,
+          "interval": [
+            0.23429860855180545,
+            0.26420680842973665
+          ]
+        },
+        "log_loss": {
+          "value": 0.691345274959299,
+          "interval": [
+            0.6612204757764061,
+            0.723080643814302
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5679347826086957,
+          "interval": [
+            0.5127322087732852,
+            0.6189383890268683
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "constant_baseline": {
+        "binary_brier": {
+          "value": 0.24728891914605497,
+          "interval": [
+            0.23549565978329473,
+            0.2598141696658463
+          ]
+        },
+        "log_loss": {
+          "value": 0.68784741203269,
+          "interval": [
+            0.6638572945703,
+            0.7133265626197179
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5679347826086957,
+          "interval": [
+            0.5118031043533351,
+            0.6207860560492139
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "league_poisson_baseline": {
+        "binary_brier": {
+          "value": 0.24786749570789993,
+          "interval": [
+            0.23566504313656297,
+            0.2610559794862607
+          ]
+        },
+        "log_loss": {
+          "value": 0.6890767503664436,
+          "interval": [
+            0.6641645755733477,
+            0.7159617918851401
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5679347826086957,
+          "interval": [
+            0.5118031043533351,
+            0.6207860560492139
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "model_minus_constant": {
+        "binary_brier": {
+          "value": 0.0015273217341249881,
+          "interval": [
+            -0.002759759359429602,
+            0.006530398610772104
+          ]
+        },
+        "log_loss": {
+          "value": 0.003497862926608982,
+          "interval": [
+            -0.005943726630908306,
+            0.014398465682738762
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.0,
+          "interval": [
+            -0.007936507936507936,
+            0.008219742586180941
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 2,
+          "mean_probability": 0.4975785356076363,
+          "observed_frequency": 0.5,
+          "frequency_interval": [
+            0.09453120573423074,
+            0.9054687942657693
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 98,
+          "mean_probability": 0.5706421454927957,
+          "observed_frequency": 0.5306122448979592,
+          "frequency_interval": [
+            0.43252467204457545,
+            0.6263904306010359
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 257,
+          "mean_probability": 0.6417617268931073,
+          "observed_frequency": 0.5797665369649806,
+          "frequency_interval": [
+            0.5186796143750927,
+            0.6385039874394638
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 11,
+          "mean_probability": 0.7091236142836078,
+          "observed_frequency": 0.6363636363636364,
+          "frequency_interval": [
+            0.35380117450784887,
+            0.8483352890463243
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.05614374118404061,
+      "positive_rate": 0.5679347826086957
+    },
+    "totals_2.5": {
+      "start": "2024-08-16",
+      "end": "2025-05-25",
+      "model": {
+        "binary_brier": {
+          "value": 0.2501143546937817,
+          "interval": [
+            0.23557113211189123,
+            0.26492931540983217
+          ]
+        },
+        "log_loss": {
+          "value": 0.6943732869391469,
+          "interval": [
+            0.6638694417519178,
+            0.7253301663031628
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5706521739130435,
+          "interval": [
+            0.5250390079180252,
+            0.6148426870748299
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "constant_baseline": {
+        "binary_brier": {
+          "value": 0.25048070783950965,
+          "interval": [
+            0.23769832799932353,
+            0.2636745988298042
+          ]
+        },
+        "log_loss": {
+          "value": 0.6947620893891403,
+          "interval": [
+            0.6684462538579111,
+            0.7219251270752809
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5706521739130435,
+          "interval": [
+            0.5250390079180252,
+            0.6148426870748299
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "league_poisson_baseline": {
+        "binary_brier": {
+          "value": 0.24551451595142967,
+          "interval": [
+            0.23662834637631006,
+            0.25428742613706296
+          ]
+        },
+        "log_loss": {
+          "value": 0.6841878684041284,
+          "interval": [
+            0.6662143420521806,
+            0.7018893609404929
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5706521739130435,
+          "interval": [
+            0.5250390079180252,
+            0.6148426870748299
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "model_minus_constant": {
+        "binary_brier": {
+          "value": -0.00036635314572798023,
+          "interval": [
+            -0.005266856978562803,
+            0.004997322271393213
+          ]
+        },
+        "log_loss": {
+          "value": -0.0003888024499932175,
+          "interval": [
+            -0.011250429102696614,
+            0.01122564420752015
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.0,
+          "interval": [
+            0.0,
+            0.0
+          ]
+        },
+        "n": 368,
+        "utc_day_blocks": 109
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 39,
+          "mean_probability": 0.5682513200192714,
+          "observed_frequency": 0.4358974358974359,
+          "frequency_interval": [
+            0.2930475387568963,
+            0.5902430835133052
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 275,
+          "mean_probability": 0.6511267356294483,
+          "observed_frequency": 0.56,
+          "frequency_interval": [
+            0.5009049591618672,
+            0.617441861069124
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 54,
+          "mean_probability": 0.7157470751834019,
+          "observed_frequency": 0.7222222222222222,
+          "frequency_interval": [
+            0.5910955707120475,
+            0.8238317234697763
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.08307421662757108,
+      "positive_rate": 0.5706521739130435
+    }
+  },
+  "new_odds_requests": 0,
+  "new_paid_ai_requests": 0,
+  "existing_local_odds_budget": {
+    "used": 9,
+    "limit": 9
+  },
+  "local_server": {
+    "port": 8507,
+    "health_http": 200,
+    "body": "ok",
+    "odds_key_passed": false,
+    "paid_ai_enabled": false
+  },
+  "streamlit_interactions": "Offline AppTest: complete synthetic input emits research; real source gaps block forecasts; dashboard, soccer, performance, assistant pass",
+  "hosted_preview": {
+    "url": "https://soccer-ev-scanner-preview-jp.streamlit.app/",
+    "verified": false,
+    "blocked_by": "Execution proxy returned ProxyError"
+  },
+  "no_current_forecast_claim": true,
+  "model_approved": false,
+  "tests": {
+    "passed": 259,
+    "network": "Real Requests and HTTPX transports blocked"
+  },
+  "profitability_or_roi_claim": false,
+  "production_modified": false,
+  "main_modified": false
+}
