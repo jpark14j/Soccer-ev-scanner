@@ -39,6 +39,15 @@ def configured_store(secret_getter=None):
     from intelligence.ledger import restore
     def setting(name,default):
         return os.getenv(name) or (secret_getter(name) if secret_getter else '') or default
+    from intelligence.shared_state import configuration,open_replica,StateError
+    if configuration(secret_getter).enabled:
+        try:
+            return open_replica(setting('RESEARCH_REPLICA_DIR','data/shared-replica'),
+                setting('INTELLIGENCE_DB','data/intelligence.sqlite3'))
+        except (StateError,OSError,ValueError):
+            store=Store(setting('INTELLIGENCE_DB','data/intelligence.sqlite3'),read_replica=True)
+            store.shared_status={'problem':'Saved shared replica integrity failed. Inspect the private saved head; no provider requests or authoritative publication permitted.'}
+            return store
     store = Store(setting('INTELLIGENCE_DB','data/intelligence.sqlite3'))
     restore(store,setting('PREDICTION_LEDGER_DIR','ledger'))
     return store
@@ -303,6 +312,7 @@ def evaluate_quotes(result,store,*,allow_results_fetch=True):
 def publish_current(result, store, now=None):
     """Recheck expiry at publication; renders must not revive cached recommendations."""
     now = now or utcnow()
+    if getattr(store,'read_replica',False):return []
     published = []
     for o in result.opportunities:
         eligible, _ = qualify(o.quote,o.estimate,now)

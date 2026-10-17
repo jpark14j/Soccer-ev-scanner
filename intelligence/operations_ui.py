@@ -4,13 +4,15 @@ from intelligence.lifecycle import registry_status
 
 
 def render_operations(analysis,store,secret=None):
+    from intelligence.automation_ui import render_health
+    render_health(store,secret)
     st.subheader('Research Operations')
     storage=storage_status(store);registry=registry_status(store)
     a,b,c=st.columns(3)
     a.metric('Private shadow forecasts',storage['shadow_forecasts'])
     b.metric('Candidate model artifacts',registry['candidate_artifacts'])
     c.metric('Reviewed model actions',registry['reviewed_actions'])
-    st.info('Research loads on first open or an explicit refresh within the existing cap. Pages and filters reuse the session scan. Streamlit is not an always-running scheduler. Scheduled collection/retraining and off-host persistence are not configured.')
+    st.info('Pages and filters use saved data. An optional independent single-writer worker is implemented but disabled until configured and verified. Streamlit is not an always-running scheduler and does not train models.')
     st.write(storage['note'])
     st.write('Final results are collected automatically for ended pending publications/shadow events when two existing credits are available. Settlement stays pending without exact verified results and reviewed operator rules. Player props, voids and quarter-line settlement are not inferred.')
     st.write('Shadow forecasts are immutable pregame research records. Provider-declared NBA/MLB finals can score their full-final targets; focused EPL forecasts can receive public source-reported full-time target labels. Soccer operator settlement scope remains unverified. These are not accepted tickets or a forward betting ROI record.')

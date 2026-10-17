@@ -1,0 +1,12 @@
+# Safe preview defaults. Merge selected entries into PREVIEW Secrets only.
+# This is an example, not an automatically loaded configuration or real secret.
+PAID_ANALYST_APPROVED = "0"
+ODDS_DAILY_CREDITS = "9"
+RESEARCH_SHARED_STATE_ENABLED = "0"
+RESEARCH_STATE_USE_REVIEWED = "0"
+RESEARCH_STATE_URL = ""
+RESEARCH_STATE_READER_KEY = ""
+RESEARCH_STATE_READ_TOKEN = ""
+RESEARCH_WORKER_ENABLED = "0"
+# The service-role writer key belongs only in the independent worker Secrets.
+# Existing ODDS_API_KEY / FOOTBALL_DATA_TOKEN stay private and are not copied here.

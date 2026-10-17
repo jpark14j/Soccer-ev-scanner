@@ -19,10 +19,14 @@ def quota_details(store,limit,now=None):
         from intelligence.request_guard import blocked
         held=blocked(db)
     used=row['used'] if row else 0
-    return {'used':used,'limit':limit,'remaining':0 if held else max(0,limit-used),'recovery_hold':held,**reset_info(now)}
+    replica=getattr(store,'read_replica',False)
+    return {'used':used,'limit':limit,'remaining':0 if held or replica else max(0,limit-used),'recovery_hold':held,
+        'read_only_replica':replica,**reset_info(now)}
 
 
 def refresh_reason(*,key_configured,selection_count,cost,quota,cooldown=False):
+    if quota.get('read_only_replica'):
+        return 'Shared mode uses one background writer. This dashboard replica cannot request sportsbook data; sync committed state instead.'
     if quota.get('recovery_hold'):
         return 'Restored-store requests are held until explicit provider-usage review. A daily reset does not release this hold.'
     if not key_configured:

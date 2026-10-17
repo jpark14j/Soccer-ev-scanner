@@ -1,0 +1,40 @@
+{
+  "baseline_commit": "f3b69232e85e26b08f141ce2cf6a5a3682a0d200",
+  "branch": "development/verified-sports-intelligence",
+  "local_tests": {
+    "passed": 557,
+    "new": 23,
+    "duration_seconds": 28.43,
+    "old_test_files_unchanged": 38
+  },
+  "local_postgres": {
+    "shipping_migration_executed": true,
+    "HTTP_transport": "mocked",
+    "hosted_Supabase_verified": false
+  },
+  "startup": {
+    "status": 200,
+    "body": "ok",
+    "port": 8516,
+    "credentials_removed": true,
+    "paid_AI_enabled": false,
+    "odds_cap": 0
+  },
+  "frozen_research_asset_files_unchanged": 7,
+  "actual_local_store_records_not_test_fixtures": {
+    "shadow_forecasts": 0,
+    "forward_forecasts": 0,
+    "forward_labels": 0,
+    "research_publications": 0,
+    "learning_challengers": 0,
+    "learning_forecasts": 0,
+    "learning_evaluations": 0,
+    "model_actions": 0
+  },
+  "paid_AI_enabled": false,
+  "new_external_accounts": 0,
+  "actual_sports_or_remote_service_requests": 0,
+  "recurring_scheduler_configured": false,
+  "main_or_production_modified": false,
+  "github_CI": "Check Draft PR #1 after publication; not known at evidence-file creation"
+}

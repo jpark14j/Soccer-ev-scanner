@@ -80,6 +80,8 @@ def render_evaluations(store):
 
 
 def render_performance(store):
+    from intelligence.automation_ui import render_published
+    render_published(store)
     paper,published,evaluations=st.tabs(['Prospective paper research','Published hypothetical records','Held-out model evaluations'])
     with paper:
         from intelligence.forward_ui import render_forward

@@ -12,8 +12,10 @@ from intelligence.domain import digest, parse_time, utcnow
 
 
 class Store:
-    def __init__(self, path='data/intelligence.sqlite3'):
+    def __init__(self, path='data/intelligence.sqlite3', *, request_authority=None, read_replica=False):
         self.path = str(path)
+        self.request_authority=request_authority
+        self.read_replica=read_replica
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.executescript('''
@@ -69,6 +71,19 @@ class Store:
     def reserve(self, cost, daily_limit=12, now=None):
         if cost <= 0 or daily_limit < 0:
             raise ValueError('Invalid quota budget')
+        if self.read_replica:return False
+        if self.request_authority:
+            # Postgres owns the durable reservation even if the next SQLite
+            # snapshot is never committed. Local state may only over-count it.
+            if cost>min(daily_limit,9):return False
+            with self.connect() as db:
+                from intelligence.request_guard import blocked
+                if blocked(db):return False
+            result=self.request_authority.reserve('odds',cost)
+            if not result:return False
+            with self.connect() as db:
+                db.execute('INSERT INTO budget VALUES(?,?) ON CONFLICT(day) DO UPDATE SET used=max(budget.used,excluded.used)',(result['day'],result['used']))
+            return True
         day = (now or utcnow()).date().isoformat()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -80,6 +95,19 @@ class Store:
                 return False
             db.execute('INSERT OR REPLACE INTO budget VALUES(?,?)', (day, used + cost))
         return True
+
+    def authorize_discovery(self):
+        if self.read_replica:return False
+        with self.connect() as db:
+            from intelligence.request_guard import blocked
+            if blocked(db):return False
+        return bool(self.request_authority.reserve('discovery',1)) if self.request_authority else True
+
+    def observed_charge(self,raw):
+        if not self.request_authority:return True
+        try:actual=int(raw) if raw is not None and str(raw).isdigit() else None
+        except (ValueError,TypeError):actual=None
+        return bool(self.request_authority.charge(actual))
 
     def claim_fetch(self,key,owner,now=None):
         now=now or utcnow()

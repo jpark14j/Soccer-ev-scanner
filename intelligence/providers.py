@@ -1,5 +1,6 @@
 """The Odds API adapter. Requests use only licensed public endpoints, not scraping."""
 import re
+import json
 import uuid
 from typing import Protocol
 import requests
@@ -35,6 +36,9 @@ class OddsAPI:
         self.key, self.store = key, store
         self.daily_limit, self.ttl = daily_limit, ttl
         self.session = session or requests.Session()
+        # Refuse redirect hops while retaining the existing injectable transport
+        # contract (get(url, params, timeout)). Real Requests raises before a hop.
+        if isinstance(self.session,requests.Session):self.session.max_redirects=0
 
     def _get(self, path, params, cost, now=None):
         if not self.key:
@@ -62,6 +66,8 @@ class OddsAPI:
     def _fetch(self,path,params,cost,cache_key,now):
         # Reserve each retry too, even on uncertain billing; fail closed on limits.
         for attempt in range(2):
+            if not cost and not self.store.authorize_discovery():
+                raise ProviderError('Provider discovery blocked: read-only replica, shared hold or bounded discovery limit')
             if cost and not self.store.reserve(cost, self.daily_limit, now):
                 raise ProviderError('Daily API credit budget exhausted; cached data may be stale')
             try:
@@ -71,6 +77,9 @@ class OddsAPI:
                 if attempt == 0:
                     continue
                 raise ProviderError('Odds provider connection failed') from None
+            if not self.store.observed_charge(response.headers.get('x-requests-last')):
+                response.close()
+                raise ProviderError('Provider cost was unexpected or unverifiable; shared requests held for review')
             if response.status_code >= 500 and attempt == 0:
                 continue
             if response.status_code != 200:
@@ -79,6 +88,8 @@ class OddsAPI:
                 payload = response.json()
             except ValueError:
                 raise ProviderError('Odds provider returned invalid JSON') from None
+            if len(self.key)>=8 and self.key in json.dumps(payload,ensure_ascii=False):
+                raise ProviderError('Provider response reflected credential material; no data was saved')
             result = {'data': payload, 'received_at': utcnow().isoformat(),
                       'credits_remaining': response.headers.get('x-requests-remaining'),
                       'credits_last': response.headers.get('x-requests-last')}

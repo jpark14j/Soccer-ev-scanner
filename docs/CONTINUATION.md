@@ -1,3 +1,10 @@
+# Phase 10 continuation
+
+Latest implementation/readiness: [Phase 10 operations](PHASE10_OPERATIONS.md).
+Recovery, tests and exact delivery continuation:
+[Phase 10 checkpoint](PHASE10_CHECKPOINT.md). The prior interrupted uncommitted
+work was recovered and preserved. No production/paid activation occurred.
+
 # Coordinated phases 7–9 checkpoint
 
 Starting verified commit: `26ec3869f4aeddccce49a42d21176c43c5430fc5`.

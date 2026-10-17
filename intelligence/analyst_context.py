@@ -75,6 +75,15 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
                 text+='Missing review evidence: '+'; '.join(card['review_blockers'])+'. No automatic model or betting approval.'
                 add('reliability_'+str(index),'models',scope['sport'],text)
         except (sqlite3.Error,OSError,ValueError,KeyError,TypeError):add('forward_evaluation','performance','all','Forward evaluation storage/protocol proof is unavailable. No score or reliability is inferred.')
+        try:
+            from intelligence.publication_journal import performance as publication_performance
+            from intelligence.learning import status as learning_status
+            published=publication_performance(store);learning=learning_status(store)
+            add('published_research','performance','all',f"Published research journal: {published['published_committed_pregame']} remotely committed pregame picks, {published['settled']} source-score settlements, {published['pending']} pending, {published['quarantined']} quarantined. Fixed-unit paper single returns: {published['paper_net_units'] if published['paper_net_units'] is not None else 'unavailable'}; parlay money returns unavailable without applicable observed combined quotes. This is separate from internal forecasts, legacy paper logs, backtests and actual bets. No profitability is established.")
+            add('learning_status','models','all',f"AI learning status: {len(learning['challengers'])} calibration challengers, {learning['test_forecasts']} actually recorded prospective challenger forecasts; last evaluation {learning['last_evaluation'] or 'unavailable'}. Frozen historical champions remain intact. Independent improvement is not established. Training happens only in the independent worker after locked training/calibration requirements; future test outcomes never tune the candidate. No automatic promotion or approval; chat cannot train, activate, purchase or bet.")
+            heartbeat=getattr(store,'shared_status',{}).get('envelope',{}).get('heartbeat',{})
+            add('automation_status','freshness','all',f"Saved background-worker last success: {heartbeat.get('last_success_at') or 'unavailable'}; last error code: {heartbeat.get('last_error_code') or 'none recorded'}. A saved run does not prove a recurring scheduler or hosted redeploy durability. New integrations default disabled; no sports requests or training are triggered by this chat.")
+        except (sqlite3.Error,OSError,ValueError,KeyError,TypeError):add('learning_status','models','all','Saved publication/learning evidence is unavailable; no improvement, activation or profitability inferred.')
     from intelligence.book_optimizer import best_by_game,optimize_by_book
     games=best_by_game(analysis,now=now)
     add('slate_summary','coverage','all',f'{len(games)} upcoming games discovered or observed in the configured slate; '
@@ -179,7 +188,7 @@ def build_context(analysis, performance=None, evaluations=(), now=None, sensitiv
     selected=select_candidates(analysis,sports=(focus_sport,) if focus_sport in ('NBA','Soccer','MLB') else ('NBA','Soccer','MLB'),now=now)
     add('parlay_summary','parlays',focus_sport,
         f'{len(selected.candidates)} current research candidates selected from {selected.eligible_quotes} eligible Ontario single quotes. No qualifying parlay opportunities identified today. '
-        'Ranking considers actual single-price freshness, model evidence, interval width and dependence warnings, not high payouts. No validated joint probability or authorized combined quote is connected; parlay EV is unavailable. Candidate-specific settled performance is not recorded, and cannot be inferred from historical model diagnostics.')
+        'Ranking considers actual single-price freshness, model evidence, interval width and dependence warnings, not high payouts. No validated joint probability or authorized combined quote is connected; parlay EV is unavailable. Price-only candidate history is not linked here; the separate published research journal is source-score research, not operator-ticket returns.')
     for index,candidate in enumerate(selected.candidates,1):
         description='; '.join(f"{leg.quote.sport} {leg.quote.event}: {selection_label(leg.quote)}, observed decimal {leg.quote.odds:.2f}, source {leg.quote.source_updated_at}, received {leg.quote.received_at}, model status {leg.model_status}" for leg in candidate.legs)
         add('parlay_'+candidate.id[:16],'parlays',focus_sport,
@@ -257,9 +266,9 @@ def select_local(question, context, history=()):
         kind = 'limitations'
     elif any(word in lower for word in ('perform','profit','roi','win rate','results')):
         kind = 'performance'
-    elif any(word in lower for word in ('model','reliabil','validat','calibrat','backtest','historical','confidence','why','forecast','probabilit','prediction')):
+    elif any(word in lower for word in ('model','reliabil','validat','calibrat','backtest','historical','confidence','why','forecast','probabilit','prediction','learning','challenger','training')):
         kind = 'models'
-    elif any(word in lower for word in ('stale','update','timestamp','changed','change','fresh')):
+    elif any(word in lower for word in ('stale','update','timestamp','changed','change','fresh','automation','background','worker')):
         kind = 'freshness'
     elif any(word in lower for word in ('odds','price','sportsbook','book offers')):
         kind = 'prices'
@@ -277,6 +286,8 @@ def select_local(question, context, history=()):
     if 'reliabil' in lower or 'forward' in lower:
         first=[id for id in chosen if id.startswith(('forward_','reliability_'))]
         chosen=first+[id for id in chosen if id not in first]
+    for words,fact in ((('learning','challenger','training'),'learning_status'),(('published','paper return'),'published_research'),(('automation','background','worker'),'automation_status')):
+        if any(word in lower for word in words) and fact in chosen:chosen=[fact]+[id for id in chosen if id!=fact]
     if kind=='coverage' and any(word in lower for word in ('games','slate')):
         chosen=['slate_summary',*[f.id for f in context.facts if f.id.startswith('games_')]]
     if kind=='parlays':

@@ -1,0 +1,8 @@
+# EXAMPLE ONLY: never installed or activated by this repository.
+# Use an existing always-on machine with gh securely authenticated to this repo.
+# CRON_TZ support varies: verify UTC scheduling on the chosen machine first.
+CRON_TZ=UTC
+17 10,16 * * * /usr/bin/gh workflow run telegram_alerts.yml --repo jpark14j/Soccer-ev-scanner --ref development/verified-sports-intelligence
+# Explicit development dispatch only. Main's schedule/deployment is unchanged.
+# The development research job also requires opt-in repository variables, the
+# migrated/bootstrap state, a reviewed quota scope, credentials and data rights.

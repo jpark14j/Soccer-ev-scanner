@@ -21,6 +21,14 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
     safe=lambda value:redact(str(value),sensitive)
     result=select_top(analysis,store,books,now,leagues)
     audit=inspect_odds(analysis,store,books,now,cap)
+    from intelligence.publication_journal import overall
+    overall_pick=overall(result)
+    st.subheader("Today's Best Overall AI Pick")
+    if overall_pick['winner']=='single':
+        st.write('**Best Overall Research Pick · single · experimental**')
+        st.caption(overall_pick['reason'])
+    else:
+        st.info('No defensible overall single-versus-parlay winner. '+overall_pick['reason'])
     st.subheader("AI's Top Research Pick — Experimental")
     st.caption('Local statistical-model and rule-based research summary; no generative AI request.')
     risk=result.get('risk_rankings',{})

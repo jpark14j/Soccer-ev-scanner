@@ -1,5 +1,19 @@
 # Verification matrix
 
+## Phase 10 — October 17, 2026
+
+**557 local tests pass** (23 new). Real local Postgres executes the shipping
+migration for fencing, concurrent reservations, immutable head/readback and
+crash behavior. Deterministic clock tests cover UTC rollover/expiry. The actual
+worker/model/publication/read-replica dashboard path is replayed with synthetic
+provider data; HTTP transport is mocked, not hosted Supabase. Publication losses,
+paper accounting and prospective challenger isolation/no-promotion are tested.
+All 38 earlier test files and seven frozen research asset files are unchanged.
+Compilation, dependencies, whitespace, configured-secret scan and isolated
+Streamlit HTTP 200 startup pass. Paid AI is off. Actual new sports-provider and
+remote-service requests: zero. See [Phase 10 readiness and setup](PHASE10_OPERATIONS.md)
+for external blockers; hosted durability and recurring operation are not claimed.
+
 ## Coordinated phases 7–9 — October 17, 2026 UTC
 
 **534 local tests pass** (49 added since Phase 6). Existing tests are unchanged.

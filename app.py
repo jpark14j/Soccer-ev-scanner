@@ -31,7 +31,21 @@ def secret(name):
         return ''
 
 
+from intelligence.shared_state import configuration as shared_configuration,StateError
+shared_config=shared_configuration(secret)
+shared_problem=None
+if shared_config.enabled:
+    @st.cache_data(ttl=300,show_spinner=False)
+    def sync_shared_state(scope,directory,_config):
+        from intelligence.shared_state import pull_replica
+        return pull_replica(directory,_config)
+    try:
+        sync_shared_state((shared_config.url,digest((shared_config.reader_key,shared_config.reader_token))),
+            os.getenv('RESEARCH_REPLICA_DIR') or secret('RESEARCH_REPLICA_DIR') or 'data/shared-replica',shared_config)
+    except (StateError,OSError,ValueError):
+        shared_problem='Shared-state synchronization unavailable. The last verified saved replica is retained; no sports-provider requests are made.'
 store = configured_store(secret)
+if shared_problem:st.info(shared_problem)
 from intelligence.data_settings import load_settings
 data_settings=load_settings(secret)
 from intelligence.current_results import configuration as results_configuration
@@ -51,9 +65,9 @@ with st.sidebar:
 
 
 @st.cache_data(ttl=1800,show_spinner=False)
-def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours,results_scope,store_instance):
+def load_analysis(api_key,competitions,db_path,cap,ttl,collect_results,window_hours,results_scope,store_instance,read_replica=False):
     from intelligence.storage import Store
-    data_store=Store(db_path)
+    data_store=Store(db_path,read_replica=read_replica)
     return run_analysis(api_key,list(competitions),store=data_store,collect_results=False,autonomous=True,window_hours=window_hours,cached_only=True)
 
 
@@ -68,13 +82,14 @@ if snapshot and snapshot.get('scope')==snapshot_scope:
 else:
     if not key:st.info('ODDS_API_KEY is not configured. Saved data remains inspectable; configure keys only in Secrets when you choose to retrieve markets.')
     with st.spinner('Checking saved markets and model evidence · no provider requests…'):
-        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope,store_instance)
+        result = load_analysis(key,tuple(leagues),store.path,data_settings.daily_limit,data_settings.cache_seconds,data_settings.collect_results,data_settings.window_hours,results_scope,store_instance,getattr(store,'read_replica',False))
 
 if not snapshot or snapshot.get('scope')!=snapshot_scope:
     st.session_state['_research_snapshot']={'scope':snapshot_scope,'analysis':result,'stored_at':utcnow().isoformat()}
 from intelligence.cached_research import synchronize
 result=synchronize(st.session_state['_research_snapshot'],store)
 st.caption('Opening pages and changing filters use saved data without provider requests. Prices expire after five minutes; Refresh analysis is an explicit capped retrieval.')
+if getattr(store,'read_replica',False):st.caption('Shared mode · read-only dashboard replica. Committed worker state is checked at most every five minutes; no app visit creates a publication or spends sports-provider credits.')
 
 from intelligence.quota import quota_details
 refresh_quota=quota_details(store,data_settings.daily_limit)

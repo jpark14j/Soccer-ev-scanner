@@ -154,6 +154,18 @@ def parse(raw, league, season, observed_at, now=None):
 
 
 def _reserve(store, now):
+    if getattr(store,'read_replica',False):return False
+    authority=getattr(store,'request_authority',None)
+    if authority:
+        with store.connect() as db:
+            from intelligence.request_guard import blocked
+            if blocked(db):return False
+        result=authority.reserve('results',1)
+        if not result:return False
+        with store.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS football_data_requests(at TEXT NOT NULL)')
+            db.execute('INSERT INTO football_data_requests VALUES(?)',(now.isoformat(),))
+        return True
     with store.connect() as db:
         db.execute('CREATE TABLE IF NOT EXISTS football_data_requests(at TEXT NOT NULL)')
         db.execute('BEGIN IMMEDIATE')

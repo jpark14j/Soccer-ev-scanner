@@ -6,6 +6,9 @@ from intelligence.diagnostics import results_revision
 
 
 def record_and_label(analysis, store, now=None):
+    if getattr(store,'read_replica',False):
+        analysis.processing['shared_replica']='Inspection only; forecasts/publications/results are committed by the background writer'
+        return analysis
     from intelligence.processing import ensure_processing, record_shadow_forecasts, label_public_epl
     from intelligence.multi_readiness import process_expanded_paper
     from intelligence.current_soccer import prepare_epl

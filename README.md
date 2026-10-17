@@ -5,6 +5,11 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+Latest: [Phase 10 operational readiness and one-time setup](docs/PHASE10_OPERATIONS.md)
+adds the optional fenced background worker, shared budget authority, published
+research/paper ledger and prospective calibration challengers. All activation
+flags remain disabled; real hosted operation still needs configuration.
+
 The [Phases 7–9 readiness report](docs/PHASES7_9_READINESS.md) covers the defined
 risk/probability rankings, dependent-format research, immutable prospective
 evaluation, scoped reliability and disabled optional private recovery. Page
