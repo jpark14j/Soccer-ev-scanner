@@ -62,13 +62,32 @@ def run_analysis(key, leagues=None, store=None, provider=None, markets=('h2h',),
         now=utcnow();end=now+timedelta(hours=window_hours)
         result=restore_market_snapshots(Analysis(checked_at=now.isoformat()),store,leagues)
         saved=store.cached('saved-slate-audit-v1',604800,now) or {}
-        events={}
+        events={};discovery=[]
+        # A shared replica retains provider-discovered games even when scarce
+        # odds credits did not cover their markets. Never mark these as live.
+        for league in leagues:
+            response=store.cached('background-discovery-'+league,604800,now) or {}
+            n=0
+            for e in response.get('data',[]) if isinstance(response.get('data'),list) else []:
+                try:
+                    if (not isinstance(e,dict) or e['sport_key']!=LEAGUES[league][1]
+                        or not isinstance(e['id'],str) or not e['id']
+                        or not all(isinstance(e[k],str) and e[k] for k in ('home_team','away_team'))
+                        or not now<parse_time(e['commence_time'])<=end):continue
+                    events[(league,e['id'])]={'league':league,'sport':LEAGUES[league][0],'event_id':e['id'],
+                        'home':e['home_team'],'away':e['away_team'],'event':e['home_team']+' vs '+e['away_team'],
+                        'start':e['commence_time'],'discovered_at':response['received_at'],'live_discovery':False}
+                    n+=1
+                except (ValueError,KeyError,TypeError):continue
+            if response:discovery.append({'league':league,'events':n,'received_at':response.get('received_at'),
+                'status':'Saved worker discovery; not a current fixture verification'})
         for q in result.quotes:
             if now<parse_time(q.commence_time)<=end:
                 events[(q.league,q.event_id)]={'league':q.league,'sport':q.sport,'event_id':q.event_id,
                     'home':q.home,'away':q.away,'event':q.event,'start':q.commence_time,'discovered_at':q.received_at,'live_discovery':False}
         result.slate={'window_start':now.isoformat(),'window_end':end.isoformat(),'window_hours':window_hours,
-            'events':list(events.values()),'discovery':[],'queries':[r for r in saved.get('queries',[]) if r.get('league') in leagues],
+            'events':sorted(events.values(),key=lambda e:(e['start'],e['league'],e['event_id'])),
+            'discovery':discovery,'queries':[r for r in saved.get('queries',[]) if r.get('league') in leagues],
             'prior_query_audit_at':saved.get('audit_recorded_at'),'last_successful_update':max((q.received_at for q in result.quotes),default=None),
             'coverage':'Saved observations only; no current event discovery or provider request',
             'gaps':saved.get('gaps',[]),'cached_only':True,'network_requests':0}

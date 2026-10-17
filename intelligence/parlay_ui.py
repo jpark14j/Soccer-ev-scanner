@@ -77,7 +77,8 @@ def render_research(analysis,store,book_keys,leagues,has_key,refresh_callback,se
     # Recompute expiry every minute without making any data-provider request.
     @st.fragment(run_every='60s')
     def show():
-        filtered=replace(analysis,quotes=[q for q in analysis.quotes if q.league in competitions and evidence_state(q,analysis)[0] in evidence])
+        from intelligence.book_optimizer import scoped_quotes
+        filtered=replace(analysis,quotes=[q for q in scoped_quotes(analysis) if q.league in competitions and evidence_state(q,analysis)[0] in evidence])
         result=select_candidates(filtered,sports=sports,bookmakers=selected_books,leg_counts=counts,categories=categories,markets=market_types,event_ids=event_ids)
         st.caption(f'Checked {result.checked_at}. {result.eligible_quotes} eligible individual quotes; searched {result.searched_quotes} quotes and {result.examined_combinations} combinations. At most 24 legs per sportsbook are searched, balanced across sports/events; this is not an exhaustive optimizer.')
         if not result.candidates:

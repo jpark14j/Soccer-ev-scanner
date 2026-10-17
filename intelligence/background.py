@@ -9,7 +9,8 @@ from intelligence.domain import utcnow,parse_time,digest
 from intelligence.storage import Store
 from intelligence.shared_state import Client,StateError,configuration,materialize,hydrate_budgets,snapshot
 
-LEAGUES=('Premier League','Bundesliga','Ligue 1')
+MODEL_LEAGUES=('Premier League','Bundesliga','Ligue 1')
+LEAGUES=('NBA','Premier League','MLB','Bundesliga','Ligue 1')
 
 
 def run_id(now):return digest(('background-pregame-1',now.strftime('%Y-%m-%dT%H')))
@@ -52,11 +53,12 @@ def bootstrap(source,client=None,config=None):
         raise
 
 
-def collect_supported(store,key,now=None,provider=None):
-    """Discovery and supported totals/BTTS only; no speculative prop spending."""
+def collect_supported(store,key,now=None,provider=None,window_hours=48):
+    """Multi-date discovery; frozen soccer targets plus NBA/MLB price research."""
     from intelligence.providers import OddsAPI,normalize,ProviderError
     from intelligence.quota import quota_details
     now=now or utcnow();audit=[]
+    if type(window_hours) is not int or not 1<=window_hours<=168:raise StateError('Invalid worker lookahead window')
     if not key:return [{'status':'odds credential not configured; saved observations only'}]
     if quota_details(store,9,now)['remaining']==0:return [{'status':'odds allowance unavailable; no discovery or odds calls'}]
     provider=provider or OddsAPI(key,store,daily_limit=9,ttl=1800)
@@ -64,23 +66,35 @@ def collect_supported(store,key,now=None,provider=None):
     for league in LEAGUES:
         try:
             response=provider.events(league)
+            from intelligence.providers import LEAGUES as PROVIDER_LEAGUES
+            if not isinstance(response['data'],list):raise ValueError('Invalid event list')
             upcoming[league]=sorted([e for e in response['data'] if
-                now+timedelta(minutes=15)<parse_time(e['commence_time'])<=now+timedelta(hours=48)],key=lambda e:e['commence_time'])[:12]
+                isinstance(e,dict) and e.get('sport_key')==PROVIDER_LEAGUES[league][1] and isinstance(e.get('id'),str) and e['id']
+                and all(isinstance(e.get(k),str) and e[k] for k in ('home_team','away_team'))
+                and now+timedelta(minutes=15)<parse_time(e['commence_time'])<=now+timedelta(hours=window_hours)],key=lambda e:e['commence_time'])
             store.cache('background-discovery-'+league,response)
+            audit.append({'league':league,'status':'provider event discovery','upcoming_events':len(upcoming[league]),
+                'received_at':response['received_at'],'window_hours':window_hours})
         except (ProviderError,ValueError,KeyError,TypeError):
             audit.append({'league':league,'status':'event discovery failed; no fixture invented'})
             upcoming[league]=[]
     tasks=[]
     for league in ('Premier League','Ligue 1'):
         if upcoming[league]:tasks.append((league,None,'totals'))
+    for league in ('NBA','MLB'):
+        if upcoming[league]:tasks.append((league,None,'h2h'))
     # Round robin across supported leagues/games rather than preferring a book.
-    for i in range(max((len(upcoming[l]) for l in ('Premier League','Bundesliga')),default=0)):
+    for i in range(min(12,max((len(upcoming[l]) for l in ('Premier League','Bundesliga')),default=0))):
         for league in ('Premier League','Bundesliga'):
             if i<len(upcoming[league]):tasks.append((league,upcoming[league][i]['id'],'btts'))
+    # Rotate oldest needed scopes so one busy sport cannot monopolize later runs.
+    def task_key(task):return 'background-query-'+digest(task)
+    tasks.sort(key=lambda t:(store.cached(task_key(t),604800,now) or {}).get('attempted_at',''))
     for league,event,market in tasks:
         if quota_details(store,9)['remaining']<1:
             audit.append({'status':'daily odds cap reached; remaining market tasks skipped'});break
         try:
+            store.cache(task_key((league,event,market)),{'attempted_at':now.isoformat()},now)
             response=provider.odds(league,(market,)) if event is None else provider.event_odds(league,event,(market,))
             normalize(response['data'],league,response['received_at'])  # Validate, preserving exact original bytes/timestamps below.
             cache='last-success-'+league+'-'+market if event is None else 'event-snapshot-'+league+'-'+event+'-'+market
@@ -101,16 +115,22 @@ def cycle(store,key='',now=None,provider=None):
     from intelligence.learning import lock_protocol,update
     now=now or utcnow();lock_protocol(store,now)
     results={}
-    for league in LEAGUES:
+    for league in MODEL_LEAGUES:
         _,meta=current(store,league)
         results[league]={k:meta.get(k) for k in ('ok','failure_code','checked_at','problem')}
-    audit=collect_supported(store,key,now,provider)
-    analysis=run_analysis('',LEAGUES,store=store,cached_only=True,window_hours=48)
+    from intelligence.data_settings import load_settings
+    settings=load_settings()
+    if settings.errors:raise StateError('Worker data settings invalid; no odds requests authorized')
+    audit=collect_supported(store,key,now,provider,settings.window_hours)
+    analysis=run_analysis('',LEAGUES,store=store,cached_only=True,window_hours=settings.window_hours)
     labels=reconcile(store)
     created=prepare(analysis,store)
     settlement=settle(store)
     learning=update(store)
     summary={'mode':'independent pregame research','observed_quotes':len(analysis.quotes),
+        'window_hours':settings.window_hours,'sports':['NBA','Soccer','MLB'],
+        'sport_limitations':{'NBA':'Observed prices only unless existing sport-specific model gates pass',
+            'MLB':'Observed prices only unless existing sport-specific model gates pass'},
         'coverage_status':'partial: inputs or market evidence unavailable' if not analysis.estimates or not all(r.get('ok') for r in results.values()) else 'experimental supported inputs; no betting approval',
         'model_estimates':len(analysis.estimates),'new_publications':len(created),'new_forward_labels':labels['labeled'],
         'new_published_labels':settlement['labeled'],'results':results,'odds_tasks':audit,
@@ -130,6 +150,10 @@ def run_background(*,client=None,config=None,now=None,cycle_fn=None):
     client=client or Client(config or configuration(),writer=True);now=now or utcnow();identifier=run_id(now)
     envelope=client.acquire(identifier)
     try:
+        if os.getenv('RESEARCH_EXPECTED_STORE_INSTANCE'):
+            from intelligence.hosted_checks import expected_store
+            if (envelope.get('snapshot') or {}).get('manifest',{}).get('store_instance')!=expected_store():
+                raise StateError('Research worker is connected to an unexpected store; no provider request authorized')
         with tempfile.TemporaryDirectory(prefix='research-writer-') as folder:
             path=materialize(envelope,Path(folder)/'working.sqlite3')
             from intelligence.shared_state import MAX_RAW
@@ -164,10 +188,16 @@ def main():
     p.add_argument('--run',action='store_true',help='Explicit enabled independent cycle; otherwise no external requests')
     p.add_argument('--bootstrap',type=Path,help='Explicit existing-store first upload; never enables provider calls')
     p.add_argument('--pull',type=Path,help='Explicit read-only committed-state sync directory')
+    p.add_argument('--verify-shared',action='store_true',help='Two independent state-only reads/restores; no provider requests or writes')
+    p.add_argument('--storage-check',action='store_true',help='Fenced preservation checkpoint and fresh readback; no research/provider requests')
     args=p.parse_args()
-    if sum(bool(v) for v in (args.run,args.bootstrap,args.pull))>1:p.error('Choose one explicit operation')
+    if sum(bool(v) for v in (args.run,args.bootstrap,args.pull,args.verify_shared,args.storage_check))>1:p.error('Choose one explicit operation')
     try:
-        if args.bootstrap:result=bootstrap(args.bootstrap)
+        if args.verify_shared or args.storage_check:
+            from intelligence.hosted_checks import verify_shared,storage_check,expected_store
+            expected=expected_store()
+            result=storage_check(expected_instance=expected) if args.storage_check else verify_shared(expected_instance=expected)
+        elif args.bootstrap:result=bootstrap(args.bootstrap)
         elif args.pull:
             from intelligence.shared_state import pull_replica
             r=pull_replica(args.pull);result={'status':'replica saved','generation':r['envelope']['generation'],'sports_requests':0}

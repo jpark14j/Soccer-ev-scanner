@@ -24,6 +24,15 @@ class Workspace:
 def render_picks(w):
     from intelligence.top_research_ui import render_summary,active_analysis
     w=replace(w,analysis=active_analysis(w.analysis,w.store))
+    from intelligence.domain import parse_time
+    from zoneinfo import ZoneInfo
+    window=w.analysis.slate
+    if window.get('window_start') and window.get('window_end'):
+        local=ZoneInfo('America/Toronto')
+        start=parse_time(window['window_start']).astimezone(local);end=parse_time(window['window_end']).astimezone(local)
+        st.caption(f"Upcoming-game window: {window.get('window_hours',w.settings.window_hours)} hours · "
+            f"{start:%b %d, %I:%M %p %Z} to {end:%b %d, %I:%M %p %Z}. Includes future dates; "
+            'saved fixtures and prices may be incomplete. No provider requests occur when opening this page.')
     @st.fragment(run_every='60s')
     def top_research():
         render_summary(active_analysis(w.analysis,w.store),w.store,w.book_keys,w.secret,w.settings.daily_limit,w.leagues)

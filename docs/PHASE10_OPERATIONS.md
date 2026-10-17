@@ -1,5 +1,9 @@
 # Phase 10 — operational research, honest readiness
 
+For the bootstrapped development preview's request-free checks, private worker
+setup and future-date multi-sport search, use [HOSTED_ACTIVATION.md](HOSTED_ACTIVATION.md).
+Its staged setup keeps all provider requests held while hosted storage is tested.
+
 Continues `f3b69232e85e26b08f141ce2cf6a5a3682a0d200` on
 `development/verified-sports-intelligence`, Draft PR #1 only. The interrupted
 uncommitted work was recovered, inspected and retained; nothing was reset.

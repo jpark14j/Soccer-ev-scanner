@@ -10,7 +10,11 @@ def health(store,secret=None):
     envelope=p.get('envelope',{});heartbeat=envelope.get('heartbeat',{})
     running=heartbeat.get('status')=='running'
     expired=bool(running and envelope.get('lease_until') and parse_time(envelope['lease_until'])<=utcnow())
+    manifest=p.get('manifest',{});summary=heartbeat.get('summary',{})
+    mode=summary.get('mode') if isinstance(summary,dict) else None
     return {'shared_mode_configured':c.problem() is None,'problem':c.problem() or p.get('problem'),
+        'snapshot_sha256':manifest.get('sha256'),'committed_store_instance':manifest.get('store_instance'),
+        'last_checkpoint_kind':mode or ('research' if isinstance(summary,dict) and 'new_forward_forecasts' in summary else None),
         'reader_mode':getattr(store,'read_replica',False),'saved_generation':envelope.get('generation'),
         'last_replica_sync':p.get('verified_at'),'heartbeat':heartbeat,
         'last_success':heartbeat.get('last_success_at'),'last_error':heartbeat.get('last_error_code'),
@@ -24,9 +28,11 @@ def health(store,secret=None):
 
 
 def render_health(store,secret=None):
-    h=health(store,secret)
+    h=health(store,secret);c=configuration(secret)
     st.subheader('Automation Health')
-    st.write('Background research · '+('Saved worker run available' if h['last_success'] else 'Needs configuration / no saved successful run'))
+    operational=h['last_checkpoint_kind'] in ('explicit bootstrap','explicit bootstrap of audited development store','storage-only verification')
+    st.write('Background research · '+('Storage checkpoint available; research run not verified' if operational else
+        'Saved worker run available' if h['last_success'] else 'Needs configuration / no saved successful run'))
     st.write('Durable shared state · '+('Saved committed replica' if h['saved_generation'] else 'Not verified operating'))
     st.caption('Last successful run: '+str(h['last_success'] or 'not recorded')+' · last error: '+str(h['last_error'] or 'none recorded'))
     if h['coverage_status']:st.caption('Saved run coverage: '+h['coverage_status'])
@@ -34,6 +40,21 @@ def render_health(store,secret=None):
     if h['problem']:st.info(h['problem'])
     st.caption(h['schedule_note'])
     with st.expander('Advanced Details · automation, commit identity and budget authority'):st.json(h)
+    if h['shared_mode_configured']:
+        st.caption('A fresh storage check downloads Supabase state twice into new temporary files. It makes no sports-provider or AI requests and writes nothing remotely. It does not establish preview reboot persistence.')
+        if st.button('Verify fresh Supabase reads · no sports requests',key='verify_fresh_shared_reads'):
+            from intelligence.hosted_checks import verify_shared
+            from intelligence.shared_state import Client,StateError
+            from intelligence.domain import digest
+            @st.cache_data(ttl=300,show_spinner=False)
+            def verify_once(scope,_config,expected):
+                return verify_shared(client=Client(_config),expected_instance=expected or '')
+            try:
+                with st.spinner('Checking two independent Supabase snapshot restores…'):
+                    result=verify_once((c.url,digest((c.reader_key,c.reader_token))),c,h['committed_store_instance'])
+                st.json(result)
+            except (StateError,OSError,ValueError,sqlite3.Error):
+                st.warning('Fresh shared-state verification failed. Existing saved state is retained; inspect private configuration and service health. No provider requests were made.')
 
 
 def render_published(store):
