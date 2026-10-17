@@ -23,7 +23,9 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
     audit=inspect_odds(analysis,store,books,now,cap)
     st.subheader("AI's Top Research Pick — Experimental")
     st.caption('Local statistical-model and rule-based research summary; no generative AI request.')
-    leg=result['pick'];model_only=result['model_only']
+    risk=result.get('risk_rankings',{})
+    leg=result.get('recommended') or result['pick'];model_only=result['model_only']
+    st.caption('TOP AI SINGLE · '+risk.get('default_mode','Existing evidence-first research'))
     if leg:
         q,e=leg.quote,leg.estimate;gap=comparison(leg)
         with st.container(border=True):
@@ -77,6 +79,36 @@ def render_summary(analysis,store,books,secret=None,cap=9,leagues=None):
                 st.caption('Same-game and mixed formats require independently tested joint evidence; they are excluded from this default summary.')
     else:
         st.info('No supported top research parlay: at least two compatible, current model-backed favored selections at one sportsbook are required. Known shared-game/team/player links stay outside this summary.')
+
+    st.subheader('Best Risk-Adjusted Research Opportunity')
+    best=risk.get('best_risk_adjusted')
+    if best:
+        from intelligence.risk_research import sensitivity
+        evidence=sensitivity(best)
+        st.write(safe(best.quote.event+' · '+selection_label(best.quote)))
+        st.caption(safe(best.quote.bookmaker_name)+f' · observed decimal {best.quote.odds:.2f} · source '+safe(best.quote.source_updated_at))
+        st.caption('The entire supplied historical calibration range is above break-even. This is experimental price sensitivity, not independently validated EV.')
+        with st.expander('Risk ranking method, downside and missing sensitivity'):
+            st.json(redact_data(evidence,sensitive));st.write(risk['method'])
+            for line in risk['limitations']:st.text(safe(line))
+    else:
+        st.info('Risk-adjusted value is not established. The top single falls back to supported model probability when available; no value selection is forced.')
+
+    st.caption('MODEL RELIABILITY · Experimental unless separately reviewed; research rankings never approve a model or ticket.')
+    with st.expander('Three research rankings and compatible parlay formats'):
+        from intelligence.risk_research import MOST_LIKELY,RISK_ADJUSTED,PARLAY
+        st.write('**'+MOST_LIKELY+'**')
+        for l in risk.get('most_likely',[])[:3]:st.text(safe(f'{l.quote.event} · {selection_label(l.quote)} · model {l.estimate.probability:.1%}'))
+        st.write('**'+RISK_ADJUSTED+'**')
+        for l in risk.get('risk_adjusted',[])[:3]:st.text(safe(l.quote.event+' · '+selection_label(l.quote)))
+        st.write('**'+PARLAY+'** · marginal evidence only; no joint win ranking')
+        from intelligence.joint_research import analyze
+        for kind,items in result.get('format_candidates',{}).items():
+            st.write(kind)
+            if not items:st.caption('No compatible model-backed combination currently available.')
+            for item in items[:1]:
+                for l in item.research.legs:st.text(safe(l.quote.event+' · '+selection_label(l.quote)))
+                st.json(redact_data(analyze(item.research.legs,now),sensitive))
 
     if audit.get('code')!='current_prices_available':
         st.caption(safe(audit['message']))

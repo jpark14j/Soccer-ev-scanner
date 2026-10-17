@@ -152,7 +152,7 @@ def select_top(analysis,store=None,books=None,now=None,leagues=None):
         from intelligence.parlay_research import leg_evidence
         leg=leg_evidence(q,analysis,now)
         if not evidence_problem(leg,now) and not checks.check(leg):valid_ids.add(q.id)
-    report=generate(replace(analysis,quotes=[q for q in analysis.quotes if q.id in valid_ids]),books,now)
+    report=generate(replace(analysis,quotes=[q for q in analysis.quotes if q.id in valid_ids]),books,now,include_linked=True)
     parlays=report.two_leg+report.three_leg+report.alternatives
     parlays=[p for p in parlays if not any(p.dependence[k] for k in ('shared_game_pairs','shared_team_pairs','shared_player_pairs'))]
     parlay=min(parlays,key=lambda p:p.evidence_rank) if parlays else None
@@ -165,7 +165,10 @@ def select_top(analysis,store=None,books=None,now=None,leagues=None):
     for detail in analysis.research:
         if detail.get('quote_id') in current_ids-modeled_ids:
             input_blockers.update(detail.get('blockers',[]))
+    from intelligence.risk_research import rank
+    risk=rank(eligible,now)
     return {'pick':pick,'parlay':parlay,'model_only':model_only,'exclusions':dict(excluded),
+        'risk_rankings':risk,'recommended':risk['default'],'format_candidates':report.by_format,
         'input_blockers':dict(input_blockers),
         'model_only_exclusions':model_exclusions,'shared_rankings':base,'parlay_exclusions':report.exclusions,
         'method':'Existing favored-side and research-display gates first. Default: verified input completeness; narrower supplied range; calibration bucket/test/calibration support; known risk categories; lower probability bound; lower model-minus-break-even difference; point probability; source freshness. No payout or approval score.',

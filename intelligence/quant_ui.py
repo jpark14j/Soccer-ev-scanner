@@ -53,6 +53,7 @@ def render_evaluation():
         with st.expander('Full reproducible evidence, joint-event diagnostics and limitations'):
             st.json(report)
     render_phase6_evaluation()
+    render_joint_validation()
 
 
 def render_phase6_evaluation():
@@ -79,3 +80,23 @@ def render_phase6_evaluation():
         st.caption('Approval blockers remain separate: uncertain predictive gains; calibration/sample limits; per-event current inputs; eligible market coverage; unverified operator settlement; and missing actual combined prices. Research estimates do not satisfy these publication requirements automatically.')
         with st.expander('Joint-state calibration, partial settlements and complete Phase 6 evidence'):
             st.json(r)
+
+
+def render_joint_validation():
+    with st.expander('Joint research · simpler baseline, sensitivity and stability'):
+        from intelligence.joint_validation import DESTINATION
+        try:
+            r=json.loads(DESTINATION.read_text());checksum=r.pop('sha256')
+            if digest(r)!=checksum or r['code_sha256']!=digest(Path(__file__).with_name('joint_validation.py').read_text()):raise ValueError()
+        except (OSError,KeyError,ValueError):st.info('No matching joint research report. No model or ticket is approved.');return
+        st.caption('Existing score parameters replayed against a training-only coherent league baseline. These test dates were previously inspected; sensitivity ranges are scenarios, not confidence intervals.')
+        rows=[]
+        for league,v in r['leagues'].items():
+            for task,t in v['tasks'].items():
+                rows.append({'League':league,'Joint target':task,'Test n':t['n'],
+                    'All-full-win Brier':t['all_full_win']['model']['binary_brier']['value'],
+                    'Paired difference interval vs league baseline':t['all_full_win']['minus_training_league_baseline']['binary_brier']['interval'],
+                    'Median scenario range width':t['sensitivity_range_width_quantiles'][1]})
+        st.dataframe(rows,hide_index=True)
+        st.caption('Zero approved joint models. No observed executable combined ticket, parlay EV or cross-game independence claim.')
+        with st.expander('Joint settlement scores, calibration bins and quarter stability'):st.json(r)

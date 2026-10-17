@@ -193,6 +193,7 @@ class Intelligence:
     eligible_model_groups: int = 0
     searched_model_groups: int = 0
     checked_at: str = ''
+    by_format: dict = field(default_factory=dict)
     method: str = 'Bounded per-book search, maximum 24 favored markets per sportsbook; no global optimum or joint probability claimed'
 
 
@@ -257,6 +258,9 @@ def generate(analysis,bookmakers=None,now=None,include_linked=False,max_per_size
     shown={c.group_ids for c in result.two_leg+result.three_leg}
     result.alternatives=sorted((c for c in candidates.values() if c.group_ids not in shown),key=lambda c:c.evidence_rank)[:3]
     result.searched_model_groups=len(searched);result.exclusions=dict(rejected)
+    from intelligence.quant_decision import selection_format
+    result.by_format={kind:sorted((c for c in candidates.values() if selection_format([l.quote for l in c.research.legs])==kind),
+        key=lambda c:c.evidence_rank)[:3] for kind in ('Same-game parlay','Multi-game parlay','Mixed parlay')}
     return result
 
 
