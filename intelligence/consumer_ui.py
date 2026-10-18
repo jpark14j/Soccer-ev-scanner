@@ -259,7 +259,9 @@ def render_picks(w):
     st.subheader('Alternative experimental research')
     st.caption('Unsupported price-only combinations and full research controls are available in Settings → Admin / Developer Tools. They are never promoted to betting recommendations.')
     from intelligence.fixture_research_ui import render as render_fixture_research
-    render_fixture_research(w,safe)
+    from intelligence.competitions import COMPETITIONS
+    fixture_scope=replace(w,leagues=[league for league in w.leagues if COMPETITIONS[league].sport in sports])
+    render_fixture_research(fixture_scope,safe,sizes=sizes)
 
 
 def render_performance(w):
@@ -280,6 +282,13 @@ def render_performance(w):
     st.subheader('Model reliability')
     st.write(f"{reliability['recorded']} distinct forecasts recorded · {reliability['labeled']} matched to verified results.")
     st.caption('These are a separate forecast log; do not add them to published-pick counts. Models remain experimental unless their approval requirements pass.')
+    with w.store.connect() as db:
+        present=db.execute("SELECT 1 FROM sqlite_master WHERE name='statistics_forecasts'").fetchone()
+        if present:
+            recorded=db.execute('SELECT count(*) FROM statistics_forecasts').fetchone()[0]
+            labeled=db.execute('SELECT count(*) FROM statistics_outcomes').fetchone()[0]
+            st.write(f'Unpriced statistical research: {recorded} pregame records · {labeled} verified outcome labels.')
+            st.caption('These singles and score-model combinations are separate from backtests and published betting picks. No sportsbook odds or financial returns are inferred.')
     if not reliability['groups']:st.info('There is not enough forward evidence to report model reliability yet.')
     for card in reliability['groups']:
         st.text(safe(card['scope']['league']+' · '+card['scope']['market']+' · '+card['state']))

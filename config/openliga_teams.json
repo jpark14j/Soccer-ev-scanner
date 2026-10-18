@@ -1,0 +1,170 @@
+{
+  "Premier League": {
+    "364": {
+      "source_name": "Chelsea FC",
+      "canonical": "Chelsea"
+    },
+    "370": {
+      "source_name": "FC Liverpool",
+      "canonical": "Liverpool"
+    },
+    "438": {
+      "source_name": "Aston Villa",
+      "canonical": "Aston Villa"
+    },
+    "452": {
+      "source_name": "Tottenham Hotspur FC",
+      "canonical": "Tottenham"
+    },
+    "541": {
+      "source_name": "Everton FC",
+      "canonical": "Everton"
+    },
+    "549": {
+      "source_name": "Fulham FC",
+      "canonical": "Fulham"
+    },
+    "1075": {
+      "source_name": "Newcastle United FC",
+      "canonical": "Newcastle United"
+    },
+    "2489": {
+      "source_name": "Crystal Palace FC",
+      "canonical": "Crystal Palace"
+    },
+    "2556": {
+      "source_name": "Manchester United FC",
+      "canonical": "Manchester United"
+    },
+    "2617": {
+      "source_name": "FC Arsenal",
+      "canonical": "Arsenal"
+    },
+    "2942": {
+      "source_name": "AFC Bournemouth",
+      "canonical": "Bournemouth"
+    },
+    "4244": {
+      "source_name": "Manchester City",
+      "canonical": "Manchester City"
+    },
+    "5967": {
+      "source_name": "Brentford F.C.",
+      "canonical": "Brentford"
+    },
+    "8790": {
+      "source_name": "Brighton & Hove Albion",
+      "canonical": "Brighton"
+    },
+    "8791": {
+      "source_name": "Hull City",
+      "canonical": "Hull"
+    },
+    "8792": {
+      "source_name": "Leeds United",
+      "canonical": "Leeds United"
+    },
+    "8793": {
+      "source_name": "Nottingham Forest",
+      "canonical": "Nottingham Forest"
+    },
+    "8794": {
+      "source_name": "Sunderland",
+      "canonical": "Sunderland"
+    },
+    "8795": {
+      "source_name": "Coventry City",
+      "canonical": "Coventry City"
+    },
+    "8796": {
+      "source_name": "Ipswich Town",
+      "canonical": "Ipswich Town"
+    }
+  },
+  "Bundesliga": {
+    "6": {
+      "source_name": "Bayer 04 Leverkusen",
+      "canonical": "Bayer Leverkusen"
+    },
+    "7": {
+      "source_name": "Borussia Dortmund",
+      "canonical": "Borussia Dortmund"
+    },
+    "9": {
+      "source_name": "FC Schalke 04",
+      "canonical": "Schalke"
+    },
+    "16": {
+      "source_name": "VfB Stuttgart",
+      "canonical": "Stuttgart"
+    },
+    "31": {
+      "source_name": "SC Paderborn 07",
+      "canonical": "Paderborn"
+    },
+    "40": {
+      "source_name": "FC Bayern München",
+      "canonical": "Bayern Munich"
+    },
+    "65": {
+      "source_name": "1. FC Köln",
+      "canonical": "Cologne"
+    },
+    "80": {
+      "source_name": "1. FC Union Berlin",
+      "canonical": "Union Berlin"
+    },
+    "81": {
+      "source_name": "1. FSV Mainz 05",
+      "canonical": "Mainz"
+    },
+    "87": {
+      "source_name": "Borussia Mönchengladbach",
+      "canonical": "Borussia Monchengladbach"
+    },
+    "91": {
+      "source_name": "Eintracht Frankfurt",
+      "canonical": "Eintracht Frankfurt"
+    },
+    "95": {
+      "source_name": "FC Augsburg",
+      "canonical": "Augsburg"
+    },
+    "100": {
+      "source_name": "Hamburger SV",
+      "canonical": "Hamburger SV"
+    },
+    "112": {
+      "source_name": "SC Freiburg",
+      "canonical": "Freiburg"
+    },
+    "134": {
+      "source_name": "SV Werder Bremen",
+      "canonical": "Werder Bremen"
+    },
+    "175": {
+      "source_name": "TSG Hoffenheim",
+      "canonical": "Hoffenheim"
+    },
+    "198": {
+      "source_name": "SV 07 Elversberg",
+      "canonical": "Elversberg"
+    },
+    "1635": {
+      "source_name": "RB Leipzig",
+      "canonical": "RB Leipzig"
+    },
+    "199": {
+      "source_name": "1. FC Heidenheim 1846",
+      "canonical": "Heidenheim"
+    },
+    "131": {
+      "source_name": "VfL Wolfsburg",
+      "canonical": "Wolfsburg"
+    },
+    "98": {
+      "source_name": "FC St. Pauli",
+      "canonical": "St Pauli"
+    }
+  }
+}

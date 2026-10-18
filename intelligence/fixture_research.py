@@ -22,7 +22,7 @@ def soccer_forecasts(league, artifact, now, hours):
     """Use a fresh full-season provider reconciliation, never just an old schedule."""
     if artifact.get('problem'):
         return [], artifact['problem']
-    if artifact.get('results_provider') != 'football-data.org':
+    if artifact.get('results_provider') not in ('football-data.org','openligadb'):
         return [], 'Fresh reconciled full-season results and exact scheduled kickoffs are unavailable'
     if not 0 <= (now-parse_time(artifact['results_observed_at'])).total_seconds() < 21600:
         return [], 'Results verification expired; saved odds do not repair it'
@@ -79,7 +79,7 @@ def soccer_forecasts(league, artifact, now, hours):
             market = 'btts' if target == 'btts' else 'totals'
             row = {'sport': 'Soccer', 'league': league, 'event': e['home_name']+' vs '+e['away_name'],
                 'home': e['home_name'], 'away': e['away_name'], 'home_id': h, 'away_id': a,
-                'fixture_id': digest((league, e['season'], h, a)), 'kickoff': start.isoformat(),
+                'fixture_id': digest((c.id, e['season'], h, a)), 'kickoff': start.isoformat(),
                 'market': market, 'point': None if market == 'btts' else 2.5,
                 'selection': ('Yes' if positive else 'No') if market == 'btts' else ('Over' if positive else 'Under'),
                 'probability': p, 'lower': lo, 'upper': hi, 'fair_odds': 1/p,
@@ -87,7 +87,7 @@ def soccer_forecasts(league, artifact, now, hours):
                 'data_sha256': artifact['data_sha256'], 'history_n': state['n'],
                 'training_end': state['latest'], 'calibration_n': task['calibration_n'],
                 'calibration_bin_n': bucket['n'], 'test_n': task['periods']['held_out']['model']['n'] if epl else task['periods']['final_test']['eligible'],
-                'source_observed_at': artifact['results_observed_at'], 'forecast_at': now.isoformat(),
+                'source_observed_at': artifact['results_observed_at'], 'source': artifact['results_provider'], 'forecast_at': now.isoformat(),
                 'validated': False, 'status': 'Experimental fixture forecast; not a betting pick',
                 'sportsbook': None, 'observed_odds': None, 'ev': None,
                 'limitations': ['Historical calibration-bin range, not a guaranteed event confidence interval',
@@ -112,6 +112,11 @@ def collect(store, now=None, hours=48, leagues=None):
         if leagues is not None and league not in leagues:
             continue
         artifact = prepare_epl(store, now, allow_fetch=False) if league == 'Premier League' else prepare_expanded(league, store, now, allow_fetch=False)
+        if (artifact.get('problem') or artifact.get('results_provider') not in ('football-data.org','openligadb')) and league in ('Premier League','Bundesliga'):
+            from intelligence.current_soccer import prepare_openliga
+            fallback = prepare_openliga(league, store, now)
+            if not fallback.get('problem') or fallback.get('results_provider') == 'openligadb' and fallback.get('coverage'):
+                artifact = fallback
         found, problem = soccer_forecasts(league, artifact, now, hours)
         from intelligence.lifecycle import research_hold
         for row in found:
@@ -128,6 +133,11 @@ def collect(store, now=None, hours=48, leagues=None):
     for sport in ('NBA', 'MLB'):
         if leagues is None or sport in leagues:
             blockers[sport] = 'Current licensed team results, exact upcoming fixtures and matching calibrated sport-model inputs are not available in the shared store; historical studies do not activate a forecast'
+    if 'NBA' in blockers:
+        from intelligence.recent_nba import load_report
+        if load_report():blockers['NBA']='2025–26 regular-season history is evaluated; verified near-term fixtures and research evidence for current offseason/roster readiness are missing. No current probability is substituted.'
+    if 'MLB' in blockers:
+        blockers['MLB']='The permitted Retrosheet archive stops in 2025. Current 2026 game results and fixtures need a free authenticated provider; BALLDONTLIE documents free Games access but no account credential is configured for this integration.'
     rows.sort(key=lambda r: (r['upper']-r['lower'], -r['probability'], r['kickoff'], r['fixture_id'], r['market']))
     return {'forecasts': rows[:100], 'blockers': blockers, 'provider_requests': 0, 'paid_ai_requests': 0,
         'approved_models': 0, 'forward_records_created': 0,

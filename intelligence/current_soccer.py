@@ -22,7 +22,7 @@ def prepare_expanded(league, store, now=None, allow_fetch=True):
     return _prepare(league, store, now, allow_fetch)
 
 
-def _prepare(league, store, now=None, allow_fetch=True):
+def _prepare(league, store, now=None, allow_fetch=True, result_loader=None, history_completion=None):
     from intelligence.epl_forecasts import load_artifact
     from intelligence.expanded_models import load
     from intelligence.epl_source import team
@@ -36,14 +36,20 @@ def _prepare(league, store, now=None, allow_fetch=True):
     anchor = 'anchor' if epl else 'as_of'
     if parse_time(artifact['generated_at']) > now or artifact['state'][anchor] > now.date().isoformat():
         return {'problem': 'Future-dated frozen model state'}
-    events, meta = current(store, league, now, allow_fetch=allow_fetch)
+    if history_completion:
+        if (epl or history_completion.get('base_artifact_sha256')!=artifact['artifact_sha256']
+            or history_completion.get('matched')!=294 or history_completion.get('added')!=12):
+            return {'problem':'Historical completion does not match the frozen model source'}
+        artifact['state']=extend(artifact['state'],history_completion['rows'],artifact['state'][anchor],artifact['policy'])
+    events, meta = (result_loader or current)(store, league, now, allow_fetch=allow_fetch)
+    provider = meta.get('provider', 'football-data.org')
     if not meta['ok']:
-        return {'problem': meta['problem'], 'results_provider': 'football-data.org'}
+        return {'problem': meta['problem'], 'results_provider': provider}
     if (now-parse_time(meta['checked_at'])).total_seconds() >= 21600:
         return {'problem': 'Current-results observation is stale'}
     if meta['coverage']['unresolved_past'] or any(e.status == 'unresolved' for e in events):
         return {'problem': 'Full-season source contains unresolved, postponed, suspended or uncompleted past fixtures',
-                'results_provider': 'football-data.org', 'coverage': meta['coverage']}
+                'results_provider': provider, 'coverage': meta['coverage']}
     rows = []
     for e in events:
         # Preserve frozen prior-calendar-date feature construction, even if a
@@ -86,15 +92,28 @@ def _prepare(league, store, now=None, allow_fetch=True):
     else:
         artifact['fixtures'] = [asdict(e) for e in events]
         artifact['source_checked_at'] = meta['checked_at']
+    adapter_names=('current_results','current_soccer')+(('openliga',) if provider=='openligadb' else ())
     adapter_sha256 = digest({name:sha256(Path(__file__).with_name(name+'.py').read_bytes()).hexdigest()
-                            for name in ('current_results','current_soccer')})
-    artifact.update(current_rows=rows, source_kind='football-data.org delayed completed results',
-                    results_provider='football-data.org', results_coverage=meta['coverage'],
+                            for name in adapter_names})
+    artifact.update(current_rows=rows, source_kind=provider+' source-reported completed results',
+                    results_provider=provider, results_coverage=meta['coverage'],
                     results_source_url=meta['source_url'], results_observed_at=meta['checked_at'],
                     results_sha256=meta['sha256'], results_events=[asdict(e) for e in events],
                     results_adapter_sha256=adapter_sha256,
                     data_sha256=digest((artifact['data_sha256'], meta['sha256'], adapter_sha256)))
+    if history_completion:
+        artifact['data_sha256']=digest((artifact['data_sha256'],history_completion['sha256']))
+        artifact['historical_completion_sha256']=history_completion['sha256']
     return artifact
+
+
+def prepare_openliga(league, store, now=None):
+    """Optional cache-only source; identical frozen model and approval gates."""
+    from intelligence.openliga import model_inputs as saved, history_completion
+    completion=history_completion(store,now)
+    if league!='Bundesliga' or not completion:
+        return {'problem':'Prior-season historical gaps are not yet reconciled; no current forecast authorized','results_provider':'openligadb'}
+    return _prepare(league, store, now, allow_fetch=False, result_loader=saved,history_completion=completion)
 
 
 def forecast(q, artifact, now=None):

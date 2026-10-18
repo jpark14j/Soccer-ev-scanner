@@ -18,6 +18,40 @@ def instance(store):
     with store.connect() as db:return db.execute('SELECT instance FROM store_identity WHERE id=1').fetchone()[0]
 
 
+def test_prepared_statistics_checkpoint_preserves_holds_and_budgets_without_provider_calls(remote,store,monkeypatch,tmp_path):
+    from intelligence.statistics_import import publish
+    store.reserve(3,9)
+    with store.connect() as db:db.execute('INSERT INTO publications VALUES(?,?,?,?)',('previous-real-shape',utcnow().isoformat(),'synthetic-test','{}'))
+    bootstrap(store.path,writer(remote));before=reader(remote).read()
+    monkeypatch.setenv('RESEARCH_EXPECTED_STORE_INSTANCE',instance(store));monkeypatch.setenv('PAID_ANALYST_APPROVED','0')
+    def prepared(s,*args):
+        s.cache('synthetic-statistics-test',{'preserved':True})
+        return {'sports_provider_requests':0,'approved_models':0},[]
+    with patch('intelligence.statistics_import.import_files',side_effect=prepared):
+        result=publish(tmp_path,client=writer(remote),readback_output=tmp_path/'private-readback.sqlite3')
+    after=reader(remote).read()
+    assert result['shared_readback_verified'] and result['provider_hold_preserved'] and result['provider_budgets_preserved']
+    assert after['held'] is before['held'] is True and after['budgets']==before['budgets']
+    assert after['generation']==2 and after['publication_receipts']==before['publication_receipts']
+    restored=Store(tmp_path/'private-readback.sqlite3')
+    with restored.connect() as db:
+        assert db.execute('SELECT used FROM budget').fetchone()[0]==3
+        assert db.execute('SELECT count(*) FROM publications').fetchone()[0]==1
+
+
+def test_prepared_statistics_cannot_change_a_budget_or_initialize_empty_state(remote,store,monkeypatch,tmp_path):
+    from intelligence.statistics_import import publish
+    monkeypatch.setenv('RESEARCH_EXPECTED_STORE_INSTANCE',instance(store));monkeypatch.setenv('PAID_ANALYST_APPROVED','0')
+    with pytest.raises(StateError,match='bootstrapped'):publish(tmp_path,client=writer(remote))
+    bootstrap(store.path,writer(remote));before=reader(remote).read()['snapshot']
+    def tampered(s,*args):
+        with s.connect() as db:db.execute('INSERT INTO budget VALUES(?,?)',('2026-10-18',9))
+        return {},[]
+    with patch('intelligence.statistics_import.import_files',side_effect=tampered):
+        with pytest.raises(StateError,match='protected ledger or budget'):publish(tmp_path,client=writer(remote))
+    assert reader(remote).read()['snapshot']==before and reader(remote).read()['held']
+
+
 def test_fresh_reader_verification_uses_two_restores_without_writes(remote,store):
     store.cache('synthetic-proof',{'value':'retained'});bootstrap(store.path,writer(remote))
     before=reader(remote).read();remote.calls.clear()
