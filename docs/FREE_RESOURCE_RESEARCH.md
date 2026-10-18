@@ -84,10 +84,16 @@ credentials or arbitrary model data are stored in the price export.
 
 ## Independent free automation
 
-The private `free_statistics_refresh.yml` copy of the shipping template is pinned
-to a reviewed full development SHA. It uses only existing Supabase credentials
+Activation status: **prepared, not activated**. Automatic approval review blocked
+installing the scheduled worker under the earlier restriction on background
+activation. The private `proposals/free_statistics_refresh.yml` is an inert,
+reviewable copy pinned to a tested development SHA; files in `proposals/` do not
+run as GitHub Actions workflows. The only installed private workflow remains
+manual-dispatch verification by default. Explicit owner approval is pending.
+
+If approved, the proposed worker uses only existing Supabase credentials
 and the already reviewed GitHub Actions allowance; no new account/key is needed.
-The separate quote-free job is scheduled every four hours (UTC), plus manual
+The separate quote-free job would be scheduled every four hours (UTC), plus manual
 dispatch. It makes at most one fixed OpenLigaDB GET per run, no redirects or
 automatic retries, two-MB response bound, 30-second request deadline, at least
 three hours between successful refreshes (except across a UTC date boundary).
@@ -130,3 +136,18 @@ Streamlit Community Cloud. Previous anonymous preview access was denied; retain
 that distinction until a real hosted authenticated session can be observed.
 Supabase verification demonstrates the tested generation and readback, not an
 unlimited retention guarantee or disaster recovery independent of Supabase.
+
+This increment passed 755 local tests, compilation, dependency checks, credential
+scanning, and local Streamlit health/root startup. CI on the functional commit
+passed 754 tests with one existing private-archive skip. Local AppTest exercised
+all five pages using the genuine generation-3 hosted readback, including an
+explicitly synthetic, session-only manual-price comparison. No new hosted
+snapshot, forecast record, source refresh or background activation occurred in
+this increment. The existing 17 genuine pregame records remain preserved.
+
+The new NBA score challenger tested 1,225 games: moneyline Brier 0.2114, log loss
+0.6114, versus the prior recent Elo study's Brier 0.2086. MLB tested 2,426 games:
+moneyline Brier 0.2457, log loss 0.6845, versus prior Elo 0.2437. The new MLB total
+task failed its simple baseline (Brier 0.2672 versus 0.2509). These comparisons
+do not support replacing the existing models. Joint task metrics and calibration
+details remain in the hash-bound research report, separate from current picks.
