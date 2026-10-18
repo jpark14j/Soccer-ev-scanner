@@ -65,6 +65,7 @@ def test_no_secret_ui_still_renders(tmp_path,monkeypatch):
     monkeypatch.setenv('ODDS_API_KEY','')
     app=AppTest.from_file(Path('app.py').resolve(),default_timeout=20).run()
     assert not app.exception
-    assert any('No supported single' in info.value for info in app.info)
+    from intelligence.positive_ev import EMPTY
+    assert any(info.value==EMPTY for info in app.info)
     navigate(app,'Settings')
     assert any('ODDS_API_KEY' in info.value for info in app.info)

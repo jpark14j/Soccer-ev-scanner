@@ -50,6 +50,6 @@ def decide(analysis,books=None,now=None,combined_prices=(),joint_estimates=()):
     options.sort(key=lambda o:(-o['conservative_ev']*(1-(o['upper']-o['lower'])),o['upper']-o['lower'],
         -o['probability'],tuple(sorted(q.id for q in o['quotes']))))
     return {'status':'QUALIFYING EVIDENCE AVAILABLE' if options else 'NO QUALIFYING BET',
-        'best':options[0] if options else None,'qualified_by_format':{kind:sum(o['format']==kind for o in options) for kind in FORMATS},
+        'best':options[0] if options else None,'options':options,'qualified_by_format':{kind:sum(o['format']==kind for o in options) for kind in FORMATS},
         'blockers':dict(blocked),'missing_joint_or_combined_price_adapter':not combined_prices,
         'method':'Existing eligibility gates first; conservative EV × (1 − probability-envelope width), narrower envelope, then estimated probability. Same rule for each format; heuristic, not validated portfolio optimality.'}

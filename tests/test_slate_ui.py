@@ -20,7 +20,10 @@ def test_default_dashboard_has_cards_and_collapsed_raw_odds(tmp_path,monkeypatch
     with patch('intelligence.pipeline.run_analysis',return_value=Analysis(quotes=[q,q2])):
         app=AppTest.from_file(Path('app.py').resolve(),default_timeout=40).run()
         assert not app.exception
-        assert any(s.value=='Upcoming Games' for s in app.subheader)
+        from intelligence.positive_ev import EMPTY
+        assert any(i.value==EMPTY for i in app.info)
+        app.sidebar.radio[0].set_value('Upcoming Games').run()
+        assert {'Home vs Away','Other Home vs Other Away'}<={t.value for t in app.text}
         navigate(app,'AI Dashboard')
         assert any(m.label=='Games discovered / observed' for m in app.metric)
         assert any('No qualifying parlay opportunities' in m.value for m in app.info)

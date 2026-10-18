@@ -18,6 +18,35 @@ def instance(store):
     with store.connect() as db:return db.execute('SELECT instance FROM store_identity WHERE id=1').fetchone()[0]
 
 
+def test_key_free_worker_fenced_checkpoint_preserves_hold_and_quotas(remote,store,monkeypatch,tmp_path):
+    from intelligence.free_statistics_worker import publish
+    store.reserve(2,9);bootstrap(store.path,writer(remote));before=reader(remote).read()
+    monkeypatch.setenv('RESEARCH_EXPECTED_STORE_INSTANCE',instance(store))
+    for name in ('PAID_ANALYST_APPROVED','RESEARCH_WORKER_ENABLED','RESEARCH_SCHEDULE_ENABLED'):monkeypatch.setenv(name,'0')
+    def prepared(s,**kwargs):
+        s.cache('synthetic-free-result',{'test_only':True})
+        return {'public_results_requests':1,'odds_api_requests':0},[]
+    with patch('intelligence.free_statistics_worker.update',side_effect=prepared):
+        report=publish(client=writer(remote),readback_output=tmp_path/'fresh-readback.sqlite3')
+    after=reader(remote).read()
+    assert report['shared_readback_verified'] and after['generation']==before['generation']+1
+    assert after['held'] is before['held'] is True and after['budgets']==before['budgets']
+    assert after['publication_receipts']==before['publication_receipts']
+    assert Store(tmp_path/'fresh-readback.sqlite3').cached('synthetic-free-result',300)
+
+
+def test_key_free_failure_keeps_previous_successful_shared_snapshot(remote,store,monkeypatch):
+    from intelligence.free_statistics_worker import publish
+    bootstrap(store.path,writer(remote));before=reader(remote).read()
+    monkeypatch.setenv('RESEARCH_EXPECTED_STORE_INSTANCE',instance(store))
+    for name in ('PAID_ANALYST_APPROVED','RESEARCH_WORKER_ENABLED','RESEARCH_SCHEDULE_ENABLED'):monkeypatch.setenv(name,'0')
+    with patch('intelligence.free_statistics_worker.update',side_effect=ValueError('Synthetic source failure')):
+        with pytest.raises(ValueError):publish(client=writer(remote))
+    after=reader(remote).read()
+    assert after['generation']==before['generation'] and after['snapshot']==before['snapshot']
+    assert after['held'] and after['budgets']==before['budgets']
+
+
 def test_prepared_statistics_checkpoint_preserves_holds_and_budgets_without_provider_calls(remote,store,monkeypatch,tmp_path):
     from intelligence.statistics_import import publish
     store.reserve(3,9)

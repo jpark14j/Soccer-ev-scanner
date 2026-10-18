@@ -166,32 +166,8 @@ def render_games(w,limit=None,filters=True):
 def render_home(w):
     from intelligence.manual_research_ui import render as render_manual
     render_manual(w)
-    safe=safe_text(w);top,rows=research_view(w.analysis,w.store,w.book_keys,w.leagues)
-    status,message=data_status(w.analysis,w.book_keys)
-    st.caption('NBA · Soccer · MLB | Ontario sportsbook research')
-    st.write('**Sportsbook price status: '+status+'**');st.caption(message)
-    st.caption('This status applies to sportsbook prices. Model-only research does not require live odds.')
-    from intelligence.fixture_research_ui import render as render_fixture_research
-    render_fixture_research(w,safe)
-    left,right=st.columns(2)
-    with left:
-        st.subheader('Best Single Pick')
-        if rows:single_card(rows[0][1],safe,rows[0][0]==APPROVED)
-        else:st.info('No supported single qualifies right now. We’ll show one when current prices and sufficient model evidence are available.')
-    with right:
-        st.subheader('Best Parlay')
-        if top['parlay']:
-            parlay_card(top['parlay'],safe)
-            other=[p for values in top['format_candidates'].values() for p in values
-                if len(p.research.legs)!=len(top['parlay'].research.legs)
-                and not any(p.dependence[k] for k in ('shared_game_pairs','shared_team_pairs','shared_player_pairs'))]
-            if other:parlay_card(min(other,key=lambda p:p.evidence_rank),safe)
-        else:st.info('No qualifying parlay opportunities identified today.')
-    st.subheader('Upcoming Games');render_games(w,limit=3,filters=False)
-    st.subheader('Other Opportunities')
-    if len(rows)<2:st.caption('No additional supported selections right now.')
-    for state,leg in rows[1:3]:single_card(leg,safe,state==APPROVED)
-    render_exploratory_prices(w,rows,safe)
+    from intelligence.positive_ev import render
+    render(w,safe_text(w))
 
 
 def render_exploratory_prices(w,supported,safe):
@@ -250,6 +226,8 @@ def render_picks(w):
     from intelligence.competitions import COMPETITIONS
     fixture_scope=replace(w,leagues=[league for league in w.leagues if COMPETITIONS[league].sport in sports])
     render_fixture_research(fixture_scope,safe,sizes=sizes)
+    from intelligence.manual_odds_ui import render as render_manual_prices
+    render_manual_prices(fixture_scope,safe)
     top,rows=research_view(w.analysis,w.store,w.book_keys,w.leagues)
     from intelligence.parlay_intelligence import selection_groups
     groups,_=selection_groups(w.analysis,w.book_keys)
@@ -279,6 +257,7 @@ def render_picks(w):
     for item in candidates:parlay_card(item,safe)
     st.subheader('Alternative experimental research')
     st.caption('Unsupported price-only combinations and full research controls are available in Settings → Admin / Developer Tools. They are never promoted to betting recommendations.')
+    render_exploratory_prices(w,rows,safe)
 
 
 def render_performance(w):
@@ -306,6 +285,13 @@ def render_performance(w):
             labeled=db.execute('SELECT count(*) FROM statistics_outcomes').fetchone()[0]
             st.write(f'Unpriced statistical research: {recorded} pregame records · {labeled} verified outcome labels.')
             st.caption('These singles and score-model combinations are separate from backtests and published betting picks. No sportsbook odds or financial returns are inferred.')
+            from intelligence.statistics_forward import monitoring
+            monitor=monitoring(w.store)
+            st.caption(f"{monitor['unique_pregame_decisions']} distinct unpriced decisions after excluding repeat refresh snapshots.")
+            with st.expander('Unpriced forward calibration'):
+                for group in monitor['groups']:
+                    st.text(safe(f"{group['league']} · {group['format']} · {group['labeled']} verified outcomes · {group['pending']} pending"))
+                    if group['brier'] is not None:st.caption(f"Brier {group['brier']:.4f} · log loss {group['log_loss']:.4f}. Descriptive forward evidence only; no financial return or approval.")
     if not reliability['groups']:st.info('There is not enough forward evidence to report model reliability yet.')
     for card in reliability['groups']:
         st.text(safe(card['scope']['league']+' · '+card['scope']['market']+' · '+card['state']))

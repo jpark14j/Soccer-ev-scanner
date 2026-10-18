@@ -98,7 +98,9 @@ def test_everyday_pages_hide_admin_diagnostics_and_never_scan_on_navigation(cons
     app,scans=consumer_app
     assert app.sidebar.radio[0].options==[p.name for p in PAGES]
     assert app.sidebar.radio[0].value=='Home'
-    assert {'Best Single Pick','Best Parlay','Upcoming Games','Other Opportunities'}<={s.value for s in app.subheader}
+    from intelligence.positive_ev import LABELS,EMPTY
+    assert [s.value for s in app.subheader]==list(LABELS)
+    assert any(i.value==EMPTY for i in app.info)
     for name in ('Home','Best Picks & Parlays','Upcoming Games','Performance Tracker'):
         app.sidebar.radio[0].set_value(name).run()
         assert not app.exception and not app.json and not app.dataframe
@@ -120,17 +122,20 @@ def test_simple_parlay_is_theoretical_and_leg_filter_works(consumer_app):
     assert scans.call_count==1
 
 
-def test_home_shows_supported_two_and_three_leg_candidates_without_opposing_price_picks(consumer_app):
+def test_home_withholds_experimental_candidates_but_keeps_them_on_research_page(consumer_app):
     app,_=consumer_app
+    assert not any('experimental parlay' in x.value for x in app.markdown)
+    app.sidebar.radio[0].set_value('Best Picks & Parlays').run()
     assert any('2-leg experimental parlay' in x.value for x in app.markdown)
     assert any('3-leg experimental parlay' in x.value for x in app.markdown)
     assert not any(e.label=='Experimental market research · model evidence incomplete' for e in app.expander)
 
 
-def test_statistics_do_not_require_scrolling_past_empty_sportsbook_sections(consumer_app):
+def test_model_research_is_secondary_and_home_has_only_three_positive_ev_slots(consumer_app):
     app,_=consumer_app
     headings=[s.value for s in app.subheader]
-    assert headings.index('Model research without live odds')<headings.index('Best Single Pick')
+    assert 'Model research without live odds' not in headings
+    assert not app.dataframe and not app.json
     app.sidebar.radio[0].set_value('Best Picks & Parlays').run()
     headings=[s.value for s in app.subheader]
     assert headings.index('Model research without live odds')<headings.index('Highest estimated win probability')

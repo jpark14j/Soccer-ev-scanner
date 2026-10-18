@@ -60,3 +60,37 @@ def reconcile(store,now=None):
                 'scope':'Unpriced paper forecast outcome; not a settled sportsbook ticket or financial return'}
             added+=db.execute('INSERT OR IGNORE INTO statistics_outcomes VALUES(?,?,?)',(row['id'],now.isoformat(),json.dumps(value))).rowcount
     return added
+
+
+def monitoring(store):
+    """First prospectively recorded forecast per game/task, separate from bets.
+
+    Refreshing a source must not increase the number of independent decisions.
+    Descriptive calibration only; no promotion, retraining or money returns.
+    """
+    from collections import defaultdict
+    from intelligence.epl_validation import reliability
+    ensure(store);first={};groups=defaultdict(list)
+    with store.connect() as db:
+        records=db.execute('SELECT f.*,o.payload outcome FROM statistics_forecasts f LEFT JOIN statistics_outcomes o ON f.id=o.id ORDER BY f.at,f.id').fetchall()
+    for record in records:
+        r=json.loads(record['payload']);legs=r.get('legs') or [{k:r[k] for k in ('market','selection','point')}]
+        task=digest([{k:l.get(k) for k in ('market','selection','point')} for l in legs])
+        key=(r['fixture_id'],r['model_version'],task)
+        first.setdefault(key,(r,json.loads(record['outcome']) if record['outcome'] else None))
+    for r,outcome in first.values():
+        group=(r.get('sport','Soccer'),r['league'],r['model_version'],'single' if not r.get('legs') else str(len(r['legs']))+'-leg SGP')
+        groups[group].append((r,outcome))
+    output=[]
+    for scope,values in sorted(groups.items()):
+        labeled=[(r,o) for r,o in values if o is not None];p=[r.get('joint_probability',r.get('probability')) for r,o in labeled]
+        y=[int(o['all_selections_won']) for r,o in labeled]
+        output.append({'sport':scope[0],'league':scope[1],'model_version':scope[2],'format':scope[3],
+            'unique_pregame_decisions':len(values),'labeled':len(y),'pending':len(values)-len(y),
+            'brier':sum((a-b)**2 for a,b in zip(p,y))/len(y) if y else None,
+            'log_loss':-sum(b*math.log(max(1e-8,a))+(1-b)*math.log(max(1e-8,1-a)) for a,b in zip(p,y))/len(y) if y else None,
+            'reliability':reliability(p,y) if y else [],'approved':False,
+            'state':'Descriptive forward monitoring; independent validation and reviewed approval still required',
+            'paper_roi':None})
+    return {'recorded_snapshots':len(records),'unique_pregame_decisions':len(first),'groups':output,
+        'automatic_promotion':False,'note':'First genuinely recorded pregame forecast per fixture/model/selection. SGPs and singles sharing games are dependent; calibration frequency ranges are descriptive. No odds, stakes or financial results are inferred.'}

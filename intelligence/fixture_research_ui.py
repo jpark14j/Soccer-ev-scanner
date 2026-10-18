@@ -88,6 +88,15 @@ def render(w, safe, sizes=(2,3)):
             st.caption('This remains a historical study. The 2025 source cannot supply current 2026 game probabilities.')
             st.caption(m['source']['attribution'])
         st.caption('MLB still needs permitted 2026 results and fixtures. Prices are never converted into model forecasts. Player props and live models require additional verified inputs.')
+        from intelligence.team_score_study import load_report as score_report
+        study=score_report()
+        if study:
+            for sport,report in study['reports'].items():
+                st.text(f"{sport} score challenger · {report['selected_variant']} · {report['partitions']['test']['n']} test games. Retrospective diagnostic; no model promoted.")
+                for task in ('home_win','home_win_and_over','home_win_and_total_band'):
+                    t=report['tasks'][task]
+                    st.caption(f"{task.replace('_',' ')}: Brier {t['metrics']['binary_brier']['value']:.4f}; training-only constant baseline {t['training_constant_baseline']['binary_brier']['value']:.4f}; log loss {t['metrics']['log_loss']['value']:.4f}; calibration error {t['ece']:.1%}.")
+                st.caption('Fixed total lines are statistical study targets, not observed sportsbook offers. Joint score assumptions and retrospective results do not establish current readiness or a betting advantage.')
     from intelligence.openliga import public_dataset
     dataset=public_dataset(w.store)
     if json.loads(dataset)['source_datasets']:

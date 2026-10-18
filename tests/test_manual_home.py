@@ -65,6 +65,10 @@ def test_home_owner_unlock_dispatch_and_committed_result_visibility(home):
 
 def test_fresh_unmodeled_prices_show_experimental_two_and_three_leg_research(home):
     app,store,_,client,_=home
+    from intelligence.positive_ev import EMPTY
+    assert any(i.value==EMPTY for i in app.info)
+    assert not any('price-only research' in x.value for x in app.markdown)
+    app.sidebar.radio[0].set_value('Best Picks & Parlays').run()
     assert any(e.label=='Experimental market research · model evidence incomplete' for e in app.expander)
     assert any('2-leg price-only research' in x.value for x in app.markdown)
     assert any('3-leg price-only research' in x.value for x in app.markdown)
@@ -80,13 +84,16 @@ def test_stale_prices_cannot_become_home_candidates(home):
     app.run()
     assert not app.exception
     assert not any('price-only research' in x.value for x in app.markdown)
-    assert any('No supported single qualifies' in x.value for x in app.info) and not client.dispatched
+    from intelligence.positive_ev import EMPTY
+    assert any(x.value==EMPTY for x in app.info) and not client.dispatched
+    app.sidebar.radio[0].set_value('Best Picks & Parlays').run()
+    assert not any('price-only research' in x.value for x in app.markdown)
 
 
 def test_ambiguous_duplicate_observations_cannot_be_shown_as_price_research(home):
     app,_,analysis,_,_=home
     analysis.quotes=analysis.quotes+[analysis.quotes[0]]
-    app.run()
+    app.sidebar.radio[0].set_value('Best Picks & Parlays').run()
     assert not app.exception
     assert not any('3-leg price-only research' in x.value for x in app.markdown)
     assert any('2-leg price-only research' in x.value for x in app.markdown)
