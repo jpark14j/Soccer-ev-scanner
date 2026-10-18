@@ -31,7 +31,8 @@ def test_public_download_has_one_fixed_url_no_key_no_retry_no_redirect():
 
 
 def test_refresh_preserves_hold_budgets_and_successful_cache_after_failure(store):
-    now=utcnow();raw=json.dumps(season(now)).encode();before=protected_counts(store)
+    from conftest import NOW
+    now=NOW;raw=json.dumps(season(now)).encode();before=protected_counts(store)
     with patch('intelligence.fixture_research.collect',return_value={'forecasts':[]}),patch('intelligence.current_score_research.candidates',return_value=[]):
         report,rows=update(store,now,lambda:(raw,now.isoformat()))
     assert report['public_results_requests']==1 and report['odds_api_credits']==0 and not rows
@@ -43,6 +44,18 @@ def test_refresh_preserves_hold_budgets_and_successful_cache_after_failure(store
     with pytest.raises(ValueError):update(store,later,lambda:(b'[]',later.isoformat()))
     assert current(store,'Bundesliga',later)[0]==first[0]
     assert protected_counts(store)==before
+
+
+def test_source_is_refreshed_across_utc_midnight_even_inside_cache_interval(store):
+    from datetime import datetime,timezone
+    now=datetime(2026,10,18,23,30,tzinfo=timezone.utc);later=now+timedelta(hours=1)
+    raw=json.dumps(season(now)).encode();calls=[]
+    with patch('intelligence.fixture_research.collect',return_value={'forecasts':[]}),patch('intelligence.current_score_research.candidates',return_value=[]):
+        update(store,now,lambda:(raw,now.isoformat()))
+        def fetch():calls.append(True);return raw,later.isoformat()
+        result,_=update(store,later,fetch)
+    assert calls==[True] and result['public_results_requests']==1
+    assert current(store,'Bundesliga',later)[1]['checked_at']==later.isoformat()
 
 
 def test_failed_transport_cannot_overwrite_results_or_mark_refresh_success(store):

@@ -84,22 +84,37 @@ credentials or arbitrary model data are stored in the price export.
 
 ## Independent free automation
 
-Activation status: **prepared, not activated**. Automatic approval review blocked
-installing the scheduled worker under the earlier restriction on background
-activation. The private `proposals/free_statistics_refresh.yml` is an inert,
-reviewable copy pinned to a tested development SHA; files in `proposals/` do not
-run as GitHub Actions workflows. The only installed private workflow remains
-manual-dispatch verification by default. Explicit owner approval is pending.
+Activation status: **owner-approved and initial refresh verified**. The owner
+explicitly approved the free-data activation on 2026-10-18 after the earlier
+automatic approval block. The installed private
+`.github/workflows/free_statistics_refresh.yml` is pinned to a reviewed full
+development SHA; `proposals/` remains a non-executable reference copy.
 
-If approved, the proposed worker uses only existing Supabase credentials
+The worker uses only existing Supabase credentials
 and the already reviewed GitHub Actions allowance; no new account/key is needed.
-The separate quote-free job would be scheduled every four hours (UTC), plus manual
+The separate quote-free job is scheduled every four hours (UTC), plus manual
 dispatch. It makes at most one fixed OpenLigaDB GET per run, no redirects or
 automatic retries, two-MB response bound, 30-second request deadline, at least
 three hours between successful refreshes (except across a UTC date boundary).
 Six scheduled requests per day; GitHub scheduling is best-effort and can delay.
 Runner time counts against the existing private Actions allowance; the included
 allowance is finite and not a billing guarantee.
+
+The initial background refresh in private run `39176130851` performed one
+OpenLigaDB GET at 2026-10-18T23:21:21Z and saved Supabase generation 4. A fresh
+hosted readback verified the original store identity, unchanged provider hold,
+unchanged budgets and protected records. Seven experimental singles, three
+eligible 2-leg SGPs and seven eligible 3-leg SGPs were generated. Seventeen new
+pregame snapshots were saved before kickoff: 34 stored snapshots now represent
+17 distinct decisions, with zero verified outcomes. None are approved bets.
+
+The initial workflow's refresh step succeeded but its later browser harness
+failed because checking out the public app removed the private helper. Browser
+verification was separated into a read-only artifact-based job, without another
+source request. Temporary push/browser triggers are removed after verification;
+the recurring updater retains only scheduled/manual triggers. The first actual
+cron-triggered execution has not yet been observed, so configured scheduling is
+not a guarantee of future execution.
 
 The existing live-odds automatic worker/schedule and paid AI flags remain zero.
 The held provider paths, nine-credit cap and remote reservations are untouched.
@@ -137,13 +152,16 @@ that distinction until a real hosted authenticated session can be observed.
 Supabase verification demonstrates the tested generation and readback, not an
 unlimited retention guarantee or disaster recovery independent of Supabase.
 
-This increment passed 755 local tests, compilation, dependency checks, credential
-scanning, and local Streamlit health/root startup. CI on the functional commit
-passed 754 tests with one existing private-archive skip. Local AppTest exercised
+The activation regression suite passed 756 local tests. A midnight-sensitive
+test was made deterministic and an explicit UTC-date-boundary refresh test was
+added; the production refresh behavior was unchanged. Compilation, dependency
+checks, credential scanning, and local Streamlit health/root startup passed.
+CI on the earlier functional commit passed 754 tests with one existing
+private-archive skip; current CI is linked from Draft PR #1. Local AppTest exercised
 all five pages using the genuine generation-3 hosted readback, including an
-explicitly synthetic, session-only manual-price comparison. No new hosted
-snapshot, forecast record, source refresh or background activation occurred in
-this increment. The existing 17 genuine pregame records remain preserved.
+explicitly synthetic, session-only manual-price comparison. The original
+17 genuine pregame records and frozen model assets remain preserved alongside
+the newly verified generation-4 records.
 
 The new NBA score challenger tested 1,225 games: moneyline Brier 0.2114, log loss
 0.6114, versus the prior recent Elo study's Brier 0.2086. MLB tested 2,426 games:
