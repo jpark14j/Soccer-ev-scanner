@@ -9,7 +9,7 @@ on:
         description: State verification or explicitly owner-requested research
         type: choice
         default: verify
-        options: [verify, storage-check, manual-research]
+        options: [verify, storage-check, hold-review, manual-research]
       request_id:
         description: Unique request identity supplied by the authenticated Home control
         type: string
@@ -82,6 +82,13 @@ jobs:
           RESEARCH_WORKER_ENABLED: '0'
           RESEARCH_SCHEDULE_ENABLED: '0'
           RESEARCH_MANUAL_ENABLED: ${{ vars.RESEARCH_MANUAL_ENABLED || '0' }}
+          RESEARCH_ACTIONS_FREE_TIER_REVIEWED: ${{ vars.RESEARCH_ACTIONS_FREE_TIER_REVIEWED || '0' }}
+          RESEARCH_CONFIG_WORKER_ENABLED: ${{ vars.RESEARCH_WORKER_ENABLED || '0' }}
+          RESEARCH_CONFIG_SCHEDULE_ENABLED: ${{ vars.RESEARCH_SCHEDULE_ENABLED || '0' }}
+          RESEARCH_ODDS_KEY_CONFIGURED: ${{ secrets.ODDS_API_KEY != '' }}
+          RESEARCH_RESULTS_TOKEN_CONFIGURED: ${{ secrets.FOOTBALL_DATA_TOKEN != '' }}
+          RESEARCH_RESULTS_ENABLED_CONFIGURED: ${{ vars.FOOTBALL_DATA_ENABLED || '0' }}
+          RESEARCH_RESULTS_USE_REVIEWED: ${{ vars.FOOTBALL_DATA_USE_REVIEWED || '0' }}
           RESEARCH_DATA_RIGHTS_VERIFIED: ${{ vars.RESEARCH_DATA_RIGHTS_VERIFIED || '0' }}
           RESEARCH_BUDGET_SCOPE_REVIEWED: ${{ vars.RESEARCH_BUDGET_SCOPE_REVIEWED || '0' }}
           ODDS_API_KEY: ${{ inputs.operation == 'manual-research' && vars.RESEARCH_MANUAL_ENABLED == '1' && vars.RESEARCH_BUDGET_SCOPE_REVIEWED == '1' && vars.RESEARCH_DATA_RIGHTS_VERIFIED == '1' && secrets.ODDS_API_KEY || '' }}
@@ -99,6 +106,9 @@ jobs:
             storage-check)
               echo 'Selected operation: storage-check. Preservation checkpoint; no sports-provider requests.'
               python -m intelligence.background --storage-check ;;
+            hold-review)
+              echo 'Selected operation: hold-review. Read-only state and configuration review; no provider requests or hold release.'
+              python -m intelligence.background --review-hold ;;
             manual-research)
               python -m intelligence.background --manual "$RESEARCH_REQUEST_ID" ;;
             *) echo 'Unsupported operation'; exit 1 ;;

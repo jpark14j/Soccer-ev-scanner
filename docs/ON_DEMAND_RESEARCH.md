@@ -18,7 +18,9 @@ Current account-wide Odds API credits and permitted research/storage use must
 be verified privately, including other consumers of the shared production key.
 Current soccer-results access must also be established. The existing provider
 hold is still active; its existing operator review/reconciliation procedure is
-required before any live run. Do not assert review flags or release it as a
+required before any live run. [Read-only provider-hold review](PROVIDER_HOLD_REVIEW.md)
+locates that procedure and checks actual state without using sports API credits.
+Do not assert review flags or release it as a
 workaround. No real run or new recommendation is claimed by these offline tests.
 
 The new Home control requires two private credentials the development environment

@@ -221,10 +221,14 @@ def main():
     p.add_argument('--pull',type=Path,help='Explicit read-only committed-state sync directory')
     p.add_argument('--verify-shared',action='store_true',help='Two independent state-only reads/restores; no provider requests or writes')
     p.add_argument('--storage-check',action='store_true',help='Fenced preservation checkpoint and fresh readback; no research/provider requests')
+    p.add_argument('--review-hold',action='store_true',help='Read-only hold, ledger and configuration review; never release or collect data')
     args=p.parse_args()
-    if sum(bool(v) for v in (args.run,args.manual,args.bootstrap,args.pull,args.verify_shared,args.storage_check))>1:p.error('Choose one explicit operation')
+    if sum(bool(v) for v in (args.run,args.manual,args.bootstrap,args.pull,args.verify_shared,args.storage_check,args.review_hold))>1:p.error('Choose one explicit operation')
     try:
-        if args.verify_shared or args.storage_check:
+        if args.review_hold:
+            from intelligence.provider_hold import review
+            result=review()
+        elif args.verify_shared or args.storage_check:
             from intelligence.hosted_checks import verify_shared,storage_check,expected_store
             expected=expected_store()
             result=storage_check(expected_instance=expected) if args.storage_check else verify_shared(expected_instance=expected)

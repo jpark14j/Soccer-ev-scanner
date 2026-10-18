@@ -181,25 +181,11 @@ data/protocol. No real learning improvement has yet been established.
    uncertain, reserve the full nine/six and wait for the next UTC day; if the
    account scope itself is unresolved, **keep the hold**. This step cannot be
    performed through chat or by restoring a local SQLite backup.
-   A conservative ready-to-review SQL transaction (after account-scope review)
-   is below. It reserves the **entire current-day allowance**, so no new sports
-   calls are possible until the next UTC day. Do not reduce these values without
-   verified account usage, and do not run it while other spending is uncontrolled.
-
-   ```sql
-   BEGIN;
-   SELECT id FROM public.research_control_state WHERE id FOR UPDATE;
-   INSERT INTO public.research_provider_budget(day,provider,used) VALUES
-     ((now() AT TIME ZONE 'UTC')::date,'odds',9),
-     ((now() AT TIME ZONE 'UTC')::date,'results',6)
-   ON CONFLICT(day,provider) DO UPDATE
-     SET used=GREATEST(research_provider_budget.used,excluded.used);
-   INSERT INTO public.research_control_audit(action,details) VALUES
-     ('operator_budget_review',
-      '{"scope_reviewed":true,"policy":"full current-day allowance reserved"}'::jsonb);
-   UPDATE public.research_control_state SET held=false WHERE id;
-   COMMIT;
-   ```
+   Use the [read-only provider-hold review](PROVIDER_HOLD_REVIEW.md) to inspect
+   current hosted state and prepare a guarded proposal for explicit approval.
+   The proposal is disabled by default, refuses active/changed/unreconciled
+   state, and conservatively reserves all current-day caps. It is never executed
+   by the diagnostic. Exact reviewed usage is required for a same-day run.
    If the chosen bootstrap file itself has the existing restored-backup recovery
    hold, reconcile that local hold with the documented
    `python -m intelligence.cli review-recovery-budget` procedure **before**

@@ -5,6 +5,10 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
+The [provider-hold review](docs/PROVIDER_HOLD_REVIEW.md) adds a read-only private
+workflow diagnostic and fixes stale control-state visibility on an open Home
+page. It never releases holds, resets budgets or dispatches live research.
+
 Latest: [Owner-requested research](docs/ON_DEMAND_RESEARCH.md) adds Home's
 **Find Best Bets Now** control, private authenticated dispatch and manual-only
 worker execution. No schedule, provider hold release or paid AI is enabled.

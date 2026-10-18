@@ -253,6 +253,20 @@ def saved_replica(directory):
     except FileNotFoundError:return None
 
 
+def replica_revision(pointer):
+    """Control changes do not necessarily create a new SQLite generation.
+
+    Ignore read timestamps so a cached read cannot cause an app-rerun loop.
+    Holds, remote reservations and worker status must still invalidate the view.
+    """
+    from intelligence.domain import digest
+    e=(pointer or {}).get('envelope',{})
+    budgets=sorted(e.get('budgets',[]),key=lambda r:(r.get('day',''),r.get('provider','')))
+    return digest({'generation':e.get('generation'),'held':e.get('held'),'budgets':budgets,
+        'lease_until':e.get('lease_until'),'heartbeat':e.get('heartbeat'),
+        'manifest':(pointer or {}).get('manifest')})
+
+
 def open_replica(directory,fallback,config=None):
     """Read-side local working copy. It never commits to the remote writer head."""
     from intelligence.storage import Store

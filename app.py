@@ -188,8 +188,8 @@ if route in ('home','picks','games'):
             try:
                 synced=sync_shared_state((shared_config.url,digest((shared_config.reader_key,shared_config.reader_token))),
                     os.getenv('RESEARCH_REPLICA_DIR') or secret('RESEARCH_REPLICA_DIR') or 'data/shared-replica',shared_config)
-                previous=getattr(store,'shared_status',{}).get('envelope',{}).get('generation')
-                if synced.get('envelope',{}).get('generation')!=previous:
+                from intelligence.shared_state import replica_revision
+                if replica_revision(synced)!=replica_revision(getattr(store,'shared_status',{})):
                     st.rerun()  # Load the new verified replica without any sports request.
             except (StateError,OSError,ValueError):
                 st.info('Saved research could not be updated. The last verified copy is kept.')
