@@ -72,3 +72,21 @@ def test_source_import_has_no_external_provider_network_path(store,tmp_path):
     (tmp_path/'manifest.json').write_text('[]')
     with pytest.raises(ValueError):import_files(store,tmp_path)
     assert before==protected_counts(store)
+
+
+@pytest.mark.parametrize('held_scope',['underlying','totals','btts'])
+def test_sgp_respects_underlying_and_every_leg_model_hold(store,held_scope):
+    from intelligence.current_score_research import candidates
+    report=load_report();now=utcnow()
+    artifact={'historical_completion_sha256':report['completion_sha256'],'model_version':'synthetic-base',
+        'artifact_sha256':'synthetic-base-evidence','state':{},'policy':{}}
+    event={'home_id':'synthetic-home','away_id':'synthetic-away','home':'Synthetic Home','away':'Synthetic Away',
+        'fixture_id':'synthetic-fixture','event':'Synthetic Home vs Synthetic Away',
+        'kickoff':(now+timedelta(days=1)).isoformat(),'source_observed_at':now.isoformat()}
+    def held(s,contract,model):
+        if held_scope=='underlying' and model.model_version=='synthetic-base':return 'Synthetic underlying hold'
+        if model.model_version==report['model_version'] and contract.market==held_scope:return 'Synthetic leg hold'
+    with patch('intelligence.current_soccer.prepare_openliga',return_value=artifact),patch('intelligence.fixture_research.soccer_forecasts',return_value=([event],'')),patch('intelligence.current_score_research.predict',return_value=({'home_rate':2.3,'away_rate':1.1},'')),patch('intelligence.lifecycle.research_hold',side_effect=held):
+        rows=candidates(store,now)
+    if held_scope in ('underlying','totals'):assert not rows
+    else:assert rows and all(len(r['legs'])==2 for r in rows)

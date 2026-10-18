@@ -112,6 +112,11 @@ def candidates(store,now=None,hours=168):
     if not report:return []
     artifact=prepare_openliga('Bundesliga',store,now)
     if artifact.get('problem') or artifact.get('historical_completion_sha256')!=report['completion_sha256']:return []
+    # This score model inherits the frozen venue strengths. A hold on that
+    # underlying model is not escaped by using a different SGP version/name.
+    base_contract=SimpleNamespace(sport='Soccer',league='Bundesliga',market='btts',point=None)
+    base_model=SimpleNamespace(model_version=artifact['model_version'],evidence_id=artifact['artifact_sha256'])
+    if research_hold(store,base_contract,base_model):return []
     events,_=soccer_forecasts('Bundesliga',artifact,now,hours)
     leg_masks,joint_masks=masks();out=[]
     for event in events:
@@ -122,9 +127,9 @@ def candidates(store,now=None,hours=168):
         for name,contracts in TASKS.items():
             if contracts[0][1]!=side:continue
             task=report['reports'][name];p=float(mass[joint_masks[name]].sum());lo,hi,n=envelope(p,task)
-            contract=SimpleNamespace(sport='Soccer',league='Bundesliga',market='h2h',point=None)
             model=SimpleNamespace(model_version=report['model_version'],evidence_id=report['sha256'])
-            if research_hold(store,contract,model):continue
+            if any(research_hold(store,SimpleNamespace(sport='Soccer',league='Bundesliga',market=m,point=point),model)
+                for m,selection,point in contracts):continue
             legs=[]
             for market,selection,point in contracts:
                 lp=float(mass[leg_masks[(market,selection,point)]].sum());ll,lu,ln=envelope(lp,report['reports'][str((market,selection,point))])

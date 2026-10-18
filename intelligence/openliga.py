@@ -129,6 +129,15 @@ def complete_history(store, raw, pinned_raw, observed_at, now=None):
         else: extra.append({'fixture_id':e.fixture_id,'season':e.season,'date':e.event_date,
             'home':e.home_id,'away':e.away_id,'hg':e.home_score,'ag':e.away_score})
     if len(previous)!=306 or matched!=294 or len(extra)!=12: raise ValueError('Unexpected historical recovery cohort')
+    successful=history_completion(store,now)
+    if successful:
+        if (successful.get('base_artifact_sha256')!=artifact['artifact_sha256']
+            or successful.get('pinned_source_sha256')!=pin or successful.get('rows')!=extra):
+            raise ValueError('Recovered historical results changed; explicit reconciliation required')
+        # Keep the first verified completed-season evidence identity when only
+        # a later receipt timestamp changed. Do not invalidate all sessions or
+        # silently replace any of the twelve genuinely recovered scores.
+        return successful
     value={'base_artifact_sha256':artifact['artifact_sha256'],'pinned_source_sha256':pin,
         'matched':matched,'added':len(extra),'rows':extra,'source':meta,'source_events':[asdict(e) for e in events]}
     value['sha256']=digest(value)

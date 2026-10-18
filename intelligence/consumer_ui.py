@@ -128,6 +128,20 @@ def parlay_card(item,safe):
 def render_games(w,limit=None,filters=True):
     from intelligence.parlay_research import quote_problem
     games=[r for r in saved_games(w.analysis,w.settings.window_hours) if r['league'] in w.leagues]
+    from intelligence.fixture_research import fixture_games
+    from intelligence.data_adapters import team_identity
+    from intelligence.competitions import COMPETITIONS
+    physical=set()
+    displayed={(r['sport'],r['league'],r['event_id']) for r in games}
+    for q in w.analysis.quotes:
+        if (q.sport,q.league,q.event_id) not in displayed:continue
+        try:
+            h,_=team_identity(COMPETITIONS[q.league],q.home);a,_=team_identity(COMPETITIONS[q.league],q.away)
+            physical.add((q.league,parse_time(q.commence_time),h,a))
+        except (KeyError,ValueError):continue
+    source_games=[r for r in fixture_games(w.store) if r['league'] in w.leagues
+        and (r['league'],parse_time(r['start']),r['home_id'],r['away_id']) not in physical]
+    games=sorted(games+source_games,key=lambda r:(parse_time(r['start']),r['league'],r['event_id']))
     safe=safe_text(w)
     if filters:
         sports=st.multiselect('Sports',['NBA','Soccer','MLB'],default=['NBA','Soccer','MLB'],key='upcoming_sports')
@@ -136,6 +150,7 @@ def render_games(w,limit=None,filters=True):
         chosen=st.multiselect('Game dates',dates,format_func=lambda d:d.strftime('%a, %b %d'),key='upcoming_dates')
         if chosen:games=[r for r in games if parse_time(r['start']).astimezone(LOCAL).date() in chosen]
     st.caption(f'Looking ahead {w.settings.window_hours} hours · times shown in Ontario. Saved coverage may be incomplete.')
+    if source_games:st.caption('Verified statistics-source fixtures additionally cover the next seven days. A fixture alone is not a prediction or an available sportsbook market.')
     if not games:st.info('No upcoming games are saved for this view yet. Games will appear after an authorized research update.');return
     for game in games[:limit] if limit else games:
         with st.container(border=True):
@@ -143,7 +158,8 @@ def render_games(w,limit=None,filters=True):
             st.caption(safe(game['sport']+' · '+game['league'])+' · '+friendly_time(game['start']))
             quotes=[q for q in w.analysis.quotes if (q.sport,q.league,q.event_id)==(game['sport'],game['league'],game['event_id']) and q.bookmaker in w.book_keys]
             current=[q for q in quotes if not quote_problem(q,utcnow())]
-            st.caption('Observed prices available; research checks still apply.' if current else 'Waiting for fresh, eligible sportsbook prices.')
+            st.caption('Verified statistics-source fixture; model support is shown separately and sportsbook odds are optional.' if game.get('statistics_fixture') else
+                'Observed prices available; research checks still apply.' if current else 'Waiting for fresh, eligible sportsbook prices.')
     if limit and len(games)>limit:st.caption('More games are available on Upcoming Games.')
 
 

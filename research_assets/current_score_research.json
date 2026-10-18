@@ -2,10 +2,10 @@
   "schema": 1,
   "league": "Bundesliga",
   "model_version": "bundesliga-coherent-score-research-1",
-  "generated_at": "2026-10-18T21:21:10.210640+00:00",
+  "generated_at": "2026-10-18T21:31:02.453024+00:00",
   "base_artifact_sha256": "7306259c05f4ce1a418d019a7d9f1dd013e98f68794d0b10e5040e38e0c64542",
   "completion_sha256": "3b1f749fd16bd26297825210af233e757a58317001a475eaf7d95a953bd0cef2",
-  "code_sha256": "6a5e48e4d9806bed5ca0006cc4aef897c0463d47cd4aeb2827fcff7ee57b4e9a",
+  "code_sha256": "6bc4b1ef686efc9eadf18c94fb0c84147f7e63facef5b38cd07682f7c3766e94",
   "data_sha256": "23d38dfd45b6f32b31a08a821d90fd9a00efedfb4a5ee1afa804dfc486d19949",
   "source_coverage": [
     {
@@ -2913,5 +2913,5 @@
     "Promoted teams without sufficient prior samples are excluded",
     "No sportsbook ticket, operator settlement rules, prices, positive EV or profitability claim"
   ],
-  "sha256": "6668378a0d9c03ac6322db74363b945cce5d15ec4a9af61244b6d6c055eadb4d"
+  "sha256": "070cf7ef9dd1fa7ac1bc6c25da6bef9dfd14744730f87017055aa25eb7cc393a"
 }

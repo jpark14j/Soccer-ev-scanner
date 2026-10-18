@@ -68,6 +68,47 @@ def test_same_day_finals_are_withheld_without_faking_source_timestamp_or_unplaye
     assert any(e.source_event_id=='1' and e.status=='unresolved' for e in tomorrow)
 
 
+def test_upcoming_source_fixtures_work_without_prices_and_disappear_when_stale(store):
+    from intelligence.fixture_research import fixture_games
+    now=utcnow();rows=season(now)
+    rows[0]['matchDateTimeUTC']=(now+timedelta(days=5)).isoformat();rows[0]['matchIsFinished']=False;rows[0]['matchResults']=[]
+    save(store,json.dumps(rows).encode(),'Bundesliga',now.isoformat(),now)
+    games=fixture_games(store,now)
+    assert len(games)==1 and games[0]['statistics_fixture'] and 'odds' not in games[0]
+    assert fixture_games(store,now,hours=48)==[]
+    assert fixture_games(store,now+timedelta(hours=6))==[]
+
+
+def test_recovered_history_identity_survives_later_receipts_and_changed_scores_cannot_replace_it(store,monkeypatch,tmp_path):
+    from dataclasses import replace
+    from hashlib import sha256
+    from intelligence.event_data import EventObservation
+    from intelligence.openliga import complete_history,history_completion
+    from intelligence.data_adapters import team_identity
+    from intelligence.competitions import COMPETITIONS
+    now=utcnow();events=[]
+    for r in season(now):
+        mapping=json.loads(Path('config/openliga_teams.json').read_text())['Bundesliga']
+        names=[mapping[str(r[t]['teamId'])]['canonical'] for t in ('team1','team2')]
+        (h,hn),(a,an)=[team_identity(COMPETITIONS['Bundesliga'],n) for n in names]
+        events.append(EventObservation('soccer:de:bundesliga','2025-26','synthetic-only',str(r['matchID']),h,a,hn,an,
+            '2026-05-01','completed',1,0,now.isoformat(),None,'https://example.test/synthetic-license','source_reported_ft'))
+    old=[e if i<294 else replace(e,status='unresolved',home_score=None,away_score=None) for i,e in enumerate(events)]
+    raw=b'{}';(tmp_path/'config').mkdir()
+    (tmp_path/'config/multi_source_snapshot.json').write_text(json.dumps({'files':{'2025-26/de.1.json':sha256(raw).hexdigest()}}))
+    monkeypatch.setattr('intelligence.openliga.ROOT',tmp_path)
+    monkeypatch.setattr('intelligence.data_adapters.openfootball',lambda *args:old)
+    monkeypatch.setattr('intelligence.expanded_models.load',lambda *args:{'artifact_sha256':'synthetic-base'})
+    meta={'coverage':{'complete_historical_season':True},'sha256':'synthetic-source'}
+    monkeypatch.setattr('intelligence.openliga.parse',lambda *args,**kwargs:(events,meta))
+    first=complete_history(store,raw,raw,now.isoformat(),now)
+    later=complete_history(store,raw,raw,(now+timedelta(minutes=5)).isoformat(),now+timedelta(minutes=5))
+    assert later==first and later['sha256']==first['sha256']
+    events[-1]=replace(events[-1],home_score=2)
+    with pytest.raises(ValueError,match='Recovered historical results changed'):complete_history(store,raw,raw,now.isoformat(),now)
+    assert history_completion(store,now)==first
+
+
 def nba_file():
     from intelligence.team_codes import NBA
     codes=sorted({v[0] for v in NBA.values()});circle=codes[:];games=[]

@@ -18,6 +18,19 @@ from intelligence.research_ranking import MIN_CALIBRATION_BIN, MIN_CALIBRATION, 
 SOCCER = ('Premier League', 'Bundesliga', 'Ligue 1')
 
 
+def fixture_games(store,now=None,hours=168):
+    """Fresh exact source fixtures for navigation; not model predictions/prices."""
+    from intelligence.openliga import current
+    now=now or utcnow()
+    events,meta=current(store,'Bundesliga',now)
+    if not meta['ok']:return []
+    return [{'sport':'Soccer','league':'Bundesliga','event_id':e.fixture_id,
+        'event':e.home_name+' vs '+e.away_name,'start':e.kickoff,
+        'home_id':e.home_id,'away_id':e.away_id,'statistics_fixture':True}
+        for e in events if e.status=='scheduled' and e.kickoff
+        and now+timedelta(minutes=15)<parse_time(e.kickoff)<=now+timedelta(hours=hours)]
+
+
 def soccer_forecasts(league, artifact, now, hours):
     """Use a fresh full-season provider reconciliation, never just an old schedule."""
     if artifact.get('problem'):
