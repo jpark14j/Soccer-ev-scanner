@@ -55,7 +55,7 @@ def synthetic_rows(now):
     return [{'sport':sport,'league':sport,'home_id':'home'+str(i),'away_id':'away'+str(i),
         'fixture_id':str(i),'kickoff':(now+timedelta(days=1)).isoformat(),
         'source_observed_at':now.isoformat(),'forecast_at':now.isoformat(),
-        'probability':p,'lower':p-.1,'upper':p+.1,'evidence_id':'synthetic-only'}
+        'probability':p,'lower':p-.1,'upper':p+.1,'evidence_id':'synthetic-only','research_eligible':True}
         for i,(sport,p) in enumerate([('NBA',.7),('Soccer',.65),('MLB',.6)])]
 
 
@@ -90,3 +90,31 @@ def test_historical_evidence_is_fingerprinted_and_never_promotes():
         assert r['test_n']>200 and r['paired_test_n']>200
         assert r['paired_minus_incumbent']['binary_brier']['interval'][0]<0<r['paired_minus_incumbent']['binary_brier']['interval'][1]
         assert not r['approved'] and not r['replaces_incumbent'] and not r['current_forecasts_enabled']
+
+
+def test_quote_free_research_respects_existing_reviewed_model_suspension(store, quote, monkeypatch):
+    from intelligence.lifecycle import register_artifact, change_champion
+    from intelligence.domain import digest
+    from test_lifecycle import synthetic_report
+    enable(monkeypatch);now=utcnow();supported_quote(store,quote,'Premier League',now)
+    before=collect(store,now,168,['Premier League'])
+    target=next(r for r in before['forecasts'] if r['market']=='btts')
+    report=synthetic_report()
+    report.update(sport='Soccer',league='Premier League',market='btts',model_version=target['model_version'])
+    report['evidence_id']=digest({k:v for k,v in report.items() if k!='evidence_id'})
+    artifact=register_artifact(store,report)
+    change_champion(store,artifact,{},'https://example.test/synthetic-suspension',action='suspend')
+    after=collect(store,now,168,['Premier League'])
+    assert not any(r['market']=='btts' for r in after['forecasts'])
+    assert 'suspension' in after['blockers']['Premier League'].lower()
+    assert any(r['market']=='totals' for r in after['forecasts'])
+
+
+def test_insufficient_calibration_never_creates_fixture_parlays(store,quote,monkeypatch):
+    enable(monkeypatch);now=utcnow();supported_quote(store,quote,'Premier League',now)
+    artifact=prepare_epl(store,now,allow_fetch=False)
+    for task in artifact['tasks'].values():
+        for bucket in task['calibration_bins']:bucket['n']=0
+    rows,_=soccer_forecasts('Premier League',artifact,now,168)
+    assert rows and all(not r['research_eligible'] for r in rows)
+    assert not combinations_for(rows,2,now=now)

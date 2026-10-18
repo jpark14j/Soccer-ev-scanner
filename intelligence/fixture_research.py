@@ -6,12 +6,14 @@ their existing recency gates; unavailable features produce an explicit blocker.
 """
 from datetime import date, timedelta
 from itertools import combinations
+from types import SimpleNamespace
 from intelligence.domain import utcnow, parse_time, digest
 from intelligence.epl_validation import calibrated
 from intelligence.current_soccer import prepare_epl, prepare_expanded
 from intelligence.data_adapters import team_identity
 from intelligence.competitions import COMPETITIONS
 from intelligence.joint_research import bounds
+from intelligence.research_ranking import MIN_CALIBRATION_BIN, MIN_CALIBRATION, MIN_TEST, MAX_ENVELOPE_WIDTH
 
 SOCCER = ('Premier League', 'Bundesliga', 'Ligue 1')
 
@@ -91,6 +93,11 @@ def soccer_forecasts(league, artifact, now, hours):
                 'limitations': ['Historical calibration-bin range, not a guaranteed event confidence interval',
                     'No independent prospective confirmation or model approval',
                     'Injuries, lineups, operator rules and a current Ontario price are unverified']}
+            row['research_eligible'] = (row['calibration_bin_n'] >= MIN_CALIBRATION_BIN
+                and row['calibration_n'] >= MIN_CALIBRATION and row['test_n'] >= MIN_TEST
+                and row['upper']-row['lower'] <= MAX_ENVELOPE_WIDTH)
+            if not row['research_eligible']:
+                row['limitations'].append('Existing calibration sample or uncertainty research-ranking requirements are not met; inspection only')
             rows.append(row)
     return rows, '; '.join(sorted(set(reasons))) or ('No verified upcoming fixture in this date window' if not rows else '')
 
@@ -106,7 +113,15 @@ def collect(store, now=None, hours=48, leagues=None):
             continue
         artifact = prepare_epl(store, now, allow_fetch=False) if league == 'Premier League' else prepare_expanded(league, store, now, allow_fetch=False)
         found, problem = soccer_forecasts(league, artifact, now, hours)
-        rows.extend(found)
+        from intelligence.lifecycle import research_hold
+        for row in found:
+            # Existing suspension/proof-conflict checks require only contract
+            # and model scope; this is not a Quote and has no fictitious price.
+            contract=SimpleNamespace(**{k:row[k] for k in ('sport','league','market','point')})
+            model=SimpleNamespace(**{k:row[k] for k in ('model_version','evidence_id')})
+            held=research_hold(store,contract,model)
+            if held:problem=held
+            else:rows.append(row)
         if problem:
             blockers[league] = problem
     # No transfer from soccer, archive-time travel or odds-implied substitution.
@@ -124,7 +139,8 @@ def combinations_for(rows, size=2, limit=3, now=None):
     if size not in (2, 3) or not 1 <= limit <= 3:
         raise ValueError('Bounded 2/3-leg research only')
     now = now or utcnow()
-    pool = [r for r in rows if now+timedelta(minutes=15) < parse_time(r['kickoff']) <= now+timedelta(hours=168)
+    pool = [r for r in rows if r.get('research_eligible') is True
+        and now+timedelta(minutes=15) < parse_time(r['kickoff']) <= now+timedelta(hours=168)
         and 0 <= (now-parse_time(r['source_observed_at'])).total_seconds() < 21600
         and 0 <= (now-parse_time(r['forecast_at'])).total_seconds() < 300][:24]
     result = []

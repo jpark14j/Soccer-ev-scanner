@@ -7,6 +7,9 @@ provider call. The unchanged EPL BTTS/2.5-goal models, Bundesliga BTTS model and
 Ligue 1 2.5-goal model supply experimental estimates when all input checks pass.
 Missing, expired, conflicting or postponed results withhold estimates. No fake
 price or sportsbook object is constructed to satisfy a prediction function.
+Existing model suspensions and forward-proof conflict holds also suppress these
+forecasts. Unpriced combinations retain the same minimum calibration-bucket,
+calibration/test sample and uncertainty-width requirements as priced research.
 
 The displayed fair decimal is `1 / model probability`, not an available price.
 No EV or betting approval is supplied. Display-time calculations are not claimed
