@@ -127,6 +127,15 @@ def test_home_shows_supported_two_and_three_leg_candidates_without_opposing_pric
     assert not any(e.label=='Experimental market research · model evidence incomplete' for e in app.expander)
 
 
+def test_statistics_do_not_require_scrolling_past_empty_sportsbook_sections(consumer_app):
+    app,_=consumer_app
+    headings=[s.value for s in app.subheader]
+    assert headings.index('Model research without live odds')<headings.index('Best Single Pick')
+    app.sidebar.radio[0].set_value('Best Picks & Parlays').run()
+    headings=[s.value for s in app.subheader]
+    assert headings.index('Model research without live odds')<headings.index('Highest estimated win probability')
+
+
 def test_assistant_remains_free_and_admin_tools_stay_separate(consumer_app):
     app,scans=consumer_app;app.sidebar.radio[0].set_value('Settings').run()
     exp=next(e for e in app.expander if e.label=='Admin / Developer Tools')

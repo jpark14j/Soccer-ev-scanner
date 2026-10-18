@@ -169,7 +169,10 @@ def render_home(w):
     safe=safe_text(w);top,rows=research_view(w.analysis,w.store,w.book_keys,w.leagues)
     status,message=data_status(w.analysis,w.book_keys)
     st.caption('NBA · Soccer · MLB | Ontario sportsbook research')
-    st.write('**Data status: '+status+'**');st.caption(message)
+    st.write('**Sportsbook price status: '+status+'**');st.caption(message)
+    st.caption('This status applies to sportsbook prices. Model-only research does not require live odds.')
+    from intelligence.fixture_research_ui import render as render_fixture_research
+    render_fixture_research(w,safe)
     left,right=st.columns(2)
     with left:
         st.subheader('Best Single Pick')
@@ -189,8 +192,6 @@ def render_home(w):
     if len(rows)<2:st.caption('No additional supported selections right now.')
     for state,leg in rows[1:3]:single_card(leg,safe,state==APPROVED)
     render_exploratory_prices(w,rows,safe)
-    from intelligence.fixture_research_ui import render as render_fixture_research
-    render_fixture_research(w,safe)
 
 
 def render_exploratory_prices(w,supported,safe):
@@ -243,7 +244,12 @@ def render_exploratory_prices(w,supported,safe):
 def render_picks(w):
     safe=safe_text(w)
     sports=st.multiselect('Sports to research',['NBA','Soccer','MLB'],default=['NBA','Soccer','MLB'],key='simple_picks_sports')
+    sizes=st.multiselect('Number of legs',[2,3],default=[2,3],key='simple_parlay_sizes')
     w=replace(w,analysis=replace(w.analysis,quotes=[q for q in w.analysis.quotes if q.sport in sports]))
+    from intelligence.fixture_research_ui import render as render_fixture_research
+    from intelligence.competitions import COMPETITIONS
+    fixture_scope=replace(w,leagues=[league for league in w.leagues if COMPETITIONS[league].sport in sports])
+    render_fixture_research(fixture_scope,safe,sizes=sizes)
     top,rows=research_view(w.analysis,w.store,w.book_keys,w.leagues)
     from intelligence.parlay_intelligence import selection_groups
     groups,_=selection_groups(w.analysis,w.book_keys)
@@ -260,7 +266,6 @@ def render_picks(w):
     for v in sorted(valued,key=lambda v:-v.conservative_ev)[:3]:
         st.text(safe(v.quote.event+' · '+selection_label(v.quote)));st.write(f'Estimated EV {v.ev:+.1%}; conservative estimate {v.conservative_ev:+.1%}. Estimates can be wrong.')
     st.subheader('Parlay research')
-    sizes=st.multiselect('Number of legs',[2,3],default=[2,3],key='simple_parlay_sizes')
     pool=[p for values in top['format_candidates'].values() for p in values]
     if top['parlay']:pool.append(top['parlay'])
     candidates=[];seen=set()
@@ -274,10 +279,6 @@ def render_picks(w):
     for item in candidates:parlay_card(item,safe)
     st.subheader('Alternative experimental research')
     st.caption('Unsupported price-only combinations and full research controls are available in Settings → Admin / Developer Tools. They are never promoted to betting recommendations.')
-    from intelligence.fixture_research_ui import render as render_fixture_research
-    from intelligence.competitions import COMPETITIONS
-    fixture_scope=replace(w,leagues=[league for league in w.leagues if COMPETITIONS[league].sport in sports])
-    render_fixture_research(fixture_scope,safe,sizes=sizes)
 
 
 def render_performance(w):
