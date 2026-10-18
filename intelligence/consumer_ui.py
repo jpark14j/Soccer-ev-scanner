@@ -111,6 +111,16 @@ def parlay_card(item,safe):
         st.caption('Combined win probability and parlay value are unavailable. Different games can still be connected; independence has not been established.')
         with st.expander('Why this parlay?'):
             st.write('Each leg passed the existing research checks. Candidates favor stronger individual evidence and narrower uncertainty, rather than larger payouts. No approved joint model is available.')
+            from intelligence.joint_research import analyze
+            try:joint=analyze(c.legs)
+            except ValueError:joint={'logical_all_full_win_bounds':None}  # Price may expire during a render.
+            logical=joint['logical_all_full_win_bounds']
+            if logical:
+                st.caption(f'Logical joint range {logical[0]:.1%}–{logical[1]:.1%}, conditional on the individual model estimates. This is not a calibrated parlay probability or confidence interval.')
+                fair=joint['logical_fair_odds_bounds']
+                if fair[0] is not None:
+                    upper=f'{fair[1]:.2f}' if fair[1] is not None else 'unbounded'
+                    st.caption(f'Corresponding model-implied fair decimal range {fair[0]:.2f}–{upper}; no sportsbook price or EV is implied.')
             for link in item.dependence['known_links']:st.text(safe(link))
             for reason in c.blockers:st.text(safe(reason))
 
@@ -163,6 +173,8 @@ def render_home(w):
     if len(rows)<2:st.caption('No additional supported selections right now.')
     for state,leg in rows[1:3]:single_card(leg,safe,state==APPROVED)
     render_exploratory_prices(w,rows,safe)
+    from intelligence.fixture_research_ui import render as render_fixture_research
+    render_fixture_research(w,safe)
 
 
 def render_exploratory_prices(w,supported,safe):
@@ -246,6 +258,8 @@ def render_picks(w):
     for item in candidates:parlay_card(item,safe)
     st.subheader('Alternative experimental research')
     st.caption('Unsupported price-only combinations and full research controls are available in Settings → Admin / Developer Tools. They are never promoted to betting recommendations.')
+    from intelligence.fixture_research_ui import render as render_fixture_research
+    render_fixture_research(w,safe)
 
 
 def render_performance(w):

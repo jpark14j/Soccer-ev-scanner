@@ -24,6 +24,16 @@ No records, budgets, holds, snapshots or configuration are changed. It makes
 zero sports-provider and paid-AI calls. The report never prints credential values,
 raw service URLs, reader fingerprints or raw historical data.
 
+An owner-authorized one-time private push workflow can execute this same
+`--review-hold` path when the available GitHub connection cannot dispatch Actions.
+It must use a literal reviewed application commit, only state credentials,
+read-only repository permissions, a unique commit-message/path trigger and the
+same concurrency group. Remove that trigger after the diagnostic completes.
+A separate explicitly authorized `/v4/sports` metadata check can observe the
+private worker account's usage without retrieving odds/results; report the
+actual `x-requests-last` cost and never assume a key rotation replenishes quota.
+Neither diagnostic authorizes a hold release or a live research request.
+
 If the observed state permits preparation, the report includes a **proposal**
 for the existing SQL-editor reconciliation. The proposal deliberately contains
 `release_approved := false` and is not executed by any code path. It requires

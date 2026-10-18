@@ -40,9 +40,11 @@ def analyze(legs,now=None,scenarios=None):
         else:
             components.append({'format':'Shared-game joint model unavailable','probability':None})
     all_components=len(probabilities)==len(groups)
+    logical=bounds(probabilities) if all_components else None
+    fair=[1/logical[1] if logical[1] else None,1/logical[0] if logical[0] else None] if logical else None
     return {'format':selection_format(quotes),'legs':len(legs),'dependencies':dependencies(legs),
         'components':components,'joint_probability':None,'joint_validated':False,
-        'logical_all_full_win_bounds':bounds(probabilities) if all_components else None,
+        'logical_all_full_win_bounds':logical,'logical_fair_odds_bounds':fair,
         'bounds_scope':'Conditional logical bounds on all-full-win, not calibrated intervals; partial settlements remain distinct',
         'independence_assumed':False,'combined_price':None,'executable':False,'parlay_EV':None,
         'note':'No cross-game probability is multiplied. Same-game probabilities require a coherent supplied scenario; no actual ticket or operator settlement is inferred.'}
