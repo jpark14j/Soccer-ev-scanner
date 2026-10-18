@@ -77,6 +77,10 @@ def single_card(leg,safe,approved=False,key='single',offers=()):
         st.caption('Odds observed '+friendly_time(q.source_updated_at))
         st.write(f'Estimated chance: **{e.probability:.0%}** · uncertainty range {e.lower:.0%}–{e.upper:.0%}')
         st.caption('Approved opportunity' if approved else 'Experimental research · not an approved betting opportunity')
+        if approved:
+            from intelligence.ev import qualify
+            opportunity,_=qualify(q,e,utcnow())
+            if opportunity:st.write(f'Estimated EV {opportunity.ev:+.1%} · conservative estimate {opportunity.conservative_ev:+.1%}')
         st.write('The model favors this outcome. Its estimated chance alone does not establish good value at this price.')
         with st.expander('Why this pick?'):
             st.write('This is a market-specific statistical estimate, separate from the sportsbook price. The range comes from historical calibration; it is not a guarantee about this game.')
@@ -134,6 +138,8 @@ def render_games(w,limit=None,filters=True):
 
 
 def render_home(w):
+    from intelligence.manual_research_ui import render as render_manual
+    render_manual(w)
     safe=safe_text(w);top,rows=research_view(w.analysis,w.store,w.book_keys,w.leagues)
     status,message=data_status(w.analysis,w.book_keys)
     st.caption('NBA · Soccer · MLB | Ontario sportsbook research')
@@ -145,12 +151,65 @@ def render_home(w):
         else:st.info('No supported single qualifies right now. We’ll show one when current prices and sufficient model evidence are available.')
     with right:
         st.subheader('Best Parlay')
-        if top['parlay']:parlay_card(top['parlay'],safe)
+        if top['parlay']:
+            parlay_card(top['parlay'],safe)
+            other=[p for values in top['format_candidates'].values() for p in values
+                if len(p.research.legs)!=len(top['parlay'].research.legs)
+                and not any(p.dependence[k] for k in ('shared_game_pairs','shared_team_pairs','shared_player_pairs'))]
+            if other:parlay_card(min(other,key=lambda p:p.evidence_rank),safe)
         else:st.info('No qualifying parlay opportunities identified today.')
     st.subheader('Upcoming Games');render_games(w,limit=3,filters=False)
     st.subheader('Other Opportunities')
     if len(rows)<2:st.caption('No additional supported selections right now.')
     for state,leg in rows[1:3]:single_card(leg,safe,state==APPROVED)
+    render_exploratory_prices(w,rows,safe)
+
+
+def render_exploratory_prices(w,supported,safe):
+    """Existing selector, with unsupported model numbers explicitly withheld."""
+    from intelligence.parlay_research import select_candidates,quote_problem,leg_evidence
+    from intelligence.book_optimizer import scoped_quotes
+    from intelligence.parlay_intelligence import binary_market
+    from collections import Counter
+    ids={leg.quote.id for _,leg in supported};now=utcnow()
+    modeled_contracts={binary_market(leg.quote)[0] for _,leg in supported}
+    counts=Counter(q.id for q in w.analysis.quotes)
+    quotes=[q for q in scoped_quotes(w.analysis,now) if q.id not in ids and q.bookmaker in w.book_keys
+        and counts[q.id]==1 and q.league in w.leagues and not quote_problem(q,now)
+        and binary_market(q)[0] not in modeled_contracts]
+    if not quotes:return
+    # Never recycle rejected/stale model outputs as weaker apparent forecasts.
+    raw=replace(w.analysis,quotes=quotes,estimates={},advanced_estimates={},opportunities=[])
+    with st.expander('Experimental market research · model evidence incomplete',expanded=False):
+        st.caption('Real observed prices for comparison, not model-backed picks. Ordered by source freshness, sport and event; no statistical advantage is asserted.')
+        seen=set()
+        for q in sorted(quotes,key=lambda q:(-parse_time(q.source_updated_at).timestamp(),q.sport,q.event_id,q.id)):
+            if (q.league,q.event_id) in seen:continue
+            seen.add((q.league,q.event_id))
+            leg=leg_evidence(q,raw,now)
+            with st.container(border=True):
+                st.text(safe(q.event+' · '+q.sport+' · '+q.league));st.caption(friendly_time(q.commence_time))
+                st.text(safe(CATALOG[q.market].name+' · '+selection_label(q)))
+                st.write(safe(q.bookmaker_name)+f' · observed decimal {q.odds:.2f}')
+                st.caption('Odds observed '+friendly_time(q.source_updated_at))
+                st.caption(f'Price break-even {1/q.odds:.0%}. Model probability and EV unavailable: sufficient current model evidence is missing.')
+                for reason in leg.blockers[:2]:st.text(safe(reason))
+            if len(seen)==3:break
+        st.write('**Two- and three-leg price research**')
+        for size in (2,3):
+            result=select_candidates(raw,bookmakers=w.book_keys,leg_counts=(size,),max_results=1,now=now)
+            if not result.candidates:
+                st.caption(f'No compatible current {size}-leg price research candidate.');continue
+            candidate=result.candidates[0]
+            with st.container(border=True):
+                st.write(f'**{size}-leg price-only research · not a betting recommendation**')
+                for leg in candidate.legs:
+                    q=leg.quote
+                    st.text(safe(q.sport+' · '+q.league+' · '+q.event+' · '+CATALOG[q.market].name+' · '+selection_label(q)))
+                    st.caption(friendly_time(q.commence_time)+' · '+safe(q.bookmaker_name)+f' · {q.odds:.2f} · odds observed '+friendly_time(q.source_updated_at))
+                st.caption('A combined sportsbook ticket, joint probability and parlay EV are unavailable. No combined price is presented as executable.')
+                st.caption('Different games can still be dependent. These are feasible observed selections for investigation, not a forecast of parlay success.')
+                for warning in candidate.warnings:st.text(safe(warning))
 
 
 def render_picks(w):

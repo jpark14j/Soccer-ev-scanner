@@ -171,7 +171,8 @@ if published:
     archive(store,os.getenv('PREDICTION_LEDGER_DIR','ledger'))
 from intelligence.workspace_ui import Workspace,render_tools
 from intelligence import consumer_ui
-workspace=Workspace(result,store,data_settings,book_keys,leagues,key,secret,refresh_selected,show_markets,current_opportunities)
+workspace=Workspace(result,store,data_settings,book_keys,leagues,key,secret,refresh_selected,show_markets,current_opportunities,
+    sync_saved=sync_shared_state.clear if shared_config.enabled else None)
 route=destination(page).renderer
 
 def admin(w):

@@ -151,8 +151,9 @@ def test_private_worker_template_is_pinned_and_defaults_to_no_activation():
     assert trigger['workflow_dispatch']['inputs']['operation']['default']=='verify'
     assert w['permissions']=={'contents':'read'} and job['timeout-minutes']==12
     assert "RESEARCH_ACTIONS_FREE_TIER_REVIEWED == '1'" in job['if']
-    assert "RESEARCH_SCHEDULE_ENABLED == '1'" in job['if']
+    assert 'schedule' not in trigger and "github.event_name == 'workflow_dispatch'" in job['if']
     assert job['steps'][1]['with']['persist-credentials'] is False
     assert step['env']['PAID_ANALYST_APPROVED']=='0' and step['env']['ODDS_DAILY_CREDITS']=='9'
-    assert "inputs.operation == 'research'" in step['env']['ODDS_API_KEY']
+    assert "inputs.operation == 'manual-research'" in step['env']['ODDS_API_KEY']
+    assert step['env']['RESEARCH_WORKER_ENABLED']==step['env']['RESEARCH_SCHEDULE_ENABLED']=='0'
     assert 'held=false' not in source and 'TELEGRAM_BOT_TOKEN' not in source

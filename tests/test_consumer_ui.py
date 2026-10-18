@@ -120,6 +120,13 @@ def test_simple_parlay_is_theoretical_and_leg_filter_works(consumer_app):
     assert scans.call_count==1
 
 
+def test_home_shows_supported_two_and_three_leg_candidates_without_opposing_price_picks(consumer_app):
+    app,_=consumer_app
+    assert any('2-leg experimental parlay' in x.value for x in app.markdown)
+    assert any('3-leg experimental parlay' in x.value for x in app.markdown)
+    assert not any(e.label=='Experimental market research · model evidence incomplete' for e in app.expander)
+
+
 def test_assistant_remains_free_and_admin_tools_stay_separate(consumer_app):
     app,scans=consumer_app;app.sidebar.radio[0].set_value('Settings').run()
     exp=next(e for e in app.expander if e.label=='Admin / Developer Tools')

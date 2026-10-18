@@ -1,5 +1,9 @@
 # Everyday research screens and live-research readiness
 
+Home's subsequent [owner-requested research control](ON_DEMAND_RESEARCH.md)
+replaces the earlier future worker/schedule activation plan below. No scheduled
+trigger remains in the current private workflow; all data/approval gates remain.
+
 Open the existing development preview:
 https://soccer-ev-scanner-preview-jp.streamlit.app/
 

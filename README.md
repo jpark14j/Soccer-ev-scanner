@@ -5,7 +5,13 @@ This upgrades the **existing** Python/Streamlit app on
 `app.py`; the existing Telegram script, workflow path and secret names are retained.
 Nothing on `main` has been deployed or had its secrets changed by this work.
 
-Latest: [Everyday research screens and current readiness](docs/EVERYDAY_RESEARCH.md)
+Latest: [Owner-requested research](docs/ON_DEMAND_RESEARCH.md) adds Home's
+**Find Best Bets Now** control, private authenticated dispatch and manual-only
+worker execution. No schedule, provider hold release or paid AI is enabled.
+New private owner/dispatch credentials and existing data/budget reviews remain
+required before a genuine hosted run. No new live picks are claimed.
+
+[Everyday research screens and current readiness](docs/EVERYDAY_RESEARCH.md)
 documents the five-page interface, corrected read-only budget explanation, and
 successful hosted generation-2 storage/read checks. Live research and scheduling
 remain disabled; provider usage and permissions still require review. Earlier

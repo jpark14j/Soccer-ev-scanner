@@ -5,6 +5,7 @@ import unicodedata
 from intelligence.domain import utcnow, parse_time
 
 PATTERNS = (
+    r'\bgithub_pat_[A-Za-z0-9_]{20,}',
     r'\bsk-[A-Za-z0-9_-]{8,}',
     r'\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}',
     r'\b\d{6,}:[A-Za-z0-9_-]{15,}',

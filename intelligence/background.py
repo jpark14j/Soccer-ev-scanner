@@ -106,7 +106,7 @@ def collect_supported(store,key,now=None,provider=None,window_hours=48):
     return audit
 
 
-def cycle(store,key='',now=None,provider=None):
+def cycle(store,key='',now=None,provider=None,manual=False):
     """Reusable integration seam. Tests supply fixtures; production uses adapters."""
     from intelligence.current_results import current
     from intelligence.pipeline import run_analysis
@@ -121,6 +121,9 @@ def cycle(store,key='',now=None,provider=None):
     from intelligence.data_settings import load_settings
     settings=load_settings()
     if settings.errors:raise StateError('Worker data settings invalid; no odds requests authorized')
+    if manual and provider is None:
+        from intelligence.providers import OddsAPI
+        provider=OddsAPI(key,store,daily_limit=9,ttl=60)
     audit=collect_supported(store,key,now,provider,settings.window_hours)
     analysis=run_analysis('',LEAGUES,store=store,cached_only=True,window_hours=settings.window_hours)
     labels=reconcile(store)
@@ -144,12 +147,32 @@ def run_background(*,client=None,config=None,now=None,cycle_fn=None):
     # These flags authorize a configured integration; they do not prove hosted
     # operation. The remote hold, fence and budget remain authoritative.
     if os.getenv('RESEARCH_WORKER_ENABLED','0')!='1':return {'status':'disabled','provider_requests':0}
+    return _run(client=client,config=config,now=now,cycle_fn=cycle_fn)
+
+
+def run_manual(request_id,*,client=None,config=None,now=None,cycle_fn=None):
+    """One explicitly authenticated workflow invocation, never a scheduler."""
+    import re
+    if not isinstance(request_id,str) or not re.fullmatch('[a-f0-9]{32}',request_id):raise StateError('Invalid manual request identity')
+    if os.getenv('RESEARCH_MANUAL_ENABLED','0')!='1':raise StateError('Manual research is disabled pending owner review')
+    if os.getenv('RESEARCH_SCHEDULE_ENABLED','0')!='0' or os.getenv('RESEARCH_WORKER_ENABLED','0')!='0':
+        raise StateError('Manual mode requires automatic worker and schedule flags to remain disabled')
+    if not os.getenv('ODDS_API_KEY'):raise StateError('Configure the permitted odds credential only in private worker Secrets')
+    from intelligence.hosted_checks import expected_store
+    expected_store()  # Required in manual mode, before any remote operation.
+    return _run(client=client,config=config,now=now,cycle_fn=cycle_fn,manual_request_id=request_id)
+
+
+def _run(*,client=None,config=None,now=None,cycle_fn=None,manual_request_id=None):
     if os.getenv('PAID_ANALYST_APPROVED','0')!='0':raise StateError('Background worker requires paid AI disabled')
     if os.getenv('RESEARCH_DATA_RIGHTS_VERIFIED','0')!='1':raise StateError('Review permitted provider research use before worker activation')
     if os.getenv('RESEARCH_BUDGET_SCOPE_REVIEWED','0')!='1':raise StateError('Review other users of the same provider credentials; production is outside this development ledger')
-    client=client or Client(config or configuration(),writer=True);now=now or utcnow();identifier=run_id(now)
+    client=client or Client(config or configuration(),writer=True);now=now or utcnow()
+    identifier=digest(('manual-pregame-1',manual_request_id)) if manual_request_id else run_id(now)
     envelope=client.acquire(identifier)
     try:
+        if manual_request_id and envelope.get('held') is not False:
+            raise StateError('Manual research blocked by remote provider hold; no provider request authorized')
         if os.getenv('RESEARCH_EXPECTED_STORE_INSTANCE'):
             from intelligence.hosted_checks import expected_store
             if (envelope.get('snapshot') or {}).get('manifest',{}).get('store_instance')!=expected_store():
@@ -161,9 +184,14 @@ def run_background(*,client=None,config=None,now=None,cycle_fn=None):
                 raise StateError('Shared state is approaching its bounded capacity; reviewed storage migration required before new provider requests')
             store=Store(path,request_authority=client);store.commit_generation=client.generation+1
             hydrate_budgets(store,envelope);verify_assets(store)
+            if manual_request_id:
+                from intelligence.quota import quota_details
+                if quota_details(store,9,now)['remaining']<1:raise StateError('Manual research allowance unavailable; no provider requests authorized')
             from intelligence.forward_testing import records
             old_ids={r['id'] for r in records(store)}
-            summary,created=(cycle_fn or cycle)(store,os.getenv('ODDS_API_KEY',''),now)
+            if manual_request_id and cycle_fn is None:
+                summary,created=cycle(store,os.getenv('ODDS_API_KEY',''),now,manual=True)
+            else:summary,created=(cycle_fn or cycle)(store,os.getenv('ODDS_API_KEY',''),now)
             new=[r for r in records(store) if r['id'] not in old_ids]
             starts=[r['payload']['quote']['commence_time'] for r in new]+[r['kickoff'] for r in created]
             body=snapshot(store)
@@ -171,9 +199,11 @@ def run_background(*,client=None,config=None,now=None,cycle_fn=None):
                 'prospective_deadline':min(starts,key=parse_time) if starts else None,'publications':created,
                 'summary':{'new_publications':len(created),'new_forward_forecasts':len(new),
                     'new_labels':summary.get('new_forward_labels',0),'paid_ai_requests':0,
-                    'coverage_status':summary.get('coverage_status','integration replay')}})
+                    'coverage_status':summary.get('coverage_status','integration replay'),
+                    **({'manual_request_id':manual_request_id,'mode':'owner-requested research'} if manual_request_id else {})}})
             observed=client.read()
             verified=observed.get('generation')==receipt['generation'] and observed.get('snapshot',{}).get('manifest')==body['manifest']
+            if not verified:raise StateError('Committed research readback was not verified; do not claim new research is visible')
             return {'status':'committed','generation':receipt['generation'],'committed_at':receipt['committed_at'],
                 'shared_readback_verified':verified,'summary':summary,
                 'note':'One independent invocation; this does not verify a recurring scheduler, redeployment or model improvement.'}
@@ -186,12 +216,13 @@ def run_background(*,client=None,config=None,now=None,cycle_fn=None):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--run',action='store_true',help='Explicit enabled independent cycle; otherwise no external requests')
+    p.add_argument('--manual',metavar='REQUEST_ID',help='One owner-requested private workflow cycle; automatic flags must remain zero')
     p.add_argument('--bootstrap',type=Path,help='Explicit existing-store first upload; never enables provider calls')
     p.add_argument('--pull',type=Path,help='Explicit read-only committed-state sync directory')
     p.add_argument('--verify-shared',action='store_true',help='Two independent state-only reads/restores; no provider requests or writes')
     p.add_argument('--storage-check',action='store_true',help='Fenced preservation checkpoint and fresh readback; no research/provider requests')
     args=p.parse_args()
-    if sum(bool(v) for v in (args.run,args.bootstrap,args.pull,args.verify_shared,args.storage_check))>1:p.error('Choose one explicit operation')
+    if sum(bool(v) for v in (args.run,args.manual,args.bootstrap,args.pull,args.verify_shared,args.storage_check))>1:p.error('Choose one explicit operation')
     try:
         if args.verify_shared or args.storage_check:
             from intelligence.hosted_checks import verify_shared,storage_check,expected_store
@@ -201,6 +232,7 @@ def main():
         elif args.pull:
             from intelligence.shared_state import pull_replica
             r=pull_replica(args.pull);result={'status':'replica saved','generation':r['envelope']['generation'],'sports_requests':0}
+        elif args.manual:result=run_manual(args.manual)
         elif args.run:result=run_background()
         else:result={'status':'disabled dry status; no network requests','activation_required':True}
         print(json.dumps(result,allow_nan=False,default=str))

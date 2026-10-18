@@ -19,6 +19,7 @@ class Workspace:
     refresh: object
     markets: object
     opportunities: object
+    sync_saved: object = None
 
 
 def render_picks(w):

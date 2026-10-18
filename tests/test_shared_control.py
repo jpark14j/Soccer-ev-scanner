@@ -210,6 +210,8 @@ def test_independent_worker_runs_real_research_publication_and_replica_ui(remote
     bootstrap(store.path,writer(remote));release(remote)
     monkeypatch.setenv('RESEARCH_WORKER_ENABLED','1');monkeypatch.setenv('RESEARCH_DATA_RIGHTS_VERIFIED','1')
     monkeypatch.setenv('RESEARCH_BUDGET_SCOPE_REVIEWED','1');monkeypatch.setenv('PAID_ANALYST_APPROVED','0')
+    # Next-round replay fixtures can be six days away after the current round.
+    monkeypatch.setenv('SLATE_WINDOW_HOURS','168')
     def model_cycle(s,key,at):
         a=research_slate(s,quote,monkeypatch)
         for q in a.quotes:

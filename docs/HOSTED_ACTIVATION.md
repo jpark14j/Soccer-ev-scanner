@@ -1,5 +1,10 @@
 # Development preview: hosted checks and guarded activation
 
+**Current activation path:** [owner-requested research](ON_DEMAND_RESEARCH.md)
+supersedes the older research/schedule activation steps below. The current
+private workflow is manual-only. Keep worker/schedule flags zero; do not enable
+a recurring worker to use Home's button. Completed state checks need not repeat.
+
 Continues Phase 10 at `4efa22f`. Production and the app's `main` branch are not
 changed. No sports data, paid API call, quota release or hosted worker is enabled
 by deploying this code. All existing model approval/calibration gates remain.

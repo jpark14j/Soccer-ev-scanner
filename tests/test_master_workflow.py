@@ -73,6 +73,9 @@ def test_actual_app_pages_and_filters_use_saved_data_without_provider_calls(tmp_
     path=tmp_path/'preview.sqlite3';store=Store(path)
     monkeypatch.setenv('INTELLIGENCE_DB',str(path));monkeypatch.setenv('PREDICTION_LEDGER_DIR',str(tmp_path/'empty-ledger'))
     monkeypatch.setenv('ODDS_API_KEY','synthetic-only');monkeypatch.setenv('PAID_ANALYST_APPROVED','0')
+    # The reviewed synthetic calendar can place the next round six days away.
+    # This replay requires those fixtures, so use the supported seven-day view.
+    monkeypatch.setenv('SLATE_WINDOW_HOURS','168')
     a=research_slate(store,quote,monkeypatch)
     # Saved raw provider fixtures, never a mocked top-pick result.
     for q in a.quotes:
