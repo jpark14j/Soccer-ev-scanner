@@ -18,7 +18,8 @@ TERMS='https://sportscore.com/developers/terms/'
 NBA_URL='https://sporting-events.org/data/nba.json'
 TTL=21600
 SCOPES={'Premier League':('english-premier-league','English Premier League'),
-        'Ligue 1':('french-ligue-1','French Ligue 1'), 'NBA':('nba','NBA')}
+        'Ligue 1':('french-ligue-1','French Ligue 1'),
+        'NBA':('national-basketball-association','National Basketball Association')}
 # Provider-specific reviewed names; the frozen historical identity map is intact.
 ALIASES={'Premier League':{'Bournemouth AFC':'Bournemouth','Brighton Hove Albion':'Brighton',
     'Hull City':'Hull','Tottenham Hotspur':'Tottenham','Wolverhampton Wanderers':'Wolves'},

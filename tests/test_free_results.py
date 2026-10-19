@@ -80,6 +80,17 @@ def test_finals_identity_and_same_day_withholding():
     assert identity('Ligue 1','Havre Athletic Club')==identity('Ligue 1','Le Havre AC')
 
 
+def test_nba_results_use_reviewed_competition_slug_not_empty_nba_alias(store):
+    calls=[]
+    def fetch(url):
+        calls.append(url)
+        return json.dumps(day_response('NBA')).encode(),NOW.isoformat()
+    c=Collector(store,NOW,fetch);events,_=c.day('NBA','2026-10-18')
+    assert 'competition=national-basketball-association&' in calls[0]
+    assert 'competition=nba&' not in calls[0]
+    assert len(events)==1 and events[0].home_score==110
+
+
 def test_completed_result_conflicts_and_unknown_pairs_rejected():
     event=parse_day(receipt(day_response()),'Premier League','2026-10-18',NOW)[0]
     assert reconcile_archive([replace(event,status='unresolved',home_score=None,away_score=None)],[event])==[event]

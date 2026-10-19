@@ -28,6 +28,13 @@ unchanged. No account or new API key is required by these adapters.
 - NBA finals use the documented SportScore basketball day endpoint when games
   have actually finished and reconcile to exact scheduled teams and tipoff.
   No regular-season games have finished at this check, before October 20 tipoff.
+  The reviewed competition identifier is `national-basketball-association`, with
+  exact response name `National Basketball Association`; `nba` returned an empty
+  day and must not be used as evidence of missing games.
+  Seven actual April 12, 2026 finals from the corrected endpoint were checked
+  against the existing licensed BoxScoreLab history: every score matched. Its
+  two October 20 scheduled games also match the Sporting Events teams/tipoffs.
+  This verifies source reconciliation, not a future live settlement or model edge.
 - MLB: the [Sporting Events MLB export](https://sporting-events.org/data/mlb.json)
   contains four tournament/Opening Day headings without teams, times or scores.
   SportScore documents no baseball endpoint. Retrosheet's available archive in
