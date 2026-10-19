@@ -22,14 +22,23 @@ def record(store,rows,now=None):
     prepared=[]
     for r in rows:
         p=r.get('joint_probability',r.get('probability'))
-        if (not r.get('research_eligible') or not isinstance(p,(int,float)) or not math.isfinite(p) or not 0<p<1
+        bounded=r.get('kind')=='bounded_cross_game'
+        if bounded:
+            from intelligence.fixture_research import forward_combinations
+            from intelligence.prediction_accuracy import same_value
+            candidates=forward_combinations(r.get('legs',[]),now)
+            if not any(same_value(c,r) for c in candidates):
+                raise ValueError('Bounded research must preserve exact verified legs and logical bounds')
+        if (not r.get('research_eligible') or (not bounded and (not isinstance(p,(int,float)) or isinstance(p,bool) or not math.isfinite(p) or not 0<p<1))
             or r.get('approved') or r.get('validated') or r.get('joint_validated') or r.get('observed_odds') is not None
             or r.get('combined_odds') is not None or r.get('ev') is not None
             or not r.get('evidence_id') or not now+timedelta(minutes=15)<parse_time(r['kickoff'])
             or not 0<=(now-parse_time(r['forecast_at'])).total_seconds()<60
             or not 0<=(now-parse_time(r['source_observed_at'])).total_seconds()<21600):
             raise ValueError('Not eligible as an actually recorded pregame statistical forecast')
-        key=digest({k:v for k,v in r.items() if k!='forecast_at'})
+        identity={k:v for k,v in r.items() if k!='forecast_at'}
+        if bounded:identity['legs']=[{k:v for k,v in leg.items() if k!='forecast_at'} for leg in r['legs']]
+        key=digest(identity)
         prepared.append((key,now.isoformat(),r['kickoff'],json.dumps(r,allow_nan=False)))
     with store.connect() as db:
         for row in prepared:
@@ -50,19 +59,32 @@ def reconcile(store,now=None):
     with store.connect() as db:
         rows=db.execute('SELECT f.* FROM statistics_forecasts f LEFT JOIN statistics_outcomes o ON f.id=o.id WHERE o.id IS NULL').fetchall()
         for row in rows:
-            r=json.loads(row['payload']);pair=finals.get(r['fixture_id'])
-            if not pair:continue
-            event,meta=pair
-            if not event.kickoff or parse_time(event.kickoff)!=parse_time(r['kickoff']) or parse_time(row['at'])>=parse_time(event.kickoff):continue
+            r=json.loads(row['payload'])
             legs=r.get('legs') or [{k:r[k] for k in ('market','selection','point')}]
-            states=[settlement(l['market'],l['selection'],l['point'],event.home_name,event.away_name,event.home_score,event.away_score) for l in legs]
-            # Current source contracts have no pushes/quarter lines. Do not
-            # turn ambiguous partial settlements into binary outcomes.
-            if any(s not in ((1.,0.,0.),(0.,0.,1.)) for s in states):continue
+            states=[];proof=[]
+            for leg in legs:
+                pair=finals.get(leg.get('fixture_id',r['fixture_id']))
+                if not pair:break
+                event,meta=pair;start=leg.get('kickoff',r['kickoff'])
+                if (not event.kickoff or parse_time(event.kickoff)!=parse_time(start)
+                    or not parse_time(row['at'])<parse_time(event.kickoff)<parse_time(event.observed_at)<=now):break
+                state=settlement(leg['market'],leg['selection'],leg.get('point'),event.home_name,event.away_name,event.home_score,event.away_score)
+                # Pushes, postponed/cancelled games, altered tipoffs and unknown
+                # fixtures remain pending, never silently scored as a loss.
+                if state not in ((1.,0.,0.),(0.,0.,1.)):break
+                states.append(state)
+                proof.append({'fixture_id':event.fixture_id,'kickoff':event.kickoff,
+                    'home_score':event.home_score,'away_score':event.away_score,
+                    'source':meta.get('provider',event.source),'source_observed_at':event.observed_at,
+                    'source_sha256':meta['sha256']})
+            if len(states)!=len(legs):continue
             value={'all_selections_won':all(s==(1.,0.,0.) for s in states),
-                'home_score':event.home_score,'away_score':event.away_score,'source':meta.get('provider',event.source),
-                'source_observed_at':event.observed_at,'source_sha256':meta['sha256'],
+                'source':' + '.join(sorted({p['source'] for p in proof})),
+                'source_observed_at':max((p['source_observed_at'] for p in proof),key=parse_time),
+                'source_sha256':digest(proof),'leg_results':proof,
                 'scope':'Unpriced paper forecast outcome; not a settled sportsbook ticket or financial return'}
+            if len({p['fixture_id'] for p in proof})==1:
+                value.update(home_score=proof[0]['home_score'],away_score=proof[0]['away_score'])
             added+=db.execute('INSERT OR IGNORE INTO statistics_outcomes VALUES(?,?,?)',(row['id'],now.isoformat(),json.dumps(value))).rowcount
     return added
 
@@ -84,14 +106,16 @@ def monitoring(store):
         key=(r['fixture_id'],r['model_version'],task)
         first.setdefault(key,(r,json.loads(record['outcome']) if record['outcome'] else None))
     for r,outcome in first.values():
-        group=(r.get('sport','Soccer'),r['league'],r['model_version'],'single' if not r.get('legs') else str(len(r['legs']))+'-leg SGP')
+        group=(r.get('sport','Soccer'),r['league'],r['model_version'],'single' if not r.get('legs') else str(len(r['legs']))+('-leg cross-game bounds' if r.get('kind')=='bounded_cross_game' else '-leg SGP'))
         groups[group].append((r,outcome))
     output=[]
     for scope,values in sorted(groups.items()):
-        labeled=[(r,o) for r,o in values if o is not None];p=[r.get('joint_probability',r.get('probability')) for r,o in labeled]
-        y=[int(o['all_selections_won']) for r,o in labeled]
+        labeled=[(r,o) for r,o in values if o is not None]
+        points=[(r,o) for r,o in labeled if r.get('kind')!='bounded_cross_game']
+        p=[r.get('joint_probability',r.get('probability')) for r,o in points]
+        y=[int(o['all_selections_won']) for r,o in points]
         output.append({'sport':scope[0],'league':scope[1],'model_version':scope[2],'format':scope[3],
-            'unique_pregame_decisions':len(values),'labeled':len(y),'pending':len(values)-len(y),
+            'unique_pregame_decisions':len(values),'labeled':len(labeled),'pending':len(values)-len(labeled),'point_probability_labels':len(y),
             'brier':sum((a-b)**2 for a,b in zip(p,y))/len(y) if y else None,
             'log_loss':-sum(b*math.log(max(1e-8,a))+(1-b)*math.log(max(1e-8,1-a)) for a,b in zip(p,y))/len(y) if y else None,
             'reliability':reliability(p,y) if y else [],'approved':False,

@@ -137,7 +137,8 @@ def parse_day(value,league,day,now):
         event=EventObservation(COMPETITIONS[league].id,season,'sportscore',r['url'],h,a,hn,an,day,
             'completed' if completed else 'scheduled' if r['status']=='upcoming' and start>now else 'unresolved',
             hg if completed else None,ag if completed else None,value['checked_at'],None,TERMS,
-            'same_day_final_withheld' if finished and start.date()==now.date() else 'source_reported_ft',start.isoformat()).validate(now)
+            'same_day_final_withheld' if finished and start.date()==now.date() else
+            'source_'+r['status'] if r['status'] in ('postponed','cancelled','suspended') else 'source_reported_ft',start.isoformat()).validate(now)
         if event.fixture_id in seen:raise ValueError('Duplicate daily fixture')
         seen.add(event.fixture_id);events.append(event)
     return events
@@ -242,7 +243,17 @@ def current(store,league,now=None,allow_fetch=False):
 
 def model_inputs(store,league,now=None,allow_fetch=False):
     now=now or utcnow();events,meta=current(store,league,now)
-    return [e for e in events if not(e.event_date==now.date().isoformat() and e.score_scope=='same_day_final_withheld')],meta
+    # Explicitly unplayed fixtures are not missing final scores. They stay in
+    # the source/immutable ledger but cannot become model features or picks.
+    # Suspensions and unknown/live states still block the existing gates.
+    excluded={'source_postponed','source_cancelled'}
+    active=[e for e in events if e.score_scope not in excluded and
+        not(e.event_date==now.date().isoformat() and e.score_scope=='same_day_final_withheld')]
+    if meta.get('ok'):
+        meta=dict(meta,coverage=dict(meta['coverage'],
+            unresolved_past=sum(e.status!='completed' and e.event_date<now.date().isoformat() for e in active)),
+            explicitly_unplayed=sum(e.score_scope in excluded for e in events))
+    return active,meta
 
 
 def prepare(league,store,now=None):

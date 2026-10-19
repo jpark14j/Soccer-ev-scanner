@@ -21,7 +21,7 @@ def inspect(path,now=None,expected_instance=None):
             with closing(sqlite3.connect(destination)) as target:source.backup(target)
         from intelligence.storage import Store
         from intelligence.background import verify_assets
-        from intelligence.fixture_research import collect
+        from intelligence.fixture_research import collect,forward_combinations
         from intelligence.current_score_research import candidates
         from intelligence.statistics_forward import monitoring
         from intelligence.openliga import current
@@ -48,6 +48,7 @@ def inspect(path,now=None,expected_instance=None):
         from intelligence.prediction_accuracy import summary as accuracy,saved_for_display
         recorded_singles=saved_for_display(store,eligible,now)
         recorded_sgps=saved_for_display(store,sgps,now)
+        recorded_bounds=saved_for_display(store,forward_combinations(eligible,now),now)
         # With no verified price evidence the main page must remain empty.
         gate=shortlist(Analysis(),store,(),(),now)
         if gate['qualified']:raise ValueError('Unpriced research was promoted into a qualifying bet')
@@ -68,7 +69,10 @@ def inspect(path,now=None,expected_instance=None):
                 'experimental_two_leg_sgp':sum(len(r['legs'])==2 for r in sgps),
                 'experimental_three_leg_sgp':sum(len(r['legs'])==3 for r in sgps)},
             'accuracy':accuracy(store,now),'recorded_singles_displayable':len(recorded_singles),
-            'recorded_sgps_displayable':len(recorded_sgps),'prospective_snapshots':monitor['recorded_snapshots'],'distinct_pregame_decisions':monitor['unique_pregame_decisions'],
+            'recorded_sgps_displayable':len(recorded_sgps),
+            'recorded_cross_game_bounds':{str(n):[{'sports':sorted({leg['sport'] for leg in r['legs']}),
+                'logical_probability_bounds':r['logical_probability_bounds'],'joint_probability':None}
+                for r in recorded_bounds if len(r['legs'])==n] for n in (2,3)},'prospective_snapshots':monitor['recorded_snapshots'],'distinct_pregame_decisions':monitor['unique_pregame_decisions'],
             'verified_outcomes':sum(g['labeled'] for g in monitor['groups']),
             'positive_ev_slots_empty_without_verified_prices':gate['qualified']==0,'empty_message':EMPTY,
             'dependence_report_verified':report is not None,'approved_joint_models':0,

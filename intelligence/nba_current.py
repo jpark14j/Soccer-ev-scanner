@@ -31,14 +31,15 @@ def fixtures(value,now):
         if ':archive:' in h+a or r['fixture']!=r['away_team']+' at '+r['home_team']:
             raise ValueError('NBA fixture identity or home designation is unreviewed')
         start=parse_time(r['date_utc']+'T'+r['time_utc']+':00+00:00')
-        if not START<=start.date()<=END or r['status'] not in ('scheduled','completed'):
+        if not START<=start.date()<=END or r['status'] not in ('scheduled','completed','postponed','cancelled'):
             raise ValueError('NBA source is not a reviewed regular-season fixture')
         key=digest((r['date_utc'],h,a))
         if key in seen:raise ValueError('Duplicate NBA game')
         seen.add(key)
         result.append(EventObservation(COMPETITIONS['NBA'].id,'2026-27','sporting-events+sportscore',key,h,a,hn,an,
             start.date().isoformat(),'scheduled' if r['status']=='scheduled' and start>now else 'unresolved',
-            None,None,value['checked_at'],None,LICENSE,'fixture_only_no_score',start.isoformat()).validate(now))
+            None,None,value['checked_at'],None,LICENSE,
+            'source_'+r['status'] if r['status'] in ('postponed','cancelled') else 'fixture_only_no_score',start.isoformat()).validate(now))
     if len({e.home_id for e in result}|{e.away_id for e in result})!=30:
         raise ValueError('NBA schedule does not contain all 30 reviewed teams')
     return result
@@ -51,10 +52,19 @@ def save(collector):
     now=collector.now
     events=fixtures(source,now);by_key={(e.event_date,e.home_id,e.away_id):e for e in events}
     previous=store.cached('nba-current',10*366*86400,now)
+    removed=[]
     if previous:
         for row in previous['events']:
             old=EventObservation(**row);key=(old.event_date,old.home_id,old.away_id)
-            if key not in by_key:by_key[key]=old  # Pruned past fixtures still need finals.
+            if key not in by_key:
+                # Repeated NBA pairings cannot be rebound by team names alone.
+                # Preserve the original for final reconciliation, but never
+                # show a removed scheduled game as a fresh upcoming pick.
+                if old.status!='completed':
+                    from dataclasses import replace
+                    removed.append(old.fixture_id)
+                    old=replace(old,status='unresolved',score_scope='fixture_removed_pending_reconciliation')
+                by_key[key]=old
     receipts=[source]
     day=START
     while day<=now.date():
@@ -82,8 +92,9 @@ def save(collector):
     meta={'ok':True,'provider':'sporting-events + sportscore','checked_at':source['checked_at'],
         'sha256':digest([r['sha256'] for r in receipts]),'license_reference':LICENSE,'results_license_reference':TERMS,
         'source_url':NBA_URL,'source_receipts':[{k:r[k] for k in ('source_url','sha256','checked_at')} for r in receipts],
+        'removed_unreconciled_fixtures':removed,
         'coverage':{'fixtures':len(events),'completed':sum(e.status=='completed' for e in events),
-            'unresolved_past':sum(e.status!='completed' and parse_time(e.kickoff)<=now for e in events)},
+            'unresolved_past':sum(e.status!='completed' and e.score_scope not in ('source_postponed','source_cancelled') and parse_time(e.kickoff)<=now for e in events)},
         'attribution':'Sporting Events fixture data; Powered by SportScore for verified final scores'}
     ingest(store,events,meta,now)
     store.cache('nba-current',{'events':[asdict(e) for e in events],'meta':meta},parse_time(source['checked_at']))
@@ -97,7 +108,7 @@ def current(store,now=None):
     events=[EventObservation(**e).validate(now) for e in value['events']]
     events=[replace(e,status='unresolved') if e.status=='scheduled' and parse_time(e.kickoff)<=now else e for e in events]
     meta=dict(value['meta']);meta['coverage']=dict(meta['coverage'],
-        unresolved_past=sum(e.status!='completed' and parse_time(e.kickoff)<=now for e in events))
+        unresolved_past=sum(e.status!='completed' and e.score_scope not in ('source_postponed','source_cancelled') and parse_time(e.kickoff)<=now for e in events))
     return events,meta
 
 
@@ -110,8 +121,11 @@ def forecasts(store,now=None,hours=168):
     if not meta['ok']:return [],meta['problem']
     if not report:return [],'Verified NBA historical model evidence missing or changed'
     if report['opening_14_days']['n']<MIN_TEST:return [],'Insufficient opening-season held-out evidence'
+    if report['test_n']<MIN_TEST:return [],'Insufficient regular-season held-out evidence'
+    if meta.get('removed_unreconciled_fixtures'):
+        return [],'NBA schedule removed an uncompleted fixture; exact cross-date source binding is required before research resumes'
     if meta['coverage']['unresolved_past']:
-        return [],'An earlier NBA game lacks a verified final or is still in progress; same-day results are withheld'
+        return [],'An earlier NBA game lacks a verified final, is suspended or is still in progress; same-day results are withheld'
     completed=sorted([e for e in events if e.status=='completed'],key=lambda e:(e.event_date,e.fixture_id))
     ratings=dict(report['ratings']);p=SETTINGS['NBA'];changes={};last=None
     for e in completed:
@@ -125,13 +139,21 @@ def forecasts(store,now=None,hours=168):
         delta=p['k']*min(2.,max(.5,log(1+abs(e.home_score-e.away_score))))*(int(e.home_score>e.away_score)-raw)
         changes[h]=changes.get(h,0.)+delta;changes[a]=changes.get(a,0.)-delta;last=e.event_date
     for t,d in changes.items():ratings[t]+=d
-    rows=[]
+    latest={}
+    for e in completed:
+        for team in (e.home_id,e.away_id):latest[team]=max(latest.get(team,e.event_date),e.event_date)
+    rows=[];missing_recent=False
     for e in events:
         start=parse_time(e.kickoff)
         if e.status!='scheduled' or not now+timedelta(minutes=15)<start<=now+timedelta(hours=hours):continue
-        # This initial scope has directly measured opening-season evidence.
-        # Do not extrapolate it to playoffs or a missing in-season pipeline.
-        if not START<=start.date()<START+timedelta(days=14):continue
+        # The frozen report also evaluates an entire unseen regular season.
+        # Beyond opening fortnight, both teams need actual current-season
+        # results and recent inputs. No transfer to playoffs/preseason.
+        if not START<=start.date()<=END:continue
+        opening=start.date()<START+timedelta(days=14)
+        if not opening and any(t not in latest or not 0<(start.date()-date.fromisoformat(latest[t])).days<=21
+            for t in (e.home_id,e.away_id)):
+            missing_recent=True;continue
         h=e.home_id.split(':')[-1];a=e.away_id.split(':')[-1]
         if h not in ratings or a not in ratings:continue
         estimate=float(calibrated(probability(ratings,h,a,'NBA'),report['coefficients']))
@@ -149,11 +171,12 @@ def forecasts(store,now=None,hours=168):
             'training_end':last or report['data_end'],'calibration_n':report['calibration_n'],
             'calibration_bin_n':bucket['n'],'test_n':report['test_n'],'source_observed_at':meta['checked_at'],
             'source':meta['provider'],'forecast_at':now.isoformat(),'validated':False,'research_eligible':eligible,
-            'sportsbook':None,'observed_odds':None,'ev':None,'status':'Experimental opening-season forecast; not a betting pick',
+            'sportsbook':None,'observed_odds':None,'ev':None,'status':'Experimental '+('opening-season' if opening else 'regular-season')+' forecast; not a betting pick',
             'limitations':['Prior-season team Elo with frozen calibration; offseason roster changes, injuries and lineups are unmodeled',
-                'Opening 14-day retrospective test: 102 games; Brier 0.2241, log loss 0.6422. Not prospective confirmation',
+                ('Opening 14-day retrospective test: 102 games; Brier 0.2241, log loss 0.6422. Not prospective confirmation' if opening else
+                 f"Frozen 2025–26 regular-season test: {report['test_n']} games; Brier {report['metrics']['binary_brier']['value']:.4f}, log loss {report['metrics']['log_loss']['value']:.4f}. Not prospective confirmation"),
                 'Historical calibration frequency range, not an event-specific confidence guarantee',
                 'Regular season and game winner including overtime only; no props, spread, total or playoff estimate',
                 'No model approval, current sportsbook price, betting EV or demonstrated advantage',report['attribution'],
                 'Fixture attribution: https://sporting-events.org/data/nba/']})
-    return rows,'' if rows else 'No supported opening-season NBA fixture in this window'
+    return rows,'' if rows else ('Current-season NBA results missing or older than 21 days for an upcoming team' if missing_recent else 'No supported regular-season NBA fixture in this window')

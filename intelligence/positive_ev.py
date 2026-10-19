@@ -54,11 +54,18 @@ def render(w,safe):
                     st.text(safe(r['event']+' · '+r['league']))
                     st.caption(friendly_time(r['kickoff']))
                     for leg in r.get('legs') or [r]:
+                        if r.get('kind')=='bounded_cross_game':
+                            st.caption(safe(leg['event'])+' · '+friendly_time(leg['kickoff']))
                         market={'h2h':'Match winner','btts':'Both teams to score','totals':'Total goals'}.get(leg['market'],leg['market'])
                         st.text(safe(market+' · '+leg['selection']+(f" {leg['point']}" if leg.get('point') is not None else '')))
                     p=r.get('joint_probability',r.get('probability'))
-                    st.write(f"Estimated chance **{p:.1%}** · Experimental prediction")
-                    st.caption('Historically tested model, unapproved. No verified sportsbook price or EV. Estimates can be wrong.')
+                    if r.get('kind')=='bounded_cross_game':
+                        lo,hi=r['logical_probability_bounds']
+                        st.write(f"Logical joint range **{lo:.1%}–{hi:.1%}** · Experimental research")
+                        st.caption('Bounds conditional on individual model estimates; no calibrated joint winning probability, verified sportsbook ticket or EV. Independence is not assumed.')
+                    else:
+                        st.write(f"Estimated chance **{p:.1%}** · Experimental prediction")
+                        st.caption('Historically tested model, unapproved. No verified sportsbook price or EV. Estimates can be wrong.')
                     st.caption('Recorded before kickoff · '+friendly_time(r['recorded_at']))
             continue
         with st.container(border=True):

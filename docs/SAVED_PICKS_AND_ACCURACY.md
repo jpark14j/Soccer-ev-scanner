@@ -60,3 +60,12 @@ MLB 2026/postseason remains blocked by permitted current-data availability.
 Historical models and all approval gates are preserved. Different-game or mixed-
 sport probabilities are not manufactured; logical bounds remain separate from
 validated joint forecasts. No new provider, service, key or subscription is used.
+
+Cross-game NBA/soccer/mixed research now also uses the existing append-only
+statistics tables. It stores logical probability bounds without substituting a
+joint point estimate. A two/three-leg outcome requires an exact verified final
+for every individual fixture and its original kickoff. Bound-only records can
+contribute all-leg win/loss accuracy after settlement, but cannot contribute
+Brier score, log loss or challenger training. Repeated refresh timestamps do not
+increase the number of decisions. Pending reschedules/ambiguous finals are not
+losses. Existing single and Bundesliga SGP calculations remain intact.

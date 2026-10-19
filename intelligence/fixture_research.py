@@ -183,7 +183,12 @@ def combinations_for(rows, size=2, limit=3, now=None):
     pool = [r for r in rows if r.get('research_eligible') is True
         and now+timedelta(minutes=15) < parse_time(r['kickoff']) <= now+timedelta(hours=168)
         and 0 <= (now-parse_time(r['source_observed_at'])).total_seconds() < 21600
-        and 0 <= (now-parse_time(r['forecast_at'])).total_seconds() < 300][:24]
+        and 0 <= (now-parse_time(r['forecast_at'])).total_seconds() < 21600]
+    # A large NBA slate must not hide every soccer/mixed-sport combination.
+    # Round-robin reviewed league groups, retaining input rank inside each.
+    groups={}
+    for r in pool:groups.setdefault(r['league'],[]).append(r)
+    pool=[group[i] for i in range(24) for group in groups.values() if i<len(group)][:24]
     result = []
     for legs in combinations(pool, size):
         if len({r['fixture_id'] for r in legs}) != size:
@@ -205,3 +210,47 @@ def combinations_for(rows, size=2, limit=3, now=None):
     result.sort(key=lambda c: (sum(r['upper']-r['lower'] for r in c['legs']), -min(r['probability'] for r in c['legs']),
         tuple(r['fixture_id'] for r in c['legs'])))
     return result[:limit]
+
+
+def daily_combinations(rows,size=2,now=None):
+    """Up to three transparent scopes, without manufacturing missing sports."""
+    now=now or utcnow();result=[]
+    sports=sorted({r['sport'] for r in rows})
+    for sport in sports:
+        candidates=combinations_for([r for r in rows if r['sport']==sport],size,1,now)
+        if candidates:result+=candidates
+    if len(sports)>1:
+        # Separate the sports into a bounded pool so the best all-NBA option
+        # cannot crowd out a genuinely mixed research combination.
+        pool=[]
+        for sport in sports:pool += [r for r in rows if r['sport']==sport][:8]
+        # Use the same rejection and evidence rules; only mixed subsets enter.
+        mixed=[]
+        for legs in combinations(pool,size):
+            if len({r['sport'] for r in legs})<2:continue
+            mixed += combinations_for(list(legs),size,1,now)
+        if mixed:
+            mixed.sort(key=lambda c:(sum(r['upper']-r['lower'] for r in c['legs']),-min(r['probability'] for r in c['legs']),tuple(r['fixture_id'] for r in c['legs'])))
+            result.append(mixed[0])
+    return result[:3]
+
+
+def forward_combinations(rows,now=None):
+    """Bound-only prospective records, separate from point-probability models."""
+    now=now or utcnow();result=[]
+    for size in (2,3):
+        for c in daily_combinations(rows,size,now):
+            legs=c['legs']
+            result.append(c|{'kind':'bounded_cross_game','research_eligible':True,'validated':False,
+                'fixture_id':digest(sorted(r['fixture_id'] for r in legs)),
+                'event':' + '.join(r['event'] for r in legs),
+                'kickoff':min((r['kickoff'] for r in legs),key=parse_time),
+                'sport':legs[0]['sport'] if len({r['sport'] for r in legs})==1 else 'Mixed',
+                'league':' + '.join(sorted({r['league'] for r in legs})),
+                'model_version':' + '.join(sorted({r['model_version'] for r in legs})),
+                'evidence_id':digest(sorted(r['evidence_id'] for r in legs)),
+                'data_sha256':digest(sorted(r['data_sha256'] for r in legs)),
+                'source_observed_at':min((r['source_observed_at'] for r in legs),key=parse_time),
+                'forecast_at':now.isoformat(),'probability':None,'lower':None,'upper':None,
+                'observed_odds':None})
+    return result

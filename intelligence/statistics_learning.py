@@ -38,7 +38,10 @@ def source_rows(store):
     with store.connect() as db:
         records=db.execute('SELECT f.*,o.payload outcome FROM statistics_forecasts f LEFT JOIN statistics_outcomes o ON f.id=o.id ORDER BY f.at,f.id').fetchall()
     for record in records:
-        r=json.loads(record['payload']);legs=r.get('legs') or [{k:r[k] for k in ('market','selection','point')}]
+        r=json.loads(record['payload'])
+        # Logical probability bounds are not point estimates to calibrate.
+        if r.get('kind')=='bounded_cross_game':continue
+        legs=r.get('legs') or [{k:r[k] for k in ('market','selection','point')}]
         if any(l['market']=='h2h' and l['selection'] not in (r.get('home'),r.get('away'),'Draw') for l in legs):continue
         # A model-favored home selection in different games shares a task, not
         # a team-name-specific training scope. Exact saved fixture IDs remain.

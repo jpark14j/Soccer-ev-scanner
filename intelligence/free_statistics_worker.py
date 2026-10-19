@@ -50,8 +50,9 @@ def update(store,now=None,fetch=download,extra_fetch=None):
     cached=store.cached('free-statistics-last-success',MIN_INTERVAL,now)
     cached=bool(cached and parse_time(cached['source_observed_at']).date()==now.date())
     extra_due=extra_fetch is not None and not store.cached('public-results-last-attempt',MIN_INTERVAL,now)
-    if cached and not extra_due:
-        return {'state':'Cached public update retained; refresh interval not reached','public_results_requests':0},[]
+    # Re-evaluate and record newly supported research from verified cached
+    # inputs even inside the network cooldown. This never refreshes receipts
+    # or reserves provider credits; browsing remains read-only.
     before=protected_counts(store);base_requests=0
     if cached:
         from intelligence.openliga import current
@@ -76,7 +77,10 @@ def update(store,now=None,fetch=download,extra_fetch=None):
         if r['fixture_id'] in sides:r['home'],r['away']=sides[r['fixture_id']]
     rows=singles+sgps
     rows=[r for r in rows if r['research_eligible'] and now+timedelta(minutes=15)<parse_time(r['kickoff'])]
-    rows=rows[:100]
+    rows=rows[:94]
+    from intelligence.fixture_research import forward_combinations
+    cross_game=forward_combinations([r for r in rows if not r.get('legs')],now)
+    rows+=cross_game
     created=record(store,rows,now);settled=reconcile(store,now)
     monitor=monitoring(store)
     learning=update_learning(store,now)
@@ -84,20 +88,21 @@ def update(store,now=None,fetch=download,extra_fetch=None):
     from intelligence.cross_game_study import summary as cross_game_summary
     from intelligence.dependence_study import load_report as dependence_report
     dependence=dependence_report()
-    summary={'state':'Key-free statistics refreshed','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
+    summary={'state':'Key-free statistics refreshed' if base_requests+extra.get('public_results_requests',0) else 'Verified cached statistics re-evaluated','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
         'source_sha256':meta['sha256'],'coverage':meta['coverage'],'public_results_requests':base_requests+extra.get('public_results_requests',0),
         'additional_public_sources':extra.get('sources',{}),
         'prepared_receipts_reused':extra.get('prepared_receipts_reused',0),
         'odds_api_requests':0,'odds_api_credits':0,'paid_ai_requests':0,
         'upcoming_singles':sum(not r.get('legs') for r in rows),
-        'experimental_2_leg_sgp':sum(len(r.get('legs',[]))==2 for r in rows),
-        'experimental_3_leg_sgp':sum(len(r.get('legs',[]))==3 for r in rows),
+        'experimental_2_leg_sgp':sum(len(r.get('legs',[]))==2 and r.get('kind')!='bounded_cross_game' for r in rows),
+        'experimental_3_leg_sgp':sum(len(r.get('legs',[]))==3 and r.get('kind')!='bounded_cross_game' for r in rows),
+        'experimental_cross_game_bounds':{str(n):sum(len(r['legs'])==n for r in cross_game) for n in (2,3)},
         'new_pregame_records':len(created),'new_verified_outcomes':settled,
         'unique_pregame_decisions':monitor['unique_pregame_decisions'],
         'challenger_learning':learning,'cross_game_diagnostics':cross_game_summary(),
         'dependence_diagnostics':{'report_verified':dependence is not None,'report_sha256':dependence['sha256'] if dependence else None,'approved_joint_models':0},
         'approved_models':0,'approved_joint_models':0,'automatic_model_promotion':False,
-        'forecasts_by_league':{league:sum(r['league']==league for r in rows) for league in ('Bundesliga','Premier League','Ligue 1','NBA','MLB')},
+        'forecasts_by_league':{league:sum(r['league']==league and r.get('kind')!='bounded_cross_game' for r in rows) for league in ('Bundesliga','Premier League','Ligue 1','NBA','MLB')},
         'remaining_blockers':result.get('blockers',{})}
     store.cache('free-statistics-last-success',summary,parse_time(at))
     store.cache('statistics-forward-monitoring',monitor,now)

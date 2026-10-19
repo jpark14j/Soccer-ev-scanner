@@ -53,15 +53,21 @@ def render(w, safe, sizes=(2,3)):
     if rows:
         with st.expander('Unpriced 2-leg and 3-leg fixture research'):
             for size in sizes:
-                candidates = combinations_for(rows, size, limit=1)
+                from intelligence.fixture_research import forward_combinations
+                current_combinations=forward_combinations(result['forecasts'])
+                candidates=[r for r in saved_for_display(w.store,current_combinations) if len(r['legs'])==size]
                 if not candidates:
                     st.caption(f'No compatible {size}-leg fixture candidate; no selection is forced.')
                 for c in candidates:
                     st.write(f'**{size}-leg research combination · no sportsbook ticket**')
-                    for r in c['legs']: st.text(safe(f"{r['event']} · {r['selection']} · model {r['probability']:.1%}"))
+                    for r in c['legs']:
+                        st.text(safe(f"{r['event']} · {r['league']} · {friendly_time(r['kickoff'])} · {r['selection']} · model {r['probability']:.1%}"))
+                        st.caption(safe(f"Historical calibration range {r['lower']:.1%}–{r['upper']:.1%} · {r['model_version']} · source checked {r['source_observed_at']} · unapproved"))
                     lo, hi = c['logical_probability_bounds']
                     st.caption(f'Logical joint range {lo:.1%}–{hi:.1%}, conditional on the individual estimates. No calibrated parlay winning probability is available.')
-                    st.caption('Fair-odds range and probability bounds are mathematical implications, not a quoted ticket or a confidence interval. No EV is calculated.')
+                    fair_lo,fair_hi=c['fair_odds_range']
+                    upper=f'{fair_hi:.2f}' if fair_hi is not None else 'unbounded'
+                    st.caption(f'Model-implied fair decimal range {fair_lo:.2f}–{upper}; mathematical bounds, not a quoted ticket or a confidence interval. No EV is calculated.')
                     for text in c['limitations']: st.text(safe(text))
     with st.expander('Soccer, NBA and MLB evidence and current-data blockers'):
         for league, problem in result['blockers'].items(): st.text(safe(league+': '+problem))
@@ -80,7 +86,7 @@ def render(w, safe, sizes=(2,3)):
         r=load_report()
         if r:
             st.text(f"Recent NBA regular-season study · {r['history_n']} games through {r['data_end']} · {r['test_n']} test games from 2025–26 · Brier {r['metrics']['binary_brier']['value']:.4f} versus simple baseline {r['baseline']['binary_brier']['value']:.4f} · log loss {r['metrics']['log_loss']['value']:.4f} · calibration error {r['ece']:.1%}.")
-            st.caption('Opening-season NBA research requires fresh reconciled fixtures and every earlier final. Roster changes remain unmodeled; no model was approved or substituted for the existing model.')
+            st.caption('NBA regular-season research requires fresh reconciled fixtures and every earlier final; beyond the opening fortnight both teams also need recent current-season results. Roster changes remain unmodeled; no model was approved or substituted for the existing model.')
             st.caption(f"Existing model on the same {r['paired_test_n']} test games: Brier {r['incumbent_metrics']['binary_brier']['value']:.4f}. The paired improvement interval includes zero; there is no credible replacement decision.")
             st.caption(r['attribution'])
         from intelligence.recent_mlb import load_report as mlb_report

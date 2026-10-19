@@ -106,3 +106,63 @@ Expand the existing evidence/data-blockers section for unsupported fixtures.
 The existing page refresh picks up new worker generations; clicking does not
 make a sports-provider request. Community Cloud hosting sign-in may still be
 required; its private hosting controls were not changed.
+
+## Targeted completion increment (October 19, 2026)
+
+The opening fortnight is no longer an arbitrary NBA season cutoff. The same
+frozen Elo updates, calibration and historical frequency ranges can be used
+through the reviewed 2026–27 regular-season fixture window, backed by the
+existing 1,225-game unseen-season evaluation. Beyond the opening fortnight,
+both teams must have a verified current-season result within 21 days of tipoff.
+All earlier played games still require reconciled finals; no preseason/playoff
+transfer, roster data, new fit, improved-accuracy claim or approval is implied.
+Explicit postponed/cancelled source statuses are retained but supply neither
+scores nor predictions. Suspensions, unknown missing results and conflicts
+remain blockers. Same-date tipoff changes cannot settle an original differently
+timed prediction. A disappeared NBA fixture fails closed: repeated pairings
+cannot safely be linked across dates without an exact reviewed source binding.
+
+Cross-game research no longer disappears five minutes after a saved prediction.
+It retains the six-hour source freshness gate and the original publication time.
+Within the existing parlay details, eligible NBA, soccer and mixed-sport scopes
+can each contribute a two/three-leg candidate. Duplicate fixtures, opposing
+outcomes and shared teams are excluded. Ranking uses narrower marginal
+calibration ranges, then the weakest individual probability, never payout.
+These combinations have Frechet logical bounds and a corresponding fair-odds
+range, **not a calibrated joint probability**. No independence, executable
+combined price or EV is claimed. Existing Bundesliga SGP cards and all single
+cards remain unchanged. When an existing Home parlay slot has no supported point
+forecast for the selected competitions, the same card can show recorded bounds;
+it does not replace an available existing point-forecast card.
+
+The existing single writer now records up to six bound-only combinations before
+all kickoffs. Every leg retains its fixture, kickoff, model, marginal estimate,
+uncertainty and source receipt. Results are reconciled separately per leg; every
+leg must have an exact final before accuracy changes. Rescheduled, void/ambiguous
+or incomplete combinations stay out of the settled denominator. Repeated clocks
+or snapshots do not manufacture extra decisions. Bounds are excluded from
+point-probability Brier/log-loss calculation and challenger calibration/training.
+An in-cooldown worker may analyze already verified cached inputs without any
+source GET or receipt-clock reset; frontend browsing still never records rows.
+
+MLB sources were rechecked, without ingesting restricted data:
+
+- [Retrosheet game logs](https://www.retrosheet.org/gamelogs/index.html) explicitly
+  cover 1871–2025; its event/postseason downloads also stop in 2025. Attribution
+  permits the existing historical study, but does not supply missing 2026 games.
+- [MLB's official terms](https://www.mlb.com/official-information/terms-of-use)
+  restrict automated collection and reuse without applicable permission. Public
+  Stats API reachability or a third-party wrapper's code licence does not grant
+  that permission. Neither was activated.
+- The previously tested Sporting Events MLB export has four context headings,
+  not team/time/final-score game records. SportScore's documented sport coverage
+  does not include baseball.
+- The public `925Sports/mlb-2026-game-logs` repository has no visible data-use
+  licence; a file named for 2026 does not establish permission, completeness or
+  postseason suitability. No raw data from it was imported.
+
+Consequently 2026 MLB singles, pitcher inputs and MLB/mixed-MLB parlays remain
+blocked. Required: permitted complete current fixtures/finals, reviewed identities
+and season phases, and matching model evidence. No new account or paid service
+was enabled. Genuine settlement must be checked after an actually recorded game
+finishes; deterministic settlement tests are not a claim of live accuracy.

@@ -10,7 +10,7 @@ from intelligence.domain import digest,parse_time,utcnow
 def contracts(r):
     legs=r.get('legs') or [r]
     return sorted([{'market':l['market'],'selection':l['selection'],'point':l.get('point'),
-        'participant':l.get('participant',''),'fixture_id':l.get('fixture_id',r['fixture_id'])} for l in legs],key=digest)
+        'participant':l.get('participant',''),'fixture_id':l.get('fixture_id',r['fixture_id']),**({'kickoff':l['kickoff']} if l.get('kickoff') else {})} for l in legs],key=digest)
 
 
 def decision(r):
@@ -79,12 +79,16 @@ def saved_for_display(store,current,now=None):
             indexed.setdefault(decision(r),[]).append(row)
         except (ValueError,KeyError,TypeError):continue
     found=[]
-    fields=('kickoff','source_observed_at','evidence_id','probability','joint_probability','lower','upper','legs')
+    fields=('kickoff','source_observed_at','evidence_id','probability','joint_probability','lower','upper','legs','kind','logical_probability_bounds','marginal_envelope_bounds','fair_odds_range')
     for computed in current:
         if not computed.get('research_eligible') or not now<parse_time(computed['kickoff']):continue
         for row in reversed(indexed.get(decision(computed),[])):
             saved=row['payload']
-            if all(same_value(saved.get(k),computed.get(k)) for k in fields):
+            def value(payload,key):
+                if key=='legs' and payload.get('kind')=='bounded_cross_game':
+                    return [{k:v for k,v in leg.items() if k not in ('forecast_at','record_id','recorded_at')} for leg in payload[key]]
+                return payload.get(key)
+            if all(same_value(value(saved,k),value(computed,k)) for k in fields):
                 found.append(saved|{'recorded_at':row['at'],'record_id':row['id']});break
     return found
 
@@ -122,15 +126,20 @@ def summary(store,now=None):
 
 
 def home_choices(store,leagues,now=None):
-    from intelligence.fixture_research import collect
+    from intelligence.fixture_research import collect,forward_combinations
     from intelligence.current_score_research import candidates
     now=now or utcnow()
     current=collect(store,now,168,leagues)['forecasts']
     if 'Bundesliga' in leagues:current+=candidates(store,now)
+    bounded=saved_for_display(store,forward_combinations([r for r in current if not r.get('legs')],now),now)
     current=saved_for_display(store,current,now)
     result={}
     for n in (1,2,3):
         eligible=[r for r in current if len(contracts(r))==n]
         result[n]=min(eligible,key=lambda r:(r['upper']-r['lower'],-r['calibration_bin_n'],
             -r.get('joint_probability',r.get('probability',0)),r['kickoff'])) if eligible else None
+        if result[n] is None and n>1:
+            alternatives=[r for r in bounded if len(r['legs'])==n]
+            result[n]=min(alternatives,key=lambda r:(sum(l['upper']-l['lower'] for l in r['legs']),
+                -min(l['probability'] for l in r['legs']),r['kickoff'])) if alternatives else None
     return result
