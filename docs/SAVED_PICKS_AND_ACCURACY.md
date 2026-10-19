@@ -52,10 +52,11 @@ The schedule remains best-effort; there are currently no genuinely settled
 forward outcomes, so live settlement success is not claimed. Deterministic
 integration tests cover win/loss/pending results and duplicate refreshes.
 
-Current coverage is unchanged: genuine Bundesliga source forecasts and coherent
-experimental same-game combinations are available when their inputs pass.
-EPL/Ligue 1 current reconciliation, NBA fixture/offseason readiness and permitted
-2026 MLB results/fixtures remain blocked under the no-new-account constraints.
+Current coverage and explicit restrictions are documented in
+[Current free-data coverage](CURRENT_FREE_DATA_COVERAGE.md). Bundesliga coherent
+experimental combinations are preserved. Reconciled EPL/Ligue 1 results and
+opening-season NBA fixtures use the existing models and pregame-record gates;
+MLB 2026/postseason remains blocked by permitted current-data availability.
 Historical models and all approval gates are preserved. Different-game or mixed-
 sport probabilities are not manufactured; logical bounds remain separate from
 validated joint forecasts. No new provider, service, key or subscription is used.

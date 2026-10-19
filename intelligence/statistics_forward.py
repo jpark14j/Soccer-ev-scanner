@@ -41,21 +41,26 @@ def reconcile(store,now=None):
     """Exact source fixture/kickoff and regulation score; no bookmaker settlement."""
     from intelligence.openliga import current
     from intelligence.score_distribution import settlement
-    now=now or utcnow();ensure(store);events,meta=current(store,'Bundesliga',now)
-    if not meta['ok']:return 0
-    finals={e.fixture_id:e for e in events if e.status=='completed'};added=0
+    now=now or utcnow();ensure(store);sources=[current(store,'Bundesliga',now)]
+    from intelligence.free_results import current as public_current
+    from intelligence.nba_current import current as nba_current
+    sources += [public_current(store,league,now) for league in ('Premier League','Ligue 1')]
+    sources.append(nba_current(store,now))
+    finals={e.fixture_id:(e,meta) for events,meta in sources if meta['ok'] for e in events if e.status=='completed'};added=0
     with store.connect() as db:
         rows=db.execute('SELECT f.* FROM statistics_forecasts f LEFT JOIN statistics_outcomes o ON f.id=o.id WHERE o.id IS NULL').fetchall()
         for row in rows:
-            r=json.loads(row['payload']);event=finals.get(r['fixture_id'])
-            if not event or parse_time(event.kickoff)!=parse_time(r['kickoff']) or parse_time(row['at'])>=parse_time(event.kickoff):continue
+            r=json.loads(row['payload']);pair=finals.get(r['fixture_id'])
+            if not pair:continue
+            event,meta=pair
+            if not event.kickoff or parse_time(event.kickoff)!=parse_time(r['kickoff']) or parse_time(row['at'])>=parse_time(event.kickoff):continue
             legs=r.get('legs') or [{k:r[k] for k in ('market','selection','point')}]
             states=[settlement(l['market'],l['selection'],l['point'],event.home_name,event.away_name,event.home_score,event.away_score) for l in legs]
             # Current source contracts have no pushes/quarter lines. Do not
             # turn ambiguous partial settlements into binary outcomes.
             if any(s not in ((1.,0.,0.),(0.,0.,1.)) for s in states):continue
             value={'all_selections_won':all(s==(1.,0.,0.) for s in states),
-                'home_score':event.home_score,'away_score':event.away_score,'source':event.source,
+                'home_score':event.home_score,'away_score':event.away_score,'source':meta.get('provider',event.source),
                 'source_observed_at':event.observed_at,'source_sha256':meta['sha256'],
                 'scope':'Unpriced paper forecast outcome; not a settled sportsbook ticket or financial return'}
             added+=db.execute('INSERT OR IGNORE INTO statistics_outcomes VALUES(?,?,?)',(row['id'],now.isoformat(),json.dumps(value))).rowcount

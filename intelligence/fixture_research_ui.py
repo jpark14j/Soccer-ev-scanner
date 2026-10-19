@@ -40,7 +40,7 @@ def render(w, safe, sizes=(2,3)):
             st.text(safe(r['event']+' · '+r['league']))
             from intelligence.consumer_ui import friendly_time
             st.caption(friendly_time(r['kickoff']))
-            st.write(safe(('Both teams to score · ' if r['market']=='btts' else 'Total goals 2.5 · ')+r['selection']))
+            st.write(safe(({'btts':'Both teams to score · ','h2h':'Game winner · '}.get(r['market'],'Total goals 2.5 · '))+r['selection']))
             st.write(f"Model estimate **{r['probability']:.1%}** · historical calibration range {r['lower']:.1%}–{r['upper']:.1%}")
             st.caption(f"Model-implied fair decimal {r['fair_odds']:.2f}; not an available sportsbook price. Experimental, unapproved; EV unavailable.")
             with st.expander('Statistics and missing evidence'):
@@ -80,7 +80,7 @@ def render(w, safe, sizes=(2,3)):
         r=load_report()
         if r:
             st.text(f"Recent NBA regular-season study · {r['history_n']} games through {r['data_end']} · {r['test_n']} test games from 2025–26 · Brier {r['metrics']['binary_brier']['value']:.4f} versus simple baseline {r['baseline']['binary_brier']['value']:.4f} · log loss {r['metrics']['log_loss']['value']:.4f} · calibration error {r['ece']:.1%}.")
-            st.caption('NBA archive updated; current fixture reconciliation and offseason roster readiness remain blocked. No model was approved or substituted for the existing model.')
+            st.caption('Opening-season NBA research requires fresh reconciled fixtures and every earlier final. Roster changes remain unmodeled; no model was approved or substituted for the existing model.')
             st.caption(f"Existing model on the same {r['paired_test_n']} test games: Brier {r['incumbent_metrics']['binary_brier']['value']:.4f}. The paired improvement interval includes zero; there is no credible replacement decision.")
             st.caption(r['attribution'])
         from intelligence.recent_mlb import load_report as mlb_report

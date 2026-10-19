@@ -170,6 +170,7 @@ if published:
     from intelligence.ledger import archive
     archive(store,os.getenv('PREDICTION_LEDGER_DIR','ledger'))
 from intelligence.workspace_ui import Workspace,render_tools
+st.markdown('<a href="https://sportscore.com/" rel="dofollow" title="Sports data by SportScore">Powered by SportScore</a> · <a href="https://sporting-events.org/data/nba/">NBA fixtures: Sporting Events</a>',unsafe_allow_html=True)
 from intelligence import consumer_ui
 workspace=Workspace(result,store,data_settings,book_keys,leagues,key,secret,refresh_selected,show_markets,current_opportunities,
     sync_saved=sync_shared_state.clear if shared_config.enabled else None)

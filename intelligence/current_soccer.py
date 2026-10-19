@@ -37,10 +37,16 @@ def _prepare(league, store, now=None, allow_fetch=True, result_loader=None, hist
     if parse_time(artifact['generated_at']) > now or artifact['state'][anchor] > now.date().isoformat():
         return {'problem': 'Future-dated frozen model state'}
     if history_completion:
-        if (epl or history_completion.get('base_artifact_sha256')!=artifact['artifact_sha256']
-            or history_completion.get('matched')!=294 or history_completion.get('added')!=12):
+        public=history_completion.get('kind')=='verified-missing-prior-results-1'
+        expected={'Premier League':(353,27),'Ligue 1':(282,24)}.get(league) if public else (294,12)
+        if (history_completion.get('base_artifact_sha256')!=artifact['artifact_sha256'] or not expected
+            or (history_completion.get('matched'),history_completion.get('added'))!=expected
+            or public and history_completion.get('league')!=league or not public and epl):
             return {'problem':'Historical completion does not match the frozen model source'}
-        artifact['state']=extend(artifact['state'],history_completion['rows'],artifact['state'][anchor],artifact['policy'])
+        if epl:
+            for row in history_completion['rows']:add_result(artifact['state'],row,artifact['policy'])
+        else:
+            artifact['state']=extend(artifact['state'],history_completion['rows'],artifact['state'][anchor],artifact['policy'])
     events, meta = (result_loader or current)(store, league, now, allow_fetch=allow_fetch)
     provider = meta.get('provider', 'football-data.org')
     if not meta['ok']:
@@ -92,7 +98,7 @@ def _prepare(league, store, now=None, allow_fetch=True, result_loader=None, hist
     else:
         artifact['fixtures'] = [asdict(e) for e in events]
         artifact['source_checked_at'] = meta['checked_at']
-    adapter_names=('current_results','current_soccer')+(('openliga',) if provider=='openligadb' else ())
+    adapter_names=('current_results','current_soccer')+(('openliga',) if provider=='openligadb' else ('free_results',) if provider=='sportscore' else ())
     adapter_sha256 = digest({name:sha256(Path(__file__).with_name(name+'.py').read_bytes()).hexdigest()
                             for name in adapter_names})
     artifact.update(current_rows=rows, source_kind=provider+' source-reported completed results',

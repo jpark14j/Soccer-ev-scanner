@@ -23,11 +23,16 @@ def fixture_games(store,now=None,hours=168):
     from intelligence.openliga import current
     now=now or utcnow()
     events,meta=current(store,'Bundesliga',now)
-    if not meta['ok']:return []
-    return [{'sport':'Soccer','league':'Bundesliga','event_id':e.fixture_id,
+    sources=[('Bundesliga','Soccer',events,meta)]
+    from intelligence.free_results import current as public_current
+    from intelligence.nba_current import current as nba_current
+    for league in ('Premier League','Ligue 1'):
+        es,ms=public_current(store,league,now);sources.append((league,'Soccer',es,ms))
+    es,ms=nba_current(store,now);sources.append(('NBA','NBA',es,ms))
+    return [{'sport':sport,'league':league,'event_id':e.fixture_id,
         'event':e.home_name+' vs '+e.away_name,'start':e.kickoff,
         'home_id':e.home_id,'away_id':e.away_id,'statistics_fixture':True}
-        for e in events if e.status=='scheduled' and e.kickoff
+        for league,sport,events,meta in sources if meta['ok'] for e in events if e.status=='scheduled' and e.kickoff
         and now+timedelta(minutes=15)<parse_time(e.kickoff)<=now+timedelta(hours=hours)]
 
 
@@ -35,7 +40,7 @@ def soccer_forecasts(league, artifact, now, hours):
     """Use a fresh full-season provider reconciliation, never just an old schedule."""
     if artifact.get('problem'):
         return [], artifact['problem']
-    if artifact.get('results_provider') not in ('football-data.org','openligadb'):
+    if artifact.get('results_provider') not in ('football-data.org','openligadb','sportscore'):
         return [], 'Fresh reconciled full-season results and exact scheduled kickoffs are unavailable'
     if not 0 <= (now-parse_time(artifact['results_observed_at'])).total_seconds() < 21600:
         return [], 'Results verification expired; saved odds do not repair it'
@@ -130,6 +135,10 @@ def collect(store, now=None, hours=48, leagues=None):
             fallback = prepare_openliga(league, store, now)
             if not fallback.get('problem') or fallback.get('results_provider') == 'openligadb' and fallback.get('coverage'):
                 artifact = fallback
+        if league in ('Premier League','Ligue 1') and (artifact.get('problem') or artifact.get('results_provider') not in ('football-data.org','openligadb')):
+            from intelligence.free_results import prepare as public_prepare
+            public=public_prepare(league,store,now)
+            if not public.get('problem') or public.get('results_provider')=='sportscore':artifact=public
         found, problem = soccer_forecasts(league, artifact, now, hours)
         from intelligence.lifecycle import research_hold
         for row in found:
@@ -147,10 +156,19 @@ def collect(store, now=None, hours=48, leagues=None):
         if leagues is None or sport in leagues:
             blockers[sport] = 'Current licensed team results, exact upcoming fixtures and matching calibrated sport-model inputs are not available in the shared store; historical studies do not activate a forecast'
     if 'NBA' in blockers:
-        from intelligence.recent_nba import load_report
-        if load_report():blockers['NBA']='2025–26 regular-season history is evaluated; verified near-term fixtures and research evidence for current offseason/roster readiness are missing. No current probability is substituted.'
+        from intelligence.nba_current import forecasts as nba_forecasts
+        nba,problem=nba_forecasts(store,now,hours)
+        from intelligence.lifecycle import research_hold
+        for row in nba:
+            contract=SimpleNamespace(**{k:row[k] for k in ('sport','league','market','point')})
+            model=SimpleNamespace(**{k:row[k] for k in ('model_version','evidence_id')})
+            held=research_hold(store,contract,model)
+            if held:problem=held
+            else:rows.append(row)
+        if problem:blockers['NBA']=problem
+        else:blockers.pop('NBA')
     if 'MLB' in blockers:
-        blockers['MLB']='The permitted Retrosheet archive stops in 2025. Current 2026 game results and fixtures need a free authenticated provider; BALLDONTLIE documents free Games access but no account credential is configured for this integration.'
+        blockers['MLB']='Retrosheet stops in 2025. The tested free Sporting Events MLB export contains tournament placeholders without teams or game times, not 2026 results. SportScore has no documented baseball endpoint. No licensed account-free current/postseason source has been verified; regular-season Elo cannot authorize postseason forecasts.'
     rows.sort(key=lambda r: (r['upper']-r['lower'], -r['probability'], r['kickoff'], r['fixture_id'], r['market']))
     return {'forecasts': rows[:100], 'blockers': blockers, 'provider_requests': 0, 'paid_ai_requests': 0,
         'approved_models': 0, 'forward_records_created': 0,

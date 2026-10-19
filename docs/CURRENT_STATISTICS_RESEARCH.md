@@ -1,5 +1,9 @@
 # Current statistical research increment
 
+The coverage assessment below describes the earlier increment. See
+[current free-data coverage](CURRENT_FREE_DATA_COVERAGE.md) for the subsequently
+verified date-filtered results adapter and experimental NBA opening-season scope.
+
 The existing five-page application and betting approval rules are preserved.
 No Odds API request, paid AI call, provider-hold release or recurring activation
 is part of this increment. Raw downloaded datasets remain private.

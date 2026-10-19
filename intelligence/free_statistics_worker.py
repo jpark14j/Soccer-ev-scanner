@@ -41,26 +41,42 @@ def download(session=None):
         if own:session.close()
 
 
-def update(store,now=None,fetch=download):
+def update(store,now=None,fetch=download,extra_fetch=None):
     from intelligence.openliga import save
     from intelligence.fixture_research import collect
     from intelligence.current_score_research import candidates
     from intelligence.statistics_forward import record,reconcile,monitoring
     fixed_now=now;now=now or utcnow()
     cached=store.cached('free-statistics-last-success',MIN_INTERVAL,now)
-    if cached and parse_time(cached['source_observed_at']).date()==now.date():
+    cached=bool(cached and parse_time(cached['source_observed_at']).date()==now.date())
+    extra_due=extra_fetch is not None and not store.cached('public-results-last-attempt',MIN_INTERVAL,now)
+    if cached and not extra_due:
         return {'state':'Cached public update retained; refresh interval not reached','public_results_requests':0},[]
-    before=protected_counts(store);raw,at=fetch();now=utcnow() if fixed_now is None else fixed_now
-    if not 0<=(now-parse_time(at)).total_seconds()<60:raise ValueError('Public source receipt must be current')
+    before=protected_counts(store);base_requests=0
+    if cached:
+        from intelligence.openliga import current
+        _,meta=current(store,'Bundesliga',now)
+        if not meta['ok']:raise ValueError('Cached Bundesliga verification unavailable')
+        at=meta['checked_at']
+    else:
+        raw,at=fetch();base_requests=1;now=utcnow() if fixed_now is None else fixed_now
+        if not 0<=(now-parse_time(at)).total_seconds()<60:raise ValueError('Public source receipt must be current')
+        meta=save(store,raw,'Bundesliga',at,now)
     from intelligence.statistics_learning import lock,update as update_learning
     lock(store,now)
-    meta=save(store,raw,'Bundesliga',at,now)
-    singles=collect(store,now,168,['Bundesliga'])['forecasts'];sides={r['fixture_id']:(r['home'],r['away']) for r in singles}
+    extra={}
+    if extra_due:
+        from intelligence.free_results import refresh
+        extra=refresh(store,None if fixed_now is None else now,extra_fetch)
+        if fixed_now is None:now=utcnow()
+    result=collect(store,now,168,None if extra_fetch is not None else ['Bundesliga'])
+    singles=result['forecasts'];sides={r['fixture_id']:(r['home'],r['away']) for r in singles}
     sgps=candidates(store,now)
     for r in sgps:
         if r['fixture_id'] in sides:r['home'],r['away']=sides[r['fixture_id']]
     rows=singles+sgps
     rows=[r for r in rows if r['research_eligible'] and now+timedelta(minutes=15)<parse_time(r['kickoff'])]
+    rows=rows[:100]
     created=record(store,rows,now);settled=reconcile(store,now)
     monitor=monitoring(store)
     learning=update_learning(store,now)
@@ -69,7 +85,9 @@ def update(store,now=None,fetch=download):
     from intelligence.dependence_study import load_report as dependence_report
     dependence=dependence_report()
     summary={'state':'Key-free statistics refreshed','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
-        'source_sha256':meta['sha256'],'coverage':meta['coverage'],'public_results_requests':1,
+        'source_sha256':meta['sha256'],'coverage':meta['coverage'],'public_results_requests':base_requests+extra.get('public_results_requests',0),
+        'additional_public_sources':extra.get('sources',{}),
+        'prepared_receipts_reused':extra.get('prepared_receipts_reused',0),
         'odds_api_requests':0,'odds_api_credits':0,'paid_ai_requests':0,
         'upcoming_singles':sum(not r.get('legs') for r in rows),
         'experimental_2_leg_sgp':sum(len(r.get('legs',[]))==2 for r in rows),
@@ -79,15 +97,14 @@ def update(store,now=None,fetch=download):
         'challenger_learning':learning,'cross_game_diagnostics':cross_game_summary(),
         'dependence_diagnostics':{'report_verified':dependence is not None,'report_sha256':dependence['sha256'] if dependence else None,'approved_joint_models':0},
         'approved_models':0,'approved_joint_models':0,'automatic_model_promotion':False,
-        'remaining_blockers':{'NBA':'No reviewed key-free current fixture source or offseason readiness',
-            'MLB':'No permitted key-free 2026 final results/fixture source',
-            'other_soccer':'Incomplete current/previous-season reconciliation; unchanged model gates'}}
-    store.cache('free-statistics-last-success',summary,now)
+        'forecasts_by_league':{league:sum(r['league']==league for r in rows) for league in ('Bundesliga','Premier League','Ligue 1','NBA','MLB')},
+        'remaining_blockers':result.get('blockers',{})}
+    store.cache('free-statistics-last-success',summary,parse_time(at))
     store.cache('statistics-forward-monitoring',monitor,now)
     return summary,rows
 
 
-def publish(client=None,fetch=download,readback_output=None):
+def publish(client=None,fetch=download,readback_output=None,extra_fetch=None):
     from intelligence.background import verify_assets
     from intelligence.persistence import backup_store
     if (os.getenv('PAID_ANALYST_APPROVED','0')!='0' or os.getenv('RESEARCH_WORKER_ENABLED','0')!='0'
@@ -102,7 +119,8 @@ def publish(client=None,fetch=download,readback_output=None):
         with tempfile.TemporaryDirectory(prefix='key-free-statistics-') as folder:
             store=Store(materialize(envelope,Path(folder)/'writer.sqlite3'))
             verify_assets(store);before=protected_counts(store)
-            summary,rows=update(store,fetch=fetch)
+            from intelligence.free_results import download as public_download
+            summary,rows=update(store,fetch=fetch,extra_fetch=extra_fetch or public_download)
             if protected_counts(store)!=before:raise StateError('Protected history or budgets changed')
             body=snapshot(store)
             receipt=client.control('checkpoint',body|{'run_id':run_id,'expected_generation':envelope['generation'],
@@ -123,8 +141,12 @@ def publish(client=None,fetch=download,readback_output=None):
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--private-readback-output',type=Path);a=p.parse_args()
-    try:print(json.dumps(publish(readback_output=a.private_readback_output),allow_nan=False))
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--private-readback-output',type=Path)
+    p.add_argument('--prepared-public-data',type=Path);a=p.parse_args()
+    try:
+        from intelligence.free_results import prepared_fetch
+        print(json.dumps(publish(readback_output=a.private_readback_output,
+            extra_fetch=prepared_fetch(a.prepared_public_data) if a.prepared_public_data else None),allow_nan=False))
     except Exception:
         print(json.dumps({'status':'failed','error_code':'key_free_statistics_validation_or_storage',
             'provider_hold_released':False,'odds_api_requests':0}));raise SystemExit(1) from None
