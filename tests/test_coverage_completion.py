@@ -228,3 +228,32 @@ def test_nba_fresh_fixture_receipt_does_not_extend_older_result_receipt_lifetime
     assert meta['checked_at']==older.isoformat()
     assert current(store,now)[1]['ok']
     assert not current(store,now+timedelta(hours=4))[1]['ok']
+
+
+def test_accuracy_contracts_normalize_legacy_implicit_and_explicit_leg_kickoffs():
+    from intelligence.prediction_accuracy import decision
+    start='2026-10-21T23:00:00+00:00'
+    base={'fixture_id':'synthetic-game','kickoff':start,'model_version':'synthetic-model',
+        'market':'h2h','selection':'Synthetic Home','point':None}
+    legacy=base|{'legs':[{'market':'h2h','selection':'Synthetic Home','point':None}]}
+    explicit=base|{'legs':[{'market':'h2h','selection':'Synthetic Home','point':None,
+        'fixture_id':base['fixture_id'],'kickoff':'2026-10-21T19:00:00-04:00'}]}
+    assert decision(base)==decision(legacy)==decision(explicit)
+    changed=deepcopy(explicit);changed['legs'][0]['kickoff']='2026-10-22T23:00:00+00:00'
+    assert decision(base)!=decision(changed)
+
+
+def test_new_nba_result_conflict_retains_saved_success_but_blocks_cached_forecasts(store):
+    from intelligence.nba_current import forecasts,current,NBAReconciliationError
+    from intelligence.free_results import refresh
+    nba_rows(store);before=current(store,NOW)
+    later=NOW+timedelta(minutes=1)
+    def unavailable(*args):raise ValueError('Synthetic source unavailable')
+    with patch('intelligence.nba_current.save',side_effect=NBAReconciliationError('NBA final conflicts with a previously verified result')):
+        report=refresh(store,later,unavailable)
+    assert not report['sources']['NBA']['ok'] and report['sources']['NBA']['blocks_cached_inference']
+    assert current(store,NOW)==before  # Original successful snapshot is untouched.
+    assert not forecasts(store,later)[0]
+    # A successful exact reconciliation clears this temporary inference block.
+    with patch('intelligence.nba_current.save',return_value=before[1]):refresh(store,later,unavailable)
+    assert forecasts(store,later)[0]

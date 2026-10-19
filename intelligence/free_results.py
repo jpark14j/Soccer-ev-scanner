@@ -269,7 +269,7 @@ def refresh(store,now=None,fetch=download):
     """Independent source failures do not discard another league's good data."""
     now=now or utcnow();collector=Collector(store,now,fetch);status={}
     store.cache('public-results-last-attempt',{'at':now.isoformat()},now)
-    from intelligence.nba_current import save as save_nba
+    from intelligence.nba_current import save as save_nba,NBAReconciliationError
     for league,operation in [('NBA',lambda:save_nba(collector)),
         *[(league,lambda league=league:save_soccer(collector,league)) for league in ('Premier League','Ligue 1')]]:
         try:
@@ -280,7 +280,8 @@ def refresh(store,now=None,fetch=download):
             import sys
             error=sys.exception()
             reason=str(error) if isinstance(error,ValueError) and not isinstance(error,requests.RequestException) else 'Public results transport or schema validation failed'
-            status[league]={'ok':False,'problem':reason[:220]}
+            status[league]={'ok':False,'problem':reason[:220],
+                'blocks_cached_inference':isinstance(error,NBAReconciliationError)}
         store.cache('public-results-status-'+league,status[league]|{'checked_at':now.isoformat()},now)
     return {'sources':status,'public_results_requests':collector.network_requests,
         'prepared_receipts_reused':collector.requests-collector.network_requests,'odds_api_requests':0}

@@ -17,6 +17,10 @@ END=date(2027,4,12)
 LICENSE='https://sporting-events.org/data/'
 
 
+class NBAReconciliationError(ValueError):
+    """New evidence contradicts the cached model inputs; retain, but withhold."""
+
+
 def fixtures(value,now):
     data=json.loads(value['raw'])
     if (data.get('competition')!='NBA' or data.get('source')!='https://sporting-events.org/data/nba/'
@@ -78,9 +82,9 @@ def save(collector):
         for e in finals:
             key=(e.event_date,e.home_id,e.away_id);old=by_key.get(key)
             if old is None or parse_time(old.kickoff)!=parse_time(e.kickoff):
-                raise ValueError('NBA final does not reconcile to exact scheduled teams and tipoff')
+                raise NBAReconciliationError('NBA final does not reconcile to exact scheduled teams and tipoff')
             if old.status=='completed' and (e.status!='completed' or (old.home_score,old.away_score)!=(e.home_score,e.away_score)):
-                raise ValueError('NBA final conflicts with a previously verified result')
+                raise NBAReconciliationError('NBA final conflicts with a previously verified result')
             # Keep the schedule's stable fixture identity for original records.
             from dataclasses import replace
             by_key[key]=replace(e,source_event_id=old.source_event_id,source=old.source)
@@ -94,7 +98,7 @@ def save(collector):
             new=by_id.get(old.fixture_id)
             if (not new or new.status!='completed' or new.kickoff!=old.kickoff
                 or (new.home_score,new.away_score)!=(old.home_score,old.away_score)):
-                raise ValueError('NBA refresh withdrew or revised a previously verified final')
+                raise NBAReconciliationError('NBA refresh withdrew or revised a previously verified final')
     recent=[source['checked_at']]+[r['checked_at'] for r in receipts[1:]
         if date.fromisoformat(json.loads(r['raw'])['date'])>=now.date()-timedelta(days=3)]
     checked=min(recent,key=parse_time)
@@ -130,6 +134,10 @@ def forecasts(store,now=None,hours=168):
     from intelligence.research_ranking import MIN_CALIBRATION_BIN,MIN_CALIBRATION,MIN_TEST,MAX_ENVELOPE_WIDTH
     now=now or utcnow();events,meta=current(store,now);report=load_report()
     if not meta['ok']:return [],meta['problem']
+    attempt=store.cached('public-results-status-NBA',21600,now)
+    if (attempt and attempt.get('blocks_cached_inference') and
+        parse_time(attempt['checked_at'])>=parse_time(meta['checked_at'])):
+        return [],attempt['problem']
     if not report:return [],'Verified NBA historical model evidence missing or changed'
     if report['opening_14_days']['n']<MIN_TEST:return [],'Insufficient opening-season held-out evidence'
     if report['test_n']<MIN_TEST:return [],'Insufficient regular-season held-out evidence'

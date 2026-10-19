@@ -10,7 +10,7 @@ from intelligence.domain import digest,parse_time,utcnow
 def contracts(r):
     legs=r.get('legs') or [r]
     return sorted([{'market':l['market'],'selection':l['selection'],'point':l.get('point'),
-        'participant':l.get('participant',''),'fixture_id':l.get('fixture_id',r['fixture_id']),**({'kickoff':l['kickoff']} if l.get('kickoff') else {})} for l in legs],key=digest)
+        'participant':l.get('participant',''),'fixture_id':l.get('fixture_id',r['fixture_id']),'kickoff':parse_time(l.get('kickoff') or r['kickoff']).isoformat()} for l in legs],key=digest)
 
 
 def decision(r):
@@ -33,7 +33,7 @@ def rows(store):
                     for leg in p['legs']:
                         q=leg['quote'];f=leg['source_fixture']
                         fid=digest(tuple(f[k] for k in ('competition_id','season','home_id','away_id')))
-                        legs.append({k:q.get(k) for k in ('market','selection','point','participant')}|{'fixture_id':fid})
+                        legs.append({k:q.get(k) for k in ('market','selection','point','participant')}|{'fixture_id':fid,'kickoff':q['commence_time']})
                         versions.append(leg['estimate']['model_version']);starts.append(q['commence_time'])
                     if not 1<=len(legs)<=3:continue
                     ids=sorted({l['fixture_id'] for l in legs})
