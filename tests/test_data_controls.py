@@ -54,7 +54,7 @@ def test_clear_english_labels_and_scope_do_not_claim_verified_settlement(quote):
 
 
 class Response:
-    status_code=200;headers={}
+    status_code=200;headers={'x-requests-last':'1'}
     def json(self):return []
 
 

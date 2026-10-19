@@ -240,3 +240,24 @@ def test_independent_worker_runs_real_research_publication_and_replica_ui(remote
             navigate(app,page);assert not app.exception,page
     assert records(view) and [r['payload'] for r in records(view)]==original
     assert reader(remote).read()['generation']==2  # Browsing did not publish.
+
+
+def test_odds_timeout_sets_durable_hold_without_checkpoint_or_second_transport(remote,store,tmp_path):
+    """An ambiguous paid request must remain reserved even if SQLite is lost."""
+    from unittest.mock import Mock
+    import requests
+    from intelligence.providers import OddsAPI,ProviderError
+    bootstrap(store.path,writer(remote));release(remote)  # Isolated local PG fixture only.
+    authority=writer(remote);authority.acquire(digest('synthetic-timeout-only'))
+    guarded=Store(tmp_path/'uncommitted.sqlite3',request_authority=authority)
+    transport=Mock();transport.get.side_effect=requests.Timeout('synthetic-secret-in-url')
+    with pytest.raises(ProviderError,match='billing is unknown'):
+        OddsAPI('synthetic-secret-in-url',guarded,session=transport).odds('NBA')
+    head=reader(remote).read()
+    assert head['held'] is True and head['generation']==1
+    assert any(r['provider']=='odds' and r['used']==1 for r in head['budgets'])
+    with psycopg.connect(remote.uri) as db:
+        reservations=db.execute('SELECT reserved,actual FROM public.research_reservations').fetchall()
+    assert reservations==[(1,None)]  # Unknown is never marked free or refunded.
+    with pytest.raises(ProviderError):OddsAPI('synthetic-secret-in-url',guarded,session=transport).events('NBA')
+    assert transport.get.call_count==1

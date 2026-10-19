@@ -95,7 +95,7 @@ def test_complete_market_consensus_excludes_target(quote):
 
 class Response:
     status_code=200
-    headers={'x-requests-remaining':'100'}
+    headers={'x-requests-remaining':'100','x-requests-last':'1'}
     def json(self): return []
 
 

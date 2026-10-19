@@ -34,7 +34,8 @@ class OddsProvider(Protocol):
 class OddsAPI:
     def __init__(self, key, store, daily_limit=9, ttl=1800, session=None):
         self.key, self.store = key, store
-        self.daily_limit, self.ttl = daily_limit, ttl
+        self.daily_limit = min(daily_limit,9) if type(daily_limit) is int and daily_limit>=0 else 0
+        self.ttl = ttl
         self.session = session or requests.Session()
         # Refuse redirect hops while retaining the existing injectable transport
         # contract (get(url, params, timeout)). Real Requests raises before a hop.
@@ -52,6 +53,10 @@ class OddsAPI:
         cached = self.store.cached(cache_key, effective_ttl, now)
         if cached is not None:
             return cached
+        observation=self.store.cached('provider-quota-observation',300,now)
+        if (cost and observation and observation.get('account_fingerprint')==digest(self.key)
+            and type(observation.get('remaining')) is int and observation['remaining']<cost):
+            raise ProviderError('Provider account allowance recently observed below request cost; no request made')
         owner=uuid.uuid4().hex
         if not self.store.claim_fetch(cache_key,owner,now):
             raise ProviderError('This request is already refreshing in another session; reuse the cache or try again shortly')
@@ -64,24 +69,21 @@ class OddsAPI:
             self.store.release_fetch(cache_key,owner)
 
     def _fetch(self,path,params,cost,cache_key,now):
-        # Reserve each retry too, even on uncertain billing; fail closed on limits.
-        for attempt in range(2):
-            if not cost and not self.store.authorize_discovery():
-                raise ProviderError('Provider discovery blocked: read-only replica, shared hold or bounded discovery limit')
-            if cost and not self.store.reserve(cost, self.daily_limit, now):
-                raise ProviderError('Daily API credit budget exhausted; cached data may be stale')
-            try:
-                response = self.session.get('https://api.the-odds-api.com/v4/' + path,
-                    params=params | {'apiKey': self.key}, timeout=(5, 25))
-            except requests.RequestException:
-                if attempt == 0:
-                    continue
-                raise ProviderError('Odds provider connection failed') from None
-            if not self.store.observed_charge(response.headers.get('x-requests-last')):
-                response.close()
-                raise ProviderError('Provider cost was unexpected or unverifiable; shared requests held for review')
-            if response.status_code >= 500 and attempt == 0:
-                continue
+        # One attempt per explicit collection. A timeout cannot establish whether
+        # the provider charged the request, so it must not cause another request.
+        if not cost and not self.store.authorize_discovery():
+            raise ProviderError('Provider discovery blocked: read-only replica, shared hold or bounded discovery limit')
+        if cost and not self.store.reserve(cost, self.daily_limit, now):
+            raise ProviderError('Daily API credit budget exhausted or held; cached data may be stale')
+        try:
+            response = self.session.get('https://api.the-odds-api.com/v4/' + path,
+                params=params | {'apiKey': self.key}, timeout=(5, 25))
+        except requests.RequestException:
+            self.store.observed_charge(None,expected=cost,now=now)
+            raise ProviderError('Odds provider connection failed; billing is unknown and requests are held for review') from None
+        try:
+            if not self.store.observed_charge(response.headers.get('x-requests-last'),expected=cost,now=now):
+                raise ProviderError('Provider cost was unexpected or unverifiable; requests held for review')
             if response.status_code != 200:
                 raise ProviderError(f'Odds provider returned HTTP {response.status_code}; check plan/access')
             try:
@@ -90,15 +92,23 @@ class OddsAPI:
                 raise ProviderError('Odds provider returned invalid JSON') from None
             if len(self.key)>=8 and self.key in json.dumps(payload,ensure_ascii=False):
                 raise ProviderError('Provider response reflected credential material; no data was saved')
+            # Only numeric quota observations are retained, never arbitrary header
+            # text, URLs or account credentials. This is not account-wide authority.
+            def counter(name):
+                v=response.headers.get(name)
+                return int(v) if isinstance(v,str) and v.isascii() and v.isdigit() and len(v)<=10 else None
             result = {'data': payload, 'received_at': utcnow().isoformat(),
-                      'credits_remaining': response.headers.get('x-requests-remaining'),
-                      'credits_last': response.headers.get('x-requests-last')}
+                      'credits_remaining': counter('x-requests-remaining'),
+                      'credits_last': counter('x-requests-last')}
             self.store.cache(cache_key, result)
             self.store.cache('provider-quota-observation',{
                 'observed_at':result['received_at'],'remaining':result['credits_remaining'],
-                'last_cost':result['credits_last']})
+                'used':counter('x-requests-used'),'last_cost':result['credits_last'],
+                'account_fingerprint':digest(self.key)})
             return result
-        raise ProviderError('Odds provider unavailable')
+        finally:
+            close=getattr(response,'close',None)
+            if callable(close):close()
 
     def odds(self, league, markets=('h2h',)):
         if league not in LEAGUES or not markets or not set(markets) <= {'h2h', 'spreads', 'totals'}:

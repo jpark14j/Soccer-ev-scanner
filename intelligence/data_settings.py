@@ -28,7 +28,7 @@ def load_settings(secret_getter=None):
         except (TypeError,ValueError):
             errors.append(f'{name} is invalid; interactive data requests are blocked.')
             return default
-    cap=integer('ODDS_DAILY_CREDITS',9,0,10000)
+    cap=integer('ODDS_DAILY_CREDITS',9,0,9)
     ttl=integer('ODDS_CACHE_SECONDS',1800,60,86400)
     window=integer('SLATE_WINDOW_HOURS',48,1,168)
     return DataSettings(0 if errors else cap,ttl,str(get('COLLECT_RESULTS','0'))=='1',tuple(errors),window)

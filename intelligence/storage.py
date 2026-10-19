@@ -68,32 +68,30 @@ class Store:
             db.execute('INSERT OR REPLACE INTO cache VALUES(?,?,?)',
                        (key, (now or utcnow()).isoformat(), json.dumps(payload, allow_nan=False)))
 
-    def reserve(self, cost, daily_limit=12, now=None):
-        if cost <= 0 or daily_limit < 0:
+    def reserve(self, cost, daily_limit=9, now=None):
+        if type(cost) is not int or cost <= 0 or type(daily_limit) is not int or daily_limit < 0:
             raise ValueError('Invalid quota budget')
+        daily_limit=min(daily_limit,9)
         if self.read_replica:return False
-        if self.request_authority:
-            # Postgres owns the durable reservation even if the next SQLite
-            # snapshot is never committed. Local state may only over-count it.
-            if cost>min(daily_limit,9):return False
-            with self.connect() as db:
-                from intelligence.request_guard import blocked
-                if blocked(db):return False
-            result=self.request_authority.reserve('odds',cost)
-            if not result:return False
-            with self.connect() as db:
-                db.execute('INSERT INTO budget VALUES(?,?) ON CONFLICT(day) DO UPDATE SET used=max(budget.used,excluded.used)',(result['day'],result['used']))
-            return True
-        day = (now or utcnow()).date().isoformat()
+        now=now or utcnow();day=now.date().isoformat()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             from intelligence.request_guard import blocked
             if blocked(db):return False
-            row = db.execute('SELECT used FROM budget WHERE day=?', (day,)).fetchone()
-            used = row['used'] if row else 0
-            if used + cost > daily_limit:
-                return False
-            db.execute('INSERT OR REPLACE INTO budget VALUES(?,?)', (day, used + cost))
+            row=db.execute('SELECT used FROM budget WHERE day=?',(day,)).fetchone()
+            used=row['used'] if row else 0
+            # A separate calendar-month ceiling retains legacy reservations too.
+            # This store's UTC calendar is NOT the provider billing reset/scope.
+            monthly=db.execute('SELECT coalesce(sum(used),0) FROM budget WHERE substr(day,1,7)=?',(day[:7],)).fetchone()[0]
+            if used+cost>daily_limit or monthly+cost>279:return False
+            if self.request_authority:
+                # Postgres reserves BEFORE HTTP. The fenced single writer and
+                # hydrated durable reservations remain mandatory in shared mode.
+                result=self.request_authority.reserve('odds',cost)
+                if not result:return False
+                db.execute('INSERT INTO budget VALUES(?,?) ON CONFLICT(day) DO UPDATE SET used=max(budget.used,excluded.used)',(result['day'],result['used']))
+            else:
+                db.execute('INSERT OR REPLACE INTO budget VALUES(?,?)',(day,used+cost))
         return True
 
     def authorize_discovery(self):
@@ -103,11 +101,25 @@ class Store:
             if blocked(db):return False
         return bool(self.request_authority.reserve('discovery',1)) if self.request_authority else True
 
-    def observed_charge(self,raw):
-        if not self.request_authority:return True
-        try:actual=int(raw) if raw is not None and str(raw).isdigit() else None
-        except (ValueError,TypeError):actual=None
-        return bool(self.request_authority.charge(actual))
+    def observed_charge(self,raw,expected=None,now=None):
+        """Unknown billing stops subsequent requests; reservations are never refunded.
+
+        Both the remote control ledger and local-only stores fail closed. Header
+        text is never persisted in the audit (a provider could reflect a secret).
+        """
+        actual=int(raw) if isinstance(raw,str) and raw.isascii() and raw.isdigit() and len(raw)<=5 else None
+        if actual is not None and actual>10000:actual=None
+        accepted=actual is not None and (expected is None or actual<=expected)
+        if self.request_authority:
+            accepted=bool(self.request_authority.charge(actual)) and accepted
+        if not accepted:
+            from intelligence.request_guard import hold,blocked
+            with self.connect() as db:
+                if not self.request_authority and actual is not None and expected is not None and actual>expected:
+                    db.execute('INSERT INTO budget VALUES(?,?) ON CONFLICT(day) DO UPDATE SET used=budget.used+excluded.used',
+                        ((now or utcnow()).date().isoformat(),actual-expected))
+                if not blocked(db):hold(db,'Provider billing unknown or above reservation; operator reconciliation required',now)
+        return accepted
 
     def claim_fetch(self,key,owner,now=None):
         now=now or utcnow()

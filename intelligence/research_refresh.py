@@ -11,12 +11,12 @@ from intelligence.quota import quota_details
 def credit_status(store,now=None,limit=None):
     try:
         limit=int(os.getenv('ODDS_DAILY_CREDITS','9')) if limit is None else int(limit)
-        if not 0<=limit<=10000:
+        if not 0<=limit<=9:
             raise ValueError()
     except (ValueError,TypeError):
         raise ProviderError('The local odds credit cap is invalid; configure a non-negative integer. Refresh is disabled.') from None
     info=quota_details(store,limit,now)
-    return info['used'],limit
+    return info['used'],info['limit']
 
 
 def featured_plan(current,leagues,markets,now=None):

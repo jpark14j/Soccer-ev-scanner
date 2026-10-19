@@ -1,5 +1,5 @@
 """Synthetic provider responses only; recoverability never resets verification."""
-from datetime import timedelta
+from datetime import datetime,timedelta,timezone
 from unittest.mock import patch
 import sqlite3
 import pytest
@@ -98,7 +98,8 @@ def test_store_identity_survives_reopen_but_not_an_actual_new_disk(store,tmp_pat
 
 
 def test_cached_schedule_becoming_past_is_not_hidden_by_fresh_receipt(store):
-    now=utcnow().replace(hour=23,minute=40,second=0,microsecond=0)
+    # This reviewed synthetic schedule has Sunday fixtures, not every weekday.
+    now=datetime(2026,10,18,23,40,tzinfo=timezone.utc)
     events,meta=current(store,'Bundesliga',now,CONFIG,Session(Response(payload(now=now))))
     assert meta['ok'] and any(e.status=='scheduled' and e.event_date==now.date().isoformat() for e in events)
     later=now+timedelta(minutes=30)

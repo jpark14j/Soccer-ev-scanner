@@ -65,6 +65,7 @@ def update(store,now=None,fetch=download):
     monitor=monitoring(store)
     learning=update_learning(store,now)
     if before!=protected_counts(store):raise StateError('A protected ledger or provider budget changed')
+    from intelligence.cross_game_study import summary as cross_game_summary
     summary={'state':'Key-free statistics refreshed','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
         'source_sha256':meta['sha256'],'coverage':meta['coverage'],'public_results_requests':1,
         'odds_api_requests':0,'odds_api_credits':0,'paid_ai_requests':0,
@@ -73,7 +74,7 @@ def update(store,now=None,fetch=download):
         'experimental_3_leg_sgp':sum(len(r.get('legs',[]))==3 for r in rows),
         'new_pregame_records':len(created),'new_verified_outcomes':settled,
         'unique_pregame_decisions':monitor['unique_pregame_decisions'],
-        'challenger_learning':learning,
+        'challenger_learning':learning,'cross_game_diagnostics':cross_game_summary(),
         'approved_models':0,'approved_joint_models':0,'automatic_model_promotion':False,
         'remaining_blockers':{'NBA':'No reviewed key-free current fixture source or offseason readiness',
             'MLB':'No permitted key-free 2026 final results/fixture source',

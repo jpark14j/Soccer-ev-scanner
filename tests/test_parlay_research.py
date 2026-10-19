@@ -207,13 +207,13 @@ def test_empty_and_invalid_filter_states(quote):
 
 def test_refresh_respects_budget_and_does_not_poll_scores(store,quote,monkeypatch):
     from intelligence.domain import utcnow
-    store.reserve(1,16)
+    store.reserve(1,9)
     monkeypatch.setenv('ODDS_DAILY_CREDITS','1')
     with patch('intelligence.research_refresh.run_analysis') as run:
         with pytest.raises(ProviderError,match='Not enough'):
             refresh_research(Analysis(),'fixture',['NBA'],store)
         run.assert_not_called()
-    monkeypatch.setenv('ODDS_DAILY_CREDITS','16')
+    monkeypatch.setenv('ODDS_DAILY_CREDITS','9')
     a,b=game(quote,1),game(quote,2,sport='MLB')
     original=Analysis(quotes=[a,b],estimates={},errors=['NBA: old','MLB: retained'])
     fresh=Analysis(quotes=[replace(a,odds=2.)],errors=[],checked_at=NOW.isoformat())

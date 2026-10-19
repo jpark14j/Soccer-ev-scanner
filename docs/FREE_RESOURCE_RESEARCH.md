@@ -112,9 +112,15 @@ The initial workflow's refresh step succeeded but its later browser harness
 failed because checking out the public app removed the private helper. Browser
 verification was separated into a read-only artifact-based job, without another
 source request. Temporary push/browser triggers are removed after verification;
-the recurring updater retains only scheduled/manual triggers. The first actual
-cron-triggered execution has not yet been observed, so configured scheduling is
-not a guarantee of future execution.
+the recurring updater retains only scheduled/manual triggers. Actual scheduled
+run `39182615790` on 2026-10-19 succeeded: it retained the fresh cached source,
+used zero public/provider requests, and verified Supabase generation 6, the
+recovered identity, active provider hold and unchanged budgets. The preceding
+new-day refresh `39181163890` verified 54 completed Bundesliga results, zero
+unresolved past fixtures, seven experimental singles, three 2-leg SGPs and seven
+3-leg SGPs. There were 51 saved snapshots covering 17 distinct decisions and
+zero verified outcomes. This proves those runs, not future availability or
+profitable picks. GitHub cron remains best-effort.
 
 The existing live-odds automatic worker/schedule and paid AI flags remain zero.
 The held provider paths, nine-credit cap and remote reservations are untouched.
@@ -169,3 +175,72 @@ moneyline Brier 0.2457, log loss 0.6845, versus prior Elo 0.2437. The new MLB to
 task failed its simple baseline (Brier 0.2672 versus 0.2509). These comparisons
 do not support replacing the existing models. Joint task metrics and calibration
 details remain in the hash-bound research report, separate from current picks.
+
+
+### Additional chronological cross-game diagnostics (2026-10-19)
+
+`intelligence.cross_game_study` reuses the verified BoxScoreLab and Retrosheet
+archives without any network request. NBA has two later-season test folds
+(2024–25 and 2025–26, 1,225 games each); MLB has the 2025 test season (2,426
+games). All same-date results are withheld until that date's predictions exist.
+The first half of the preceding calibration season fits marginal probabilities;
+the second half fits the joint calibrator. Neither uses later test outcomes.
+
+For each leg count, the study chooses disjoint same-date favorite groups by
+team identity, excludes repeated-team dates such as doubleheaders, and discards
+leftovers. It compares explicitly hypothetical independence products with an
+earlier joint calibration map, constrained to logical marginal bounds. Those
+bounds are conditional on estimated marginals, not confidence intervals. It
+reports Brier score, log loss, reliability bins and day-block uncertainty.
+Only aggregate diagnostics and source/code hashes are committed; no historical
+forecast is backfilled as though it had been published before a game.
+
+Results do **not** justify promotion. The 2025–26 NBA joint-calibrator-minus-
+product Brier differences were -0.001942 (574 two-leg groups; 95% day-block
+interval [-0.005322, 0.001363]) and -0.000899 (357 three-leg groups;
+[-0.005899, 0.003741]). Earlier NBA differences were positive (worse).
+MLB differences were -0.000670 (1,121 two-leg groups;
+[-0.002206, 0.000935]) and -0.000076 (749 three-leg groups;
+[-0.000663, 0.000572]). Every interval crosses zero. These archives were already
+inspected by this project; fitting isolation is not new independent confirmation.
+No cross-game or mixed-sport joint model is approved or enabled. Existing
+coherent experimental soccer SGPs and prospective monitoring remain unchanged.
+The free worker records the hash-verified report's status only; it does not fit
+these historical studies every four hours or promote a model.
+
+Reproduce privately, using the preserved provenance-checked NBA bundle:
+
+```sh
+python -m intelligence.cross_game_study --nba-bundle PATH_TO_EXISTING_BUNDLE --history-dir data/research/history
+```
+
+### Existing Odds API safety (no collection authorized)
+
+The existing The Odds API remains the only odds integration. Its hold remains
+active. No new odds provider, account, subscription, key or automatic live-odds
+activation is introduced. Legacy settings, reservations and displayed allowance
+cannot raise the nine-credit local daily ceiling. At that ceiling, this store
+also enforces a 279-credit UTC calendar-month ceiling, retaining any legacy
+reservations. A single writer hydrates recent durable remote reservations before
+checking it. This is **not** a provider monthly reset, account-wide quota guarantee, or proof that other consumers have
+stopped. Existing durable remote reservations and operator reconciliation remain
+required. A local midnight does not release the hold or restore provider credits.
+
+Each collection has one transport attempt. A timeout or missing/invalid billing
+header holds further local and shared requests without refunding reservations.
+A larger-than-reserved observed charge is retained and held for reconciliation.
+Responses close on success and failure. Quota observations retain numeric
+counters and an account fingerprint, never arbitrary header text or credentials.
+A fresh same-account observation below the proposed request cost blocks it;
+that cache is an additional safeguard, not proof of account-wide exclusivity.
+No sports-provider requests were made to implement or test this increment.
+
+Verification for this increment: 779 full-suite tests passed, followed by the
+additional local-PostgreSQL billing-timeout integration test (passed). One
+pre-existing date-dependent regression assumed Bundesliga fixtures on every
+execution date; its reviewed synthetic Sunday is now fixed explicitly. Local
+compilation, dependency checks, loopback Streamlit health/root responses,
+credential scanning, the nine frozen-asset hashes and original recovered-store
+checksum all passed. No frontend files changed. The earlier five-page browser
+proof remains a local browser using a genuine hosted replica; authenticated
+Streamlit Community Cloud preview access remains unverified in this environment.
