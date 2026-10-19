@@ -3,7 +3,7 @@
 Pure import/cache adapter. No provider calls, quota changes or model approval.
 Public derivative data is offered separately, never mixed with private ledgers.
 """
-from dataclasses import asdict
+from dataclasses import asdict,replace
 from datetime import timedelta
 from hashlib import sha256
 from pathlib import Path
@@ -86,8 +86,14 @@ def current(store,league,now=None,allow_fetch=False):
     """Cache only; network refresh belongs to an explicit bounded import job."""
     now=now or utcnow();value=store.cached('openliga-current-'+league,TTL,now)
     if value:
-        meta=value['meta'];events=[EventObservation(**e).validate(now) for e in value['events']]
+        meta=dict(value['meta']);events=[EventObservation(**e).validate(now) for e in value['events']]
         if meta.get('provider')!='openligadb' or not meta.get('sha256'): raise ValueError('Saved result provenance missing')
+        # An unexpired receipt does not keep a passed kickoff in the future.
+        # Recompute coverage at read time without changing source timestamps,
+        # inventing scores or rewriting the successful accepted snapshot.
+        events=[replace(e,status='unresolved') if e.status=='scheduled' and
+            (parse_time(e.kickoff)<=now if e.kickoff else e.event_date<now.date().isoformat()) else e for e in events]
+        meta['coverage']=coverage(events,COMPETITIONS[league],'2026-27',now)
         return events,meta
     with store.connect() as db:exists=db.execute('SELECT 1 FROM cache WHERE key=?',('openliga-current-'+league,)).fetchone()
     return [],{'ok':False,'provider':'openligadb','problem':'Saved OpenLigaDB observation expired' if exists else 'No imported OpenLigaDB full-season observation'}

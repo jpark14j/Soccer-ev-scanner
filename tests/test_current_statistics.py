@@ -161,3 +161,21 @@ def test_recent_mlb_report_uses_full_2025_test_without_claiming_current_2026_pre
     assert r['calibration_end']<r['test_start'] and r['test_end']=='2025-09-28'
     assert not r['approved'] and not r['current_forecasts_enabled'] and not r['replaces_incumbent']
     assert r['metrics']['binary_brier']['value']<r['baseline']['binary_brier']['value']
+
+
+def test_current_coverage_ages_scheduled_games_without_mutating_saved_success(store):
+    from datetime import datetime,timezone
+    now=datetime(2026,10,18,23,30,tzinfo=timezone.utc);rows=season(now)
+    rows[0].update(matchDateTimeUTC='2026-10-18T23:50:00Z',matchIsFinished=False,matchResults=[])
+    save(store,json.dumps(rows).encode(),'Bundesliga',now.isoformat(),now)
+    before=store.cached('openliga-current-Bundesliga',21600,now)
+    events,first=current(store,'Bundesliga',now)
+    assert next(e for e in events if e.source_event_id=='1').status=='scheduled'
+    after_kickoff=now+timedelta(minutes=25)
+    events,live=current(store,'Bundesliga',after_kickoff)
+    assert next(e for e in events if e.source_event_id=='1').status=='unresolved'
+    events,next_day=current(store,'Bundesliga',now+timedelta(minutes=40))
+    assert next_day['coverage']['unresolved_past']==1
+    assert next_day['checked_at']==first['checked_at'] and next_day['sha256']==first['sha256']
+    assert store.cached('openliga-current-Bundesliga',21600,now+timedelta(minutes=40))==before
+    assert next(e for e in events if e.source_event_id=='1').home_score is None

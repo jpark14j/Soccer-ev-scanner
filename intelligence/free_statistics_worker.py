@@ -66,6 +66,8 @@ def update(store,now=None,fetch=download):
     learning=update_learning(store,now)
     if before!=protected_counts(store):raise StateError('A protected ledger or provider budget changed')
     from intelligence.cross_game_study import summary as cross_game_summary
+    from intelligence.dependence_study import load_report as dependence_report
+    dependence=dependence_report()
     summary={'state':'Key-free statistics refreshed','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
         'source_sha256':meta['sha256'],'coverage':meta['coverage'],'public_results_requests':1,
         'odds_api_requests':0,'odds_api_credits':0,'paid_ai_requests':0,
@@ -75,6 +77,7 @@ def update(store,now=None,fetch=download):
         'new_pregame_records':len(created),'new_verified_outcomes':settled,
         'unique_pregame_decisions':monitor['unique_pregame_decisions'],
         'challenger_learning':learning,'cross_game_diagnostics':cross_game_summary(),
+        'dependence_diagnostics':{'report_verified':dependence is not None,'report_sha256':dependence['sha256'] if dependence else None,'approved_joint_models':0},
         'approved_models':0,'approved_joint_models':0,'automatic_model_promotion':False,
         'remaining_blockers':{'NBA':'No reviewed key-free current fixture source or offseason readiness',
             'MLB':'No permitted key-free 2026 final results/fixture source',

@@ -244,3 +244,94 @@ credential scanning, the nine frozen-asset hashes and original recovered-store
 checksum all passed. No frontend files changed. The earlier five-page browser
 proof remains a local browser using a genuine hosted replica; authenticated
 Streamlit Community Cloud preview access remains unverified in this environment.
+
+### Final execution: explicit dependence and cached-fixture aging
+
+The cache-only OpenLigaDB adapter now ages a scheduled fixture to unresolved
+once its exact kickoff passes, and recalculates full-season coverage at the
+inspection time. It never promotes an unknown score, changes the accepted source
+receipt or overwrites the successful snapshot. This fixes a case where a receipt
+could still be within six hours while its cached coverage incorrectly described
+an earlier calendar date. A midnight/kickoff regression verifies both the new
+blocking behavior and preservation of the saved source.
+
+`intelligence.dependence_study` diagnoses the earlier joint study's assumptions
+with a coherent FGM Bernoulli model. It fits one common pair-dependence parameter,
+shrunk toward zero with a fixed penalty, using all observed joint outcomes from
+the earlier calibration period. It preserves each marginal and enumerates every
+joint state; it does not silently multiply probabilities. The model explicitly
+assumes no higher-order interaction and cannot represent every dependence
+structure. Later test outcomes never fit its parameter. The report includes
+14-day block uncertainty as a sensitivity check alongside day-block intervals.
+
+The result is a rejection, not a promotion: on the latest NBA test fold (574
+2-leg groups), Brier difference versus the hypothetical product baseline was
++0.000109, with a 14-day-block interval [0.000005, 0.000235]. MLB 2025 (1,121
+2-leg groups) was +0.000202 [0.000003, 0.000379]. Positive differences are worse.
+The NBA 3-leg estimate improved by -0.000264 on 357 groups but its interval
+[-0.000647, 0.000088] crossed zero; MLB 3-leg results also did not establish
+improvement. These are reused archives, not independent prospective evidence.
+Existing frozen models, approval gates and current inference are unchanged.
+
+Reproduce with the existing verified private NBA bundle (zero network calls):
+
+```sh
+python -m intelligence.dependence_study --nba-bundle PATH_TO_EXISTING_BUNDLE --history-dir data/research/history
+```
+
+`intelligence.verify_snapshot` accepts only an existing private SQLite snapshot,
+creates a consistent temporary inspection copy, checks identity/frozen assets,
+computes current seven-day research and monitoring, and verifies empty positive-EV
+slots without prices. It cannot initialize an absent store or save forecasts to
+the source. It reports blocked/expired inputs honestly rather than requiring a
+candidate. State-only hosted verification and browser checks must remain
+separate evidence from offline tests.
+
+Synthetic end-to-end qualification tests exercise NBA, MLB and soccer quote
+normalization, single/2-leg/3-leg slots, actual-ticket contract matching, joint
+approval requirements, the conservative 2% EV threshold and stale/unapproved
+rejection. Their prices and approvals are explicitly test fixtures and are never
+stored as real recommendations or proof of live functionality.
+
+Additional free sources checked on 2026-10-19, without new accounts:
+
+- Hoops Menu's documented API licenses its travel dataset under CC BY 4.0.
+  The travel export contains team summaries, not fixture pairings; documented
+  status endpoints require already-known game IDs and do not supply the complete
+  game/team discovery needed here. General site terms allow personal use;
+  commercial fixture redistribution is not inferred from the travel license.
+  See https://hoopsmenu.com/developers, /openapi.json and /terms.
+- MLBDB has current public statistics and documented CSV exports, but its terms
+  require written permission for automated access and commercial use. No MLBDB
+  game data was downloaded or integrated. See https://www.mlbdb.com/terms.
+- Previously reviewed no-key sources and their licensing/coverage limitations
+  remain as documented above. No new sportsbook-odds provider was investigated.
+
+Current honest capability classification:
+
+| Capability | Status | Evidence or limitation |
+| --- | --- | --- |
+| Free Bundesliga refresh, seven-day discovery and durable pregame records | WORKING | Hosted generations/readback and actual scheduled run verified; inputs still expire |
+| Bundesliga singles and coherent 2-/3-leg SGP probabilities | EXPERIMENTAL | Genuine source/model estimates, not approved picks or executable tickets |
+| EPL/Ligue 1 current predictions | BLOCKED | Current/prior-season reconciliation requirements remain incomplete |
+| NBA historical ingestion, chronology and calibration | WORKING | Four reconciled regular seasons; current forecasts are separate |
+| NBA current predictions | BLOCKED | No reviewed fixture source/current offseason readiness |
+| MLB historical ingestion and calibration | WORKING | Permitted 2023–25 archive; current 2026 data is separate |
+| MLB current predictions | BLOCKED | Current results/fixtures missing; regular-season model cannot be transferred to postseason |
+| Cross-game 2-/3-leg and mixed-sport joint approval | BLOCKED | Independent validation absent; tested challengers do not justify approval |
+| Player props, verified live modeling | UNSUPPORTED | Required player/current-event data and validation absent |
+| EV arithmetic, conservative ranking, empty-state filtering | WORKING | Offline contracts and regression tests; no real positive-EV bet is claimed |
+| Current Odds API collection | BLOCKED | Owner hold remains active; no credit-consuming verification |
+| Actual combined parlay prices | UNSUPPORTED | Existing provider adapter does not supply verified combined tickets; manual inputs remain unverified |
+| Free recurring research and outcome monitoring | WORKING | Reviewed private schedule; future availability and financial performance not guaranteed |
+| Paid AI, automatic wagering | UNSUPPORTED | Paid integration remains disabled; wagering is not implemented |
+
+There is no new user setup requirement. Releasing the Odds hold is not the only
+remaining limitation; source permission/current coverage and independent model
+approval cannot be replaced by an engineering flag.
+
+Final execution local verification: 792 tests passed, including the new
+kickoff/midnight cache-aging regression, coherent joint-state/marginal checks and
+multi-sport end-to-end qualification contracts. Compilation and dependency
+integrity checks passed. Hosted readback/browser evidence is reported separately
+in Draft PR #1 so offline tests cannot be mistaken for live verification.
