@@ -219,6 +219,8 @@ def render_exploratory_prices(w,supported,safe):
 
 def render_picks(w):
     safe=safe_text(w)
+    message=st.session_state.pop('_saved_picks_message',None)
+    if message:st.caption(message)
     sports=st.multiselect('Sports to research',['NBA','Soccer','MLB'],default=['NBA','Soccer','MLB'],key='simple_picks_sports')
     sizes=st.multiselect('Number of legs',[2,3],default=[2,3],key='simple_parlay_sizes')
     w=replace(w,analysis=replace(w.analysis,quotes=[q for q in w.analysis.quotes if q.sport in sports]))
@@ -261,42 +263,22 @@ def render_picks(w):
 
 
 def render_performance(w):
-    from intelligence.publication_journal import performance
-    from intelligence.model_reliability import scorecards
-    safe=safe_text(w)
-    st.caption('Genuine pregame research records. Paper results are hypothetical and are never actual winnings.')
-    try:report=performance(w.store);reliability=scorecards(w.store)
+    from intelligence.prediction_accuracy import summary
+    try:report=summary(w.store)
     except (sqlite3.Error,OSError,ValueError,KeyError,TypeError):
-        st.info('Saved performance is unavailable right now. No results are estimated or filled in.');return
-    a,b,c=st.columns(3)
-    a.metric('Predictions recorded',report['published_committed_pregame']);b.metric('Wins after verified results',report['wins']);c.metric('Losses after verified results',report['losses'])
-    a,b,c=st.columns(3)
-    a.metric('Pending games',report['pending']);b.metric('Paper single profit / loss',f"{report['paper_net_units']:+.2f} units" if report['paper_net_units'] is not None else 'Not available')
-    c.metric('Paper single return',f"{report['paper_roi']:.1%}" if report['paper_roi'] is not None else 'Not available')
-    st.caption('Paper singles use one hypothetical unit at the recorded price. Parlay money returns are unavailable without verified combined prices. Shared legs can make results dependent.')
-    if not report['published_committed_pregame']:st.info('No genuine published pregame predictions have been recorded yet. Historical matches and backtests are not counted as predictions.')
-    st.subheader('Model reliability')
-    st.write(f"{reliability['recorded']} distinct forecasts recorded · {reliability['labeled']} matched to verified results.")
-    st.caption('These are a separate forecast log; do not add them to published-pick counts. Models remain experimental unless their approval requirements pass.')
-    with w.store.connect() as db:
-        present=db.execute("SELECT 1 FROM sqlite_master WHERE name='statistics_forecasts'").fetchone()
-        if present:
-            recorded=db.execute('SELECT count(*) FROM statistics_forecasts').fetchone()[0]
-            labeled=db.execute('SELECT count(*) FROM statistics_outcomes').fetchone()[0]
-            st.write(f'Unpriced statistical research: {recorded} pregame records · {labeled} verified outcome labels.')
-            st.caption('These singles and score-model combinations are separate from backtests and published betting picks. No sportsbook odds or financial returns are inferred.')
-            from intelligence.statistics_forward import monitoring
-            monitor=monitoring(w.store)
-            st.caption(f"{monitor['unique_pregame_decisions']} distinct unpriced decisions after excluding repeat refresh snapshots.")
-            with st.expander('Unpriced forward calibration'):
-                for group in monitor['groups']:
-                    st.text(safe(f"{group['league']} · {group['format']} · {group['labeled']} verified outcomes · {group['pending']} pending"))
-                    if group['brier'] is not None:st.caption(f"Brier {group['brier']:.4f} · log loss {group['log_loss']:.4f}. Descriptive forward evidence only; no financial return or approval.")
-    if not reliability['groups']:st.info('There is not enough forward evidence to report model reliability yet.')
-    for card in reliability['groups']:
-        st.text(safe(card['scope']['league']+' · '+card['scope']['market']+' · '+card['state']))
-        st.caption(f"{card['scores']['n']} scored forecasts. Calibration compares estimated chances with how often outcomes actually occurred; small samples are inconclusive.")
-    st.caption('Historical model studies, calibration details and older paper logs remain in Settings → Admin / Developer Tools → Detailed Performance.')
+        st.info('Saved accuracy is unavailable right now. No results are estimated.');return
+    for column,n,label in zip(st.columns(3),(1,2,3),('Singles Accuracy (%)','2-Leg Parlay Accuracy (%)','3-Leg Parlay Accuracy (%)')):
+        item=report['formats'][n]
+        column.metric(label,f"{item['accuracy']:.1f}%" if item['accuracy'] is not None else 'Not enough results yet')
+        column.caption(f"{item['correct']}/{item['settled']} correct · {item['pending']} pending")
+    st.caption('Only the first saved pregame prediction for each model and selection is counted. Pending, void and unresolved results are excluded. Historical backtests are separate.')
+    with st.expander('Experimental and validated predictions'):
+        for category in ('Experimental','Validated'):
+            st.write('**'+category+'**')
+            for n,label in ((1,'Singles'),(2,'2-leg parlays'),(3,'3-leg parlays')):
+                r=report['formats'][n][category]
+                st.caption(f"{label}: {r['accuracy']:.1f}% — {r['correct']}/{r['settled']} correct" if r['accuracy'] is not None else label+': Not enough results yet')
+        st.caption('A correct result does not establish model reliability. Every parlay leg must win. Experimental forecasts remain unapproved.')
 
 
 def render_settings(w,admin):

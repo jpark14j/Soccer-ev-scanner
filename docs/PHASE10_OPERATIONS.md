@@ -242,9 +242,11 @@ Open https://soccer-ev-scanner-preview-jp.streamlit.app/ after its development
 rebuild (`app.py`). Leave paid AI and all new flags at zero. Four pages and the
 local assistant remain available without Supabase. Dashboard explains when an
 overall winner cannot be established; existing best singles/parlays remain.
-Performance Tracker begins with Published Research & Paper Performance and AI
-Learning Status; real zero-data states are expected. Settings & Research Tools →
-Research Operations shows Automation Health and missing setup. Page/filter/local
+The current five-page layout is retained. Performance Tracker now shows singles,
+2-leg and 3-leg accuracy only, with genuine no-settled-results states. Home's
+saved-only refresh has no passcode and cannot dispatch new research. See
+SAVED_PICKS_AND_ACCURACY.md for the current behavior. Settings → Admin / Developer
+Tools retains the protected engineering operations. Page/filter/local
 chat checks make no sports requests. Do not press a provider refresh just to test
 layout. Original published-price history must not be read as a current offer.
 

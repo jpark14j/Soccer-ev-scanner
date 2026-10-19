@@ -45,6 +45,9 @@ def inspect(path,now=None,expected_instance=None):
             if not now<parse_time(r['kickoff'])<=now+__import__('datetime').timedelta(days=7):raise ValueError('Research outside reviewed future window')
             if r.get('approved') or r.get('joint_validated') or r.get('ev') is not None:raise ValueError('Experimental research falsely approved or priced')
         monitor=monitoring(store)
+        from intelligence.prediction_accuracy import summary as accuracy,saved_for_display
+        recorded_singles=saved_for_display(store,eligible,now)
+        recorded_sgps=saved_for_display(store,sgps,now)
         # With no verified price evidence the main page must remain empty.
         gate=shortlist(Analysis(),store,(),(),now)
         if gate['qualified']:raise ValueError('Unpriced research was promoted into a qualifying bet')
@@ -58,7 +61,8 @@ def inspect(path,now=None,expected_instance=None):
                 'coverage':meta.get('coverage'),'experimental_singles':len(eligible),
                 'experimental_two_leg_sgp':sum(len(r['legs'])==2 for r in sgps),
                 'experimental_three_leg_sgp':sum(len(r['legs'])==3 for r in sgps)},
-            'prospective_snapshots':monitor['recorded_snapshots'],'distinct_pregame_decisions':monitor['unique_pregame_decisions'],
+            'accuracy':accuracy(store,now),'recorded_singles_displayable':len(recorded_singles),
+            'recorded_sgps_displayable':len(recorded_sgps),'prospective_snapshots':monitor['recorded_snapshots'],'distinct_pregame_decisions':monitor['unique_pregame_decisions'],
             'verified_outcomes':sum(g['labeled'] for g in monitor['groups']),
             'positive_ev_slots_empty_without_verified_prices':gate['qualified']==0,'empty_message':EMPTY,
             'dependence_report_verified':report is not None,'approved_joint_models':0,

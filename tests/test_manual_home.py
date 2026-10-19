@@ -1,4 +1,4 @@
-"""Home end-to-end with synthetic prices and a fake private dispatch client."""
+"""Saved-only Home with synthetic prices; private dispatch must be unreachable."""
 from dataclasses import replace
 from datetime import timedelta
 from hashlib import sha256
@@ -8,7 +8,6 @@ import pytest
 from intelligence.domain import utcnow
 from intelligence.pipeline import Analysis
 from intelligence.manual_research import IDENTITY
-from intelligence.manual_research_ui import STATE,CODE
 from test_manual_research import TOKEN,COMMIT,CODE as ACCESS_CODE
 
 
@@ -43,23 +42,17 @@ def home(tmp_path,monkeypatch,quote):
         yield app,store,analysis,client,scans
 
 
-def test_home_owner_unlock_dispatch_and_committed_result_visibility(home):
+def test_home_passwordless_saved_refresh_cannot_dispatch_even_with_old_owner_configuration(home):
     app,store,_,client,scans=home
-    assert next(b for b in app.button if b.key=='find_best_bets').disabled
-    next(t for t in app.text_input if t.key==CODE).set_value(ACCESS_CODE)
-    next(b for b in app.button if b.key=='manual_research_unlock').click().run()
-    assert not app.exception and not next(b for b in app.button if b.key=='find_best_bets').disabled
-    assert next(t for t in app.text_input if t.key==CODE).value==''
-    next(b for b in app.button if b.key=='find_best_bets').click().run()
-    assert not app.exception and len(client.dispatched)==1
-    assert next(b for b in app.button if b.key=='find_best_bets').disabled
+    button=next(b for b in app.button if b.key=='find_best_bets')
+    assert not button.disabled and not app.text_input
+    assert not any('private research access'==e.label.lower() for e in app.expander)
+    button.click().run()
+    assert not app.exception and app.sidebar.radio[0].value=='Best Picks & Parlays'
+    assert not client.dispatched and client.polls==0
     assert ACCESS_CODE not in str(app.main.proto) and TOKEN not in str(app.main.proto)
-    state=app.session_state[STATE]
-    store.shared_status['envelope'].update(generation=3,heartbeat={'summary':{'manual_request_id':state['pending']['id']}})
-    app.run()
-    assert not app.exception and app.session_state[STATE]['pending']['phase']=='synced'
-    assert any('verified saved results are loaded' in x.value for x in app.info)
-    assert len(client.dispatched)==1 and scans.call_count==1
+    assert any('Showing saved predictions' in x.value for x in app.caption)
+    assert scans.call_count<=2
     with store.connect() as db:assert db.execute('SELECT count(*) FROM budget').fetchone()[0]==0
 
 

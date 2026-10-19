@@ -9,11 +9,14 @@ The [provider-hold review](docs/PROVIDER_HOLD_REVIEW.md) adds a read-only privat
 workflow diagnostic and fixes stale control-state visibility on an open Home
 page. It never releases holds, resets budgets or dispatches live research.
 
-Latest: [Owner-requested research](docs/ON_DEMAND_RESEARCH.md) adds Home's
-**Find Best Bets Now** control, private authenticated dispatch and manual-only
-worker execution. No schedule, provider hold release or paid AI is enabled.
-New private owner/dispatch credentials and existing data/budget reviews remain
-required before a genuine hosted run. No new live picks are claimed.
+Latest: [Saved picks and accuracy](docs/SAVED_PICKS_AND_ACCURACY.md) removes
+frontend owner/passcode controls. **Find Best Bets Now** reloads saved research
+without workflow dispatch or sportsbook requests. Home retains three prediction
+slots, including clearly labeled, genuinely recorded experimental forecasts.
+Performance Tracker shows singles, 2-leg and 3-leg accuracy only. The provider
+hold, free-tier limits and backend credentials remain protected. The earlier
+[owner-requested research](docs/ON_DEMAND_RESEARCH.md) guide describes retained
+backend controls, not the current frontend refresh button.
 
 [Everyday research screens and current readiness](docs/EVERYDAY_RESEARCH.md)
 documents the five-page interface, corrected read-only budget explanation, and

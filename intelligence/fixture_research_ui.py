@@ -28,12 +28,13 @@ def render(w, safe, sizes=(2,3)):
     except (OSError, sqlite3.Error, ValueError, KeyError, TypeError):
         st.caption('Fixture-only research unavailable: saved input validation failed. No probabilities were filled in.')
         return
-    rows = result['forecasts']
+    from intelligence.prediction_accuracy import saved_for_display
+    rows = saved_for_display(w.store,result['forecasts'])
     st.subheader('Model research without live odds')
     st.caption('Uses saved verified fixtures and results only. No API credits, paid AI or sportsbook prices are needed for this section.')
     st.caption('Looks ahead seven days. Estimates can change as new games finish; expired inputs remove forecasts.')
     if not rows:
-        st.info('No current fixture-only forecast passes the input checks. The model studies below are historical evidence, not current picks.')
+        st.info('No current saved prediction passes the recording and input checks. The next scheduled update may provide fresh research; historical studies are not current picks.')
     for r in rows[:3]:
         with st.container(border=True):
             st.text(safe(r['event']+' · '+r['league']))
@@ -46,6 +47,7 @@ def render(w, safe, sizes=(2,3)):
                 st.caption(safe(f"Model {r['model_version']} · {r['history_n']} earlier games · calibration {r['calibration_n']} · test {r['test_n']} · bucket {r['calibration_bin_n']}"))
                 st.caption(safe('Results through '+r['training_end']+' · source checked '+r['source_observed_at']))
                 for limitation in r['limitations']: st.text(safe(limitation))
+                st.caption('Recorded before kickoff · '+friendly_time(r['recorded_at']))
                 st.caption(result['note'])
     if 'Bundesliga' in w.leagues:render_score_research(w.store,safe,sizes)
     if rows:
@@ -108,7 +110,8 @@ def render(w, safe, sizes=(2,3)):
 
 def render_score_research(store,safe,sizes=(2,3)):
     from intelligence.current_score_research import candidates
-    rows=candidates(store)
+    from intelligence.prediction_accuracy import saved_for_display
+    rows=saved_for_display(store,candidates(store))
     if not rows:return
     st.subheader('Same-game probability research · no sportsbook ticket')
     st.caption('Experimental score-model estimates account for shared-game outcomes. They are unapproved, and joint calibration is not independently validated.')
@@ -135,4 +138,5 @@ def render_score_research(store,safe,sizes=(2,3)):
                 if r['test_metrics']['binary_brier']['value']>=r['test_baseline']['binary_brier']['value']:
                     st.caption('This joint task did not beat the simple baseline on Brier score. Treat it as an inspection candidate, not evidence of an advantage.')
                 st.caption('Source checked '+r['source_observed_at'])
+                st.caption('Recorded before kickoff · '+friendly_time(r['recorded_at']))
                 for limitation in r['limitations']:st.text(safe(limitation))

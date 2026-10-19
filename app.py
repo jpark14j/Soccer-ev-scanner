@@ -179,7 +179,7 @@ def admin(w):
     render_admin_status()
     render_tools(w)
 
-if route in ('home','picks','games'):
+if route in ('home','picks','games','performance'):
     @st.fragment(run_every='60s')
     def research_page():
         from dataclasses import replace
@@ -194,9 +194,8 @@ if route in ('home','picks','games'):
             except (StateError,OSError,ValueError):
                 st.info('Saved research could not be updated. The last verified copy is kept.')
         current=replace(workspace,analysis=active_analysis(result,store))
-        {'home':consumer_ui.render_home,'picks':consumer_ui.render_picks,'games':consumer_ui.render_games}[route](current)
+        {'home':consumer_ui.render_home,'picks':consumer_ui.render_picks,'games':consumer_ui.render_games,'performance':consumer_ui.render_performance}[route](current)
     research_page()
-elif route=='performance':consumer_ui.render_performance(workspace)
 else:consumer_ui.render_settings(workspace,admin)
 
 for manifest in Path(os.getenv('HISTORY_DIR','data/history')).glob('*.source.json'):

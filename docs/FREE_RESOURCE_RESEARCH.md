@@ -1,13 +1,12 @@
 # Free statistics and positive-EV publication increment
 
-The five existing pages and navigation are retained. Home has only the three
-requested positive-EV recommendation slots. A slot stays empty unless all of the
-existing model approval, uncertainty, current-source, Ontario price and (for
-parlays) independently validated joint/ticket checks pass. Experimental forecasts
-are on Best Picks & Parlays. Zero recommendations is the expected current state;
-neither statistical research nor software tests approve a betting model.
-Apparent point-estimate edges above 50% are withheld for independent price/model
-review; this is a protective heuristic, not a statistically fitted edge limit.
+The five existing pages and navigation are retained. The latest targeted
+completion is documented in [Saved picks and accuracy](SAVED_PICKS_AND_ACCURACY.md).
+Home retains three slots and can show genuine recorded experimental predictions,
+explicitly unapproved, while qualifying positive-EV choices retain every model,
+uncertainty, current-source, Ontario price and independent joint/ticket gate.
+Experimental predictions never become approved bets merely by being displayed.
+Apparent point-estimate edges above 50% remain withheld for independent review.
 
 ## Sources and coverage
 
