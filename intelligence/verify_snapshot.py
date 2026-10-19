@@ -38,7 +38,7 @@ def inspect(path,now=None,expected_instance=None):
             original_records=db.execute('SELECT count(*) FROM statistics_forecasts').fetchone()[0]
         verify_assets(store)
         events,meta=current(store,'Bundesliga',now)
-        research=collect(store,now,168,['Premier League','Bundesliga','Ligue 1'])
+        research=collect(store,now,168,['Premier League','Bundesliga','Ligue 1','NBA','MLB'])
         eligible=[r for r in research['forecasts'] if r['research_eligible']]
         sgps=[r for r in candidates(store,now) if r['research_eligible']]
         for r in eligible+sgps:
@@ -55,10 +55,16 @@ def inspect(path,now=None,expected_instance=None):
             if db.execute('SELECT count(*) FROM statistics_forecasts').fetchone()[0]!=original_records:raise ValueError('Verification recorded forecasts')
         from intelligence.dependence_study import load_report
         report=load_report()
+        by_league={league:{'status':'EXPERIMENTAL' if any(r['league']==league for r in eligible) else 'BLOCKED',
+            'eligible_singles':sum(r['league']==league for r in eligible),
+            'recorded_singles':sum(r['league']==league for r in recorded_singles),
+            'reason':research['blockers'].get(league,'No approved model or betting advantage is claimed')}
+            for league in ('Premier League','Ligue 1','NBA','MLB')}
+        bundesliga=[r for r in eligible if r['league']=='Bundesliga']
         return {'scope':'Offline inspection of existing snapshot; not authenticated hosted-page or live-price verification',
             'inspected_at':now.isoformat(),'store_instance':instance,'integrity':'ok','frozen_assets_verified':9,
-            'Bundesliga':{'source_ok':meta['ok'],'current_research_ready':bool(eligible or sgps),'source_observed_at':meta.get('checked_at'),
-                'coverage':meta.get('coverage'),'experimental_singles':len(eligible),
+            'Bundesliga':{'source_ok':meta['ok'],'current_research_ready':bool(bundesliga or sgps),'source_observed_at':meta.get('checked_at'),
+                'coverage':meta.get('coverage'),'experimental_singles':len(bundesliga),
                 'experimental_two_leg_sgp':sum(len(r['legs'])==2 for r in sgps),
                 'experimental_three_leg_sgp':sum(len(r['legs'])==3 for r in sgps)},
             'accuracy':accuracy(store,now),'recorded_singles_displayable':len(recorded_singles),
@@ -66,8 +72,7 @@ def inspect(path,now=None,expected_instance=None):
             'verified_outcomes':sum(g['labeled'] for g in monitor['groups']),
             'positive_ev_slots_empty_without_verified_prices':gate['qualified']==0,'empty_message':EMPTY,
             'dependence_report_verified':report is not None,'approved_joint_models':0,
-            'NBA':{'status':'BLOCKED','reason':'Current reviewed fixture identities and offseason input readiness unavailable'},
-            'MLB':{'status':'BLOCKED','reason':'Permitted 2026 results and current fixtures unavailable'},
+            **by_league,
             'provider_requests':0,'source_writes':0,'new_forecasts':0,'models_promoted':0}
 
 
