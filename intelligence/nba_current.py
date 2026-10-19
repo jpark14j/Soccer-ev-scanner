@@ -45,6 +45,12 @@ def fixtures(value,now):
     return result
 
 
+def missing_final(event,now):
+    if event.status=='completed' or event.score_scope in ('source_postponed','source_cancelled'):return False
+    if event.score_scope=='same_day_final_withheld' and event.event_date==now.date().isoformat():return False
+    return parse_time(event.kickoff)<=now
+
+
 def save(collector):
     from intelligence.free_results import NBA_URL, TERMS
     now=collector.now;store=collector.store
@@ -89,15 +95,20 @@ def save(collector):
             if (not new or new.status!='completed' or new.kickoff!=old.kickoff
                 or (new.home_score,new.away_score)!=(old.home_score,old.away_score)):
                 raise ValueError('NBA refresh withdrew or revised a previously verified final')
-    meta={'ok':True,'provider':'sporting-events + sportscore','checked_at':source['checked_at'],
+    recent=[source['checked_at']]+[r['checked_at'] for r in receipts[1:]
+        if date.fromisoformat(json.loads(r['raw'])['date'])>=now.date()-timedelta(days=3)]
+    checked=min(recent,key=parse_time)
+    if not 0<=(now-parse_time(checked)).total_seconds()<21600:
+        raise ValueError('NBA recent result verification expired')
+    meta={'ok':True,'provider':'sporting-events + sportscore','checked_at':checked,
         'sha256':digest([r['sha256'] for r in receipts]),'license_reference':LICENSE,'results_license_reference':TERMS,
         'source_url':NBA_URL,'source_receipts':[{k:r[k] for k in ('source_url','sha256','checked_at')} for r in receipts],
         'removed_unreconciled_fixtures':removed,
         'coverage':{'fixtures':len(events),'completed':sum(e.status=='completed' for e in events),
-            'unresolved_past':sum(e.status!='completed' and e.score_scope not in ('source_postponed','source_cancelled') and parse_time(e.kickoff)<=now for e in events)},
+            'unresolved_past':sum(missing_final(e,now) for e in events)},
         'attribution':'Sporting Events fixture data; Powered by SportScore for verified final scores'}
     ingest(store,events,meta,now)
-    store.cache('nba-current',{'events':[asdict(e) for e in events],'meta':meta},parse_time(source['checked_at']))
+    store.cache('nba-current',{'events':[asdict(e) for e in events],'meta':meta},parse_time(checked))
     return meta
 
 
@@ -108,7 +119,7 @@ def current(store,now=None):
     events=[EventObservation(**e).validate(now) for e in value['events']]
     events=[replace(e,status='unresolved') if e.status=='scheduled' and parse_time(e.kickoff)<=now else e for e in events]
     meta=dict(value['meta']);meta['coverage']=dict(meta['coverage'],
-        unresolved_past=sum(e.status!='completed' and e.score_scope not in ('source_postponed','source_cancelled') and parse_time(e.kickoff)<=now for e in events))
+        unresolved_past=sum(missing_final(e,now) for e in events))
     return events,meta
 
 

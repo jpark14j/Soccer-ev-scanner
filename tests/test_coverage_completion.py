@@ -188,3 +188,43 @@ def test_home_keeps_original_point_cards_and_falls_back_to_recorded_bounds_for_n
     assert result[1]['probability'] is not None
     assert all(result[n]['kind']=='bounded_cross_game' and result[n]['joint_probability'] is None for n in (2,3))
     for n in (2,3):assert len(result[n]['legs'])==n
+
+
+def test_verified_same_day_final_does_not_block_nba_or_leak_into_ratings(store):
+    from intelligence.nba_current import forecasts
+    es,meta=save_fixture_cache(store)
+    # Retain normal opening-season research while a different game has a
+    # verified same-day finish whose numerical score is intentionally withheld.
+    now=NOW.replace(day=21,hour=12)
+    completed=[replace(e,status='completed',home_score=110,away_score=105,
+        observed_at=now.isoformat(),score_scope='sportscore_final') if e.event_date<now.date().isoformat() else e for e in es]
+    original=completed[0]
+    held=replace(original,status='unresolved',home_score=None,away_score=None,
+        event_date=now.date().isoformat(),kickoff=now.replace(hour=1).isoformat(),
+        score_scope='same_day_final_withheld',observed_at=now.isoformat())
+    def put(events,at=now):store.cache('nba-current',{'events':[asdict(e) for e in events],
+        'meta':meta|{'checked_at':at.isoformat()}},at)
+    put(completed[1:]+[held]);rows,problem=forecasts(store,now)
+    assert rows and not problem and all(r['training_end']<now.date().isoformat() for r in rows)
+    put(completed[1:]);without=forecasts(store,now)[0]
+    assert [(r['fixture_id'],r['probability']) for r in rows]==[(r['fixture_id'],r['probability']) for r in without]
+    put(completed[1:]+[replace(held,score_scope='source_reported_ft')])
+    assert not forecasts(store,now)[0]  # Live or unknown score is still blocking.
+    tomorrow=now+timedelta(days=1)
+    put([held],tomorrow)
+    assert not forecasts(store,tomorrow)[0]  # Yesterday's held score needs a new verified final.
+
+
+def test_nba_fresh_fixture_receipt_does_not_extend_older_result_receipt_lifetime(store):
+    from intelligence.nba_current import save,current
+    from test_free_results import schedule
+    now=NOW.replace(day=20,hour=22);older=now-timedelta(hours=2)
+    data=schedule();data['generated']=now.isoformat()
+    class C:
+        def __init__(self):self.store=store;self.now=now
+        def get(self,*args):return receipt(data,now)
+        def day(self,league,day):return [],receipt(day_response('NBA',day),older)
+    meta=save(C())
+    assert meta['checked_at']==older.isoformat()
+    assert current(store,now)[1]['ok']
+    assert not current(store,now+timedelta(hours=4))[1]['ok']

@@ -114,7 +114,11 @@ frozen Elo updates, calibration and historical frequency ranges can be used
 through the reviewed 2026–27 regular-season fixture window, backed by the
 existing 1,225-game unseen-season evaluation. Beyond the opening fortnight,
 both teams must have a verified current-season result within 21 days of tipoff.
-All earlier played games still require reconciled finals; no preseason/playoff
+All earlier played games still require reconciled finals. A verified same-day
+final withheld from date-based features is not mislabeled a missing result; its
+score still cannot update ratings until a subsequent UTC-date verification.
+Live games, unknown scores and yesterday's unrefreshed withheld final remain
+blockers. No preseason/playoff
 transfer, roster data, new fit, improved-accuracy claim or approval is implied.
 Explicit postponed/cancelled source statuses are retained but supply neither
 scores nor predictions. Suspensions, unknown missing results and conflicts
