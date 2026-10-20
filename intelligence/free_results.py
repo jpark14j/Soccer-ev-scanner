@@ -56,7 +56,9 @@ def download(url):
         response=session.get(url,timeout=(5,12),allow_redirects=False,stream=True,
             headers={'Accept':'application/json','User-Agent':'SportsResearch-AttributedPublicResults/1.0'})
         try:
-            if response.status_code!=200:raise ValueError('Public results HTTP response unavailable')
+            if response.status_code!=200:
+                source='Sporting Events NBA fixtures' if url==NBA_URL else 'SportScore daily results' if daily else 'Pinned OpenFootball archive'
+                raise ValueError(f'Public results HTTP response unavailable ({source}; HTTP {int(response.status_code)})')
             chunks=[];size=0
             for chunk in response.iter_content(65536):
                 size+=len(chunk)
@@ -144,7 +146,7 @@ def parse_day(value,league,day,now):
             'completed' if completed else 'scheduled' if r['status']=='upcoming' and start>now else 'unresolved',
             hg if completed else None,ag if completed else None,value['checked_at'],None,TERMS,
             'same_day_final_withheld' if finished and start.date()==now.date() else
-            'source_'+r['status'] if r['status'] in ('postponed','cancelled','suspended') else 'source_reported_ft',start.isoformat()).validate(now)
+            'source_reported_ft' if finished else 'source_'+r['status'],start.isoformat()).validate(now)
         if event.fixture_id in seen:raise ValueError('Duplicate daily fixture')
         seen.add(event.fixture_id);events.append(event)
     return events

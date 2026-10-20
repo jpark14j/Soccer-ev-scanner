@@ -80,6 +80,31 @@ def test_finals_identity_and_same_day_withholding():
     assert identity('Ligue 1','Havre Athletic Club')==identity('Ligue 1','Le Havre AC')
 
 
+def test_newly_fetched_live_score_is_not_a_final_or_an_application_cache_problem():
+    data=day_response();data['matches'][0]['status']='live'
+    event=parse_day(receipt(data),'Premier League','2026-10-18',NOW)[0]
+    assert event.status=='unresolved' and event.score_scope=='source_live'
+    assert event.home_score is None and event.away_score is None
+    from intelligence.current_soccer import _prepare
+    meta={'ok':True,'provider':'sportscore','checked_at':NOW.isoformat(),
+        'coverage':{'unresolved_past':1}}
+    result=_prepare('Premier League',None,NOW,False,lambda *a,**k:([event],meta))
+    assert 'Arsenal vs Chelsea' in result['problem'] and 'source_live' in result['problem']
+    assert event.kickoff in result['problem'] and 'unresolved' in result['problem']
+
+
+def test_public_http_failure_reports_safe_source_and_status_without_response_content():
+    from unittest.mock import MagicMock
+    session=MagicMock();response=session.__enter__.return_value.get.return_value
+    response.status_code=503
+    response.content=b'synthetic-private-response-must-not-be-reported'
+    with patch('intelligence.free_results.requests.Session',return_value=session):
+        with pytest.raises(ValueError,match=r'Sporting Events NBA fixtures; HTTP 503') as error:
+            download('https://sporting-events.org/data/nba.json')
+    assert 'synthetic-private-response' not in str(error.value)
+    response.close.assert_called_once()
+
+
 def test_nba_results_use_reviewed_competition_slug_not_empty_nba_alias(store):
     calls=[]
     def fetch(url):

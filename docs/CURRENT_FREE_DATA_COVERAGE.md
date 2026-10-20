@@ -184,3 +184,27 @@ these prepared receipts during a network cooldown. Ordinary HTTP retries and
 scheduled refresh intervals remain unchanged. A targeted result check is bounded
 to one reviewed free API request and only a verified final may unblock research;
 an unfinished match never becomes a completed score.
+
+### Hosted follow-up — October 19, 8:40 PM Toronto
+
+A normal due free-source refresh used 24 public requests, zero Odds API credits
+and zero paid AI calls. Generation 14 was read back from the expected Supabase
+store with its hold and provider budgets unchanged. It contained 60 displayable
+recorded singles (45 NBA, eight Ligue 1, seven Bundesliga), ten Bundesliga SGPs
+and six current cross-game bound candidates. These are experimental; there were
+no verified forward outcomes and no approved joint models.
+
+EPL's newly fetched October 19 response still explicitly reported Tottenham–
+Coventry as `live` / `1st half`. Its fixture remains unresolved, so EPL inference
+is blocked. This observation is an upstream incomplete response, not a retained
+old application cache. A normal match-page check also did not establish a final.
+Neither response was promoted to a completed score. Diagnostics now identify
+the exact unresolved fixture, kickoff and available status; nonfinal statuses
+are no longer mislabeled as source-reported full-time results.
+
+The NBA fixture refresh returned a non-200 response. Its previously successful
+snapshot was retained with its original expiry; it was not refreshed or extended
+by that failure. The old generic error did not retain the HTTP status number.
+Future failures report the fixed source name and HTTP code, without exposing a
+response body, credentials or arbitrary URL. The three-hour retry restriction
+and normal four-hour schedule remain unchanged.

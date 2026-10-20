@@ -54,7 +54,12 @@ def _prepare(league, store, now=None, allow_fetch=True, result_loader=None, hist
     if (now-parse_time(meta['checked_at'])).total_seconds() >= 21600:
         return {'problem': 'Current-results observation is stale'}
     if meta['coverage']['unresolved_past'] or any(e.status == 'unresolved' for e in events):
-        return {'problem': 'Full-season source contains unresolved, postponed, suspended or uncompleted past fixtures',
+        unresolved=[e for e in events if e.status=='unresolved' or
+            e.status!='completed' and e.event_date<now.date().isoformat()]
+        detail='; '.join(f'{e.home_name} vs {e.away_name} ({e.kickoff or e.event_date}; '+
+            (e.score_scope if e.score_scope!='source_reported_ft' else e.status)+')' for e in unresolved[:3])
+        return {'problem': 'Full-season source contains unresolved, postponed, suspended or uncompleted past fixtures'+
+                (': '+detail if detail else ''),
                 'results_provider': provider, 'coverage': meta['coverage']}
     rows = []
     for e in events:
