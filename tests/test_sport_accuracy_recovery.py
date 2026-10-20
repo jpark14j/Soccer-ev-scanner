@@ -100,3 +100,17 @@ render_performance(SimpleNamespace(store=Store({str(path)!r})))'''
         assert any('1/1 correct' in c.value or '0/1 correct' in c.value for c in app.caption)
         if sport=='NBA':assert all(m.value=='0.0%' for m in app.metric)
         if sport=='MLB':assert all(m.value=='100.0%' for m in app.metric)
+
+
+def test_original_league_labeled_sgps_without_sport_remain_in_soccer_accuracy(store):
+    _,templates=prepare(store);end=NOW+timedelta(days=2)
+    for n in (2,3):
+        r=deepcopy(templates[n-1]);r.pop('sport')
+        r['model_version']='SYNTHETIC legacy league-only SGP '+str(n)
+        key=record(store,[r],NOW)[0]
+        o={'all_selections_won':True,'source':'SYNTHETIC test only','source_sha256':'a'*64,'source_observed_at':end.isoformat()}
+        with store.connect() as db:db.execute('INSERT INTO statistics_outcomes VALUES(?,?,?)',(key,end.isoformat(),json.dumps(o)))
+    report=summary(store,end,sport='Soccer')
+    for n in (2,3):assert report['formats'][n]['settled']==report['formats'][n]['correct']==1
+    assert summary(store,end,sport='NBA')['formats'][2]['settled']==0
+    assert sport_classification({'league':'unknown','legs':[{},{}]})=='Unclassified'

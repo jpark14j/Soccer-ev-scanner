@@ -97,6 +97,10 @@ def saved_for_display(store,current,now=None):
 def sport_classification(r):
     """Use every leg's sport; mixed or unknown records never enter a sport total."""
     parent=r.get('sport')
+    if parent is None:
+        from intelligence.competitions import COMPETITIONS
+        competition=COMPETITIONS.get(r.get('league'))
+        parent=competition.sport if competition else None
     values=[leg.get('sport',parent) for leg in r.get('legs') or [r]]
     if any(not isinstance(value,str) for value in values):return 'Unclassified'
     sports=set(values)

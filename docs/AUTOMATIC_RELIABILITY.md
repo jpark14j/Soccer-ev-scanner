@@ -70,6 +70,8 @@ Every parlay leg must win. Pending, void, partial and unresolved outcomes do not
 count as settled. Backtests are excluded. Experimental and validated categories
 remain separate; mixed-sport legs are classified together and cannot enter an
 individual sport's totals. Unknown classifications are excluded from sport totals.
+Older same-game records without a sport field use their exact registered
+competition's sport; unknown league names are never guessed or defaulted to Soccer.
 
 At the hosted read-only audit, none of the 253 actual forecast versions had reached
 kickoff. Accuracy remains unavailable, not zero or an invented success rate.
