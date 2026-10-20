@@ -257,3 +257,68 @@ def test_new_nba_result_conflict_retains_saved_success_but_blocks_cached_forecas
     # A successful exact reconciliation clears this temporary inference block.
     with patch('intelligence.nba_current.save',return_value=before[1]):refresh(store,later,unavailable)
     assert forecasts(store,later)[0]
+
+
+def test_newer_prepared_receipt_supersedes_cached_live_data_without_network_or_retry_reset(store,tmp_path):
+    from intelligence.free_results import Collector,prepared_fetch
+    import json,hashlib
+    url='https://sporting-events.org/data/nba.json'
+    old=json.dumps({'state':'older'}).encode()
+    c=Collector(store,NOW,lambda url:(old,NOW.isoformat()));c.get('proof',url)
+    original_attempt=store.cached('public-attempt-proof',86400,NOW)
+    fresh_at=NOW+timedelta(minutes=30);raw=json.dumps({'state':'newer'}).encode()
+    (tmp_path/'receipt.json').write_bytes(raw)
+    (tmp_path/'manifest.json').write_text(json.dumps([{'file':'receipt.json','url':url,'http':200,
+        'sha256':hashlib.sha256(raw).hexdigest(),'observed_at':fresh_at.isoformat()}]))
+    prepared=Collector(store,fresh_at,prepared_fetch(tmp_path));value=prepared.get('proof',url)
+    assert json.loads(value['raw'])['state']=='newer' and value['checked_at']==fresh_at.isoformat()
+    assert prepared.requests==1 and prepared.network_requests==0
+    assert store.cached('public-attempt-proof',86400,fresh_at)==original_attempt
+    # Old prepared evidence must never roll the source clock/content backwards.
+    earlier=Collector(store,fresh_at,lambda url:(_ for _ in ()).throw(AssertionError('No HTTP')))
+    assert earlier.get('proof',url)==value
+    prepared.requests=200
+    with pytest.raises(ValueError):prepared.get('new-key',url)
+
+
+def test_newer_prepared_receipts_still_require_valid_timestamps_and_checksums(store,tmp_path):
+    from intelligence.free_results import Collector,prepared_fetch
+    import json,hashlib
+    url='https://sporting-events.org/data/nba.json';raw=b'{}'
+    (tmp_path/'r.json').write_bytes(raw)
+    manifest=[{'file':'r.json','url':url,'http':200,'sha256':hashlib.sha256(raw).hexdigest(),
+        'observed_at':(NOW+timedelta(seconds=1)).isoformat()}]
+    (tmp_path/'manifest.json').write_text(json.dumps(manifest))
+    with pytest.raises(ValueError):Collector(store,NOW,prepared_fetch(tmp_path)).get('future',url)
+    manifest[0]['observed_at']=NOW.isoformat();(tmp_path/'manifest.json').write_text(json.dumps(manifest))
+    (tmp_path/'r.json').write_bytes(b'{"tampered":true}')
+    with pytest.raises(ValueError):Collector(store,NOW,prepared_fetch(tmp_path)).get('changed',url)
+
+
+def test_prepared_import_runs_in_cooldown_without_requesting_or_redating_sources(store):
+    from intelligence.free_statistics_worker import update
+    from test_current_statistics import season
+    import json
+    raw=json.dumps(season(NOW)).encode()
+    with patch('intelligence.fixture_research.collect',return_value={'forecasts':[]}),patch('intelligence.current_score_research.candidates',return_value=[]):
+        update(store,NOW,lambda:(raw,NOW.isoformat()))
+        store.cache('public-results-last-attempt',{'at':NOW.isoformat()},NOW)
+        later=NOW+timedelta(minutes=30)
+        def prepared(*args):raise AssertionError('Refresh stub must not request a missing receipt')
+        prepared.prepared_receipts=True
+        def no_get():raise AssertionError('The Bundesliga receipt is still fresh')
+        with patch('intelligence.free_results.refresh',return_value={'sources':{},'public_results_requests':0}) as imported:
+            report,_=update(store,later,no_get,extra_fetch=prepared)
+        imported.assert_called_once()
+    assert report['public_results_requests']==0 and report['source_observed_at']==NOW.isoformat()
+
+
+def test_missing_prepared_receipts_never_create_false_http_retry_backoffs(store):
+    from intelligence.free_results import refresh
+    store.cache('public-results-last-attempt',{'at':NOW.isoformat()},NOW)
+    def missing(url):raise ValueError('Prepared receipt missing; no network fallback')
+    missing.prepared_receipts=True
+    later=NOW+timedelta(minutes=30);result=refresh(store,later,missing)
+    assert result['public_results_requests']==0
+    assert store.cached('public-results-last-attempt',86400,later)=={'at':NOW.isoformat()}
+    assert store.cached('public-attempt-nba-fixtures',86400,later) is None

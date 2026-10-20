@@ -49,7 +49,8 @@ def update(store,now=None,fetch=download,extra_fetch=None):
     fixed_now=now;now=now or utcnow()
     cached=store.cached('free-statistics-last-success',MIN_INTERVAL,now)
     cached=bool(cached and parse_time(cached['source_observed_at']).date()==now.date())
-    extra_due=extra_fetch is not None and not store.cached('public-results-last-attempt',MIN_INTERVAL,now)
+    extra_due=extra_fetch is not None and (getattr(extra_fetch,'prepared_receipts',False)
+        or not store.cached('public-results-last-attempt',MIN_INTERVAL,now))
     # Re-evaluate and record newly supported research from verified cached
     # inputs even inside the network cooldown. This never refreshes receipts
     # or reserves provider credits; browsing remains read-only.

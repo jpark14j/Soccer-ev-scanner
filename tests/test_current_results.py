@@ -43,7 +43,10 @@ def payload(league='Bundesliga', now=None):
         h, aw, day = fields(f)
         done = day < now.date().isoformat()
         hg, ag = known.get((h,aw,day), (2,1)) if done else (None,None)
-        kickoff=day+'T23:50:00Z'
+        # A fixed noon kickoff remains identical when a future TEST fixture
+        # later becomes final, and can genuinely finish before the next date.
+        # 23:50 made yesterday's synthetic final impossible just after midnight.
+        kickoff=day+'T12:00:00Z'
         if not done and parse_time(kickoff)<=now:
             # Synthetic scheduled fixtures on today's date must remain future
             # even when tests run after 23:50 UTC. Keep their reviewed date;
@@ -88,6 +91,20 @@ def test_synthetic_scheduled_fixture_remains_future_after_2350(store):
     events,meta=current(store,'Bundesliga',now,CONFIG,Session(Response(payload('Bundesliga',now))))
     assert meta['ok'] and meta['coverage']['unresolved_past']==0
     assert all(parse_time(e.kickoff)>now for e in events if e.status=='scheduled')
+
+
+def test_synthetic_previous_day_finals_are_plausible_just_after_midnight(store):
+    now=parse_time('2026-10-20T00:30:00Z')
+    events,meta=current(store,'Premier League',now,CONFIG,Session(Response(payload('Premier League',now))))
+    assert meta['ok'] and events
+    completed=[e for e in events if e.status=='completed']
+    assert completed and all(parse_time(e.kickoff)+timedelta(minutes=90)<=now for e in completed)
+    earlier=payload('Premier League',now-timedelta(days=2))
+    later=payload('Premier League',now)
+    future={m['id']:m for m in earlier['matches'] if m['utcDate'][:10]>'2026-10-18'}
+    transitioned=[m for m in later['matches'] if m['id'] in future and m['status']=='FINISHED']
+    assert transitioned
+    assert all(m['utcDate']==future[m['id']]['utcDate'] for m in transitioned)
 
 
 @pytest.mark.parametrize('config',[ResultsConfig(), ResultsConfig(True), ResultsConfig(True,CONFIG.token), ResultsConfig(True,'bad\nheader',True)])

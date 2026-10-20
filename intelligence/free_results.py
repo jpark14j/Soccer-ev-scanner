@@ -73,16 +73,22 @@ class Collector:
 
     def get(self,key,url,age=10800):
         value=self.store.cached('public-source-'+key,age,self.now)
-        if value:
+        # A newer already-obtained private receipt requires no network retry.
+        # Prefer it to an older cached success/failure without changing HTTP
+        # cooldowns, original observation times or the per-run import bound.
+        prepared_at=getattr(self.fetch,'receipt_time',lambda url:None)(url)
+        prepared=prepared_at is not None and (not value or parse_time(prepared_at)>parse_time(value['checked_at']))
+        if value and not prepared:
             if sha256(value['raw'].encode()).hexdigest()!=value['sha256']:raise ValueError('Cached public source checksum differs')
             return value
-        if self.store.cached('public-attempt-'+key,10800,self.now):
+        if not prepared and self.store.cached('public-attempt-'+key,10800,self.now):
             raise ValueError('Public source retry interval has not elapsed')
         if self.requests>=200:raise ValueError('Public-data per-run request bound reached; continue next scheduled update')
         self.requests+=1
         if not getattr(self.fetch,'prepared_receipts',False):self.network_requests+=1
         # Reserve the attempt before transport, including failures. Never retry.
-        self.store.cache('public-attempt-'+key,{'attempted_at':self.now.isoformat()},self.now)
+        if not getattr(self.fetch,'prepared_receipts',False):
+            self.store.cache('public-attempt-'+key,{'attempted_at':self.now.isoformat()},self.now)
         raw,at=self.fetch(url)
         if self.real_time:self.now=utcnow()
         if len(raw)>2_000_000 or not 0<=(self.now-parse_time(at)).total_seconds()<TTL:
@@ -268,7 +274,8 @@ def prepare(league,store,now=None):
 def refresh(store,now=None,fetch=download):
     """Independent source failures do not discard another league's good data."""
     now=now or utcnow();collector=Collector(store,now,fetch);status={}
-    store.cache('public-results-last-attempt',{'at':now.isoformat()},now)
+    if not getattr(fetch,'prepared_receipts',False):
+        store.cache('public-results-last-attempt',{'at':now.isoformat()},now)
     from intelligence.nba_current import save as save_nba,NBAReconciliationError
     for league,operation in [('NBA',lambda:save_nba(collector)),
         *[(league,lambda league=league:save_soccer(collector,league)) for league in ('Premier League','Ligue 1')]]:
@@ -310,4 +317,5 @@ def prepared_fetch(directory):
         if len(raw)>2_000_000 or sha256(raw).hexdigest()!=m['sha256']:raise ValueError('Prepared source checksum differs')
         return raw,m['observed_at']
     fetch.prepared_receipts=True
+    fetch.receipt_time=lambda url:by_url.get(url,{}).get('observed_at')
     return fetch

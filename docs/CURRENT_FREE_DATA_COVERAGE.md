@@ -4,6 +4,10 @@ This increment preserves the five pages, existing models and approval rules.
 The Odds API hold, nine-credit ceiling, paid-AI disablement and production are
 unchanged. No account or new API key is required by these adapters.
 
+The targeted completion section below describes the latest scope, including
+NBA regular-season continuation and recorded cross-game bounds. The initial
+source counts remain dated observations, not a promise of unchanged live totals.
+
 ## Sources actually checked
 
 - [SportScore documented date API](https://sportscore.com/developers/api/):
@@ -60,9 +64,9 @@ over/under 2.5 estimates; the promoted Le Mans team still fails the unchanged
 NBA: the existing 4,910-game, 2022–26 date-block Elo study is reused without
 retraining, replacement or approval. Frozen calibration uses 2024–25; 2025–26
 test Brier is 0.208554, log loss 0.604931. Its opening 14-day subgroup has only
-102 games (Brier 0.224095; log loss 0.642174). Current scope is explicitly the
+102 games (Brier 0.224095; log loss 0.642174). The initial verification covered the
 first 14 regular-season days, with unmodeled offseason roster/injury changes
-disclosed. Actual source-based rehearsal yields 43 upcoming game-winner estimates
+disclosed; regular-season continuation is described below. Actual source-based rehearsal yields 43 upcoming game-winner estimates
 in seven days. Every earlier scheduled game must have a verified prior-day final;
 otherwise all NBA inference stops. No preseason, props, totals, playoff or
 postseason probabilities are transferred from this model.
@@ -170,3 +174,13 @@ blocked. Required: permitted complete current fixtures/finals, reviewed identiti
 and season phases, and matching model evidence. No new account or paid service
 was enabled. Genuine settlement must be checked after an actually recorded game
 finishes; deterministic settlement tests are not a claim of live accuracy.
+
+A newer checksum-verified private prepared receipt now takes precedence over an
+older cached response, including an in-progress result. This imports evidence
+already obtained; it makes no network request, does not reset the source's
+observation time or HTTP retry clock, cannot roll a receipt backwards, and still
+obeys the 200-item bound and six-hour validity checks. The writer may reconcile
+these prepared receipts during a network cooldown. Ordinary HTTP retries and
+scheduled refresh intervals remain unchanged. A targeted result check is bounded
+to one reviewed free API request and only a verified final may unblock research;
+an unfinished match never becomes a completed score.
