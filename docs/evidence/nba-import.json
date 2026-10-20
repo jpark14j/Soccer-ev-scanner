@@ -1,0 +1,9 @@
+{
+  "sport": "NBA",
+  "rows": 3940,
+  "data_through": "2015-06-16T00:00:00",
+  "path": "data/research/history/nba.csv",
+  "source": [
+    "https://raw.githubusercontent.com/fivethirtyeight/data/4c1ff5e3aef1816ae04af63218015066e186c147/nba-elo/nbaallelo.csv"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "phase": "3B",
+  "checked_at": "2026-10-16T23:29:07.556625+00:00",
+  "starting_commit": "86f784f931c804381743a34f897e5e4969ee9d9b",
+  "branch": "development/verified-sports-intelligence",
+  "draft_pr": 1,
+  "offline_tests_passed": 383,
+  "new_tests": 30,
+  "local_python": "3.12",
+  "source_payloads_in_tests": "Explicitly synthetic; not genuine current provider data",
+  "local_startup": {
+    "status": 200,
+    "body": "ok",
+    "port": 8511,
+    "paid_AI_enabled": false,
+    "odds_calls": 0,
+    "results_calls": 0
+  },
+  "compilation": "passed",
+  "dependency_check": "passed",
+  "whitespace_check": "passed",
+  "security": {
+    "configured_secret_matches": false,
+    "new_dependencies": false,
+    "new_modules_arbitrary_code_execution": false,
+    "live_penetration_test": false
+  },
+  "frozen_model_policy_artifact_alias_navigation_workflow_files_unchanged": true,
+  "frozen_models": {
+    "Premier League": {
+      "artifact_sha256": "619f931210080a3093a09a57290a62faaeba40c24b243789cbdc424ace8a78f3",
+      "model_code_sha256": "4e53249981c1a52ee599de4ee794703ffdfa80ef3aca2715bdfb2dd71498e76f",
+      "approval": "Research only"
+    },
+    "Bundesliga": {
+      "artifact_sha256": "7306259c05f4ce1a418d019a7d9f1dd013e98f68794d0b10e5040e38e0c64542",
+      "model_code_sha256": "eae4ba4a4256c896c1af9a0b8f713d89d8d4d7c541949126a0e91b59cc985f9e",
+      "approval": "Research only"
+    },
+    "Ligue 1": {
+      "artifact_sha256": "764e7e675a37c1a612978fae726c9f65a588560d3be25526aaaadee3dfc0aac6",
+      "model_code_sha256": "eae4ba4a4256c896c1af9a0b8f713d89d8d4d7c541949126a0e91b59cc985f9e",
+      "approval": "Research only"
+    }
+  },
+  "actual_local_price_inventory": {
+    "observations": 394,
+    "unique_quote_ids": 394,
+    "duplicate_observation_rows": 0,
+    "status_counts": {
+      "stale": 394
+    },
+    "origin_counts": {
+      "restored private cache": 394
+    },
+    "current_eligible": 0,
+    "stale_upcoming_in_window": 394,
+    "outside_window_or_started_inspection": 0,
+    "invalid_or_other_ineligible": 0,
+    "games_with_current_prices": 0,
+    "games_with_stale_observations": 25,
+    "price_expiry_seconds": 300,
+    "saved_snapshot_retention_seconds": 604800,
+    "note": "Counts are individual bookmaker/selection/line observations, not games. Saved snapshots are retained up to seven days; timestamps are never reset. The default 30-minute retrieval cache does not extend five-minute price eligibility. Stale upcoming prices are also a current-price gap, not actionable odds. No refresh is performed by this diagnostic."
+  },
+  "actual_local_odds_usage": [
+    {
+      "day": "2026-10-16",
+      "used": 9
+    }
+  ],
+  "additional_real_odds_requests": 0,
+  "additional_authenticated_results_requests": 0,
+  "paid_AI_requests": 0,
+  "actual_local_paper_records": {
+    "private_forecasts": 0,
+    "scored_forecast_labels": 0,
+    "betting_roi": null
+  },
+  "preview_user_report": {
+    "provenance": "Provided by user; not independently retrieved in this environment",
+    "completed_results": {
+      "Premier League": 60,
+      "Bundesliga": 46,
+      "Ligue 1": 55
+    },
+    "unresolved_past": 0,
+    "discovered_games": 55,
+    "games_with_current_markets": 9,
+    "games_with_model_research": 5,
+    "qualified_singles": 0,
+    "stale_observations": 422,
+    "EPL_estimates_visible": true
+  },
+  "independently_demonstrated_genuine_current_forecast_competitions_here": [],
+  "synthetic_pipeline_inference_verified": [
+    "Premier League",
+    "Bundesliga",
+    "Ligue 1"
+  ],
+  "ranking_views": [
+    "Most reliable model evidence",
+    "Highest estimated win probability",
+    "Strongest model-versus-market difference"
+  ],
+  "ranking_display_requirements": {
+    "minimum_calibration_bin": 50,
+    "minimum_calibration": 100,
+    "minimum_test": 100,
+    "maximum_envelope_width": 0.5,
+    "model_approval_changed": false
+  },
+  "new_models_approved": 0,
+  "real_preview_Bundesliga_Ligue1_inference_verified": false,
+  "hosted_preview_interactive_verified": false,
+  "redeployment_persistence_verified": false,
+  "CI": "Existing workflow retained; inspect commit-linked Actions after publication",
+  "unverified": [
+    "Exact preview 422-observation inventory",
+    "Real hosted Bundesliga/Ligue1 inference",
+    "Hosted prospective paper counts and actual outcomes",
+    "Hosted rebuild/interactive browser",
+    "Off-host restoration and commercial data-transfer permissions"
+  ]
+}

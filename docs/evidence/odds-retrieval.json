@@ -1,0 +1,151 @@
+{
+  "checked_at": "2026-10-16T02:47:13.357689+00:00",
+  "provider": "The Odds API v4",
+  "leagues": {
+    "NBA": {
+      "quotes": 204,
+      "ontario_book_keys": [
+        "betmgm_ca_on",
+        "betrivers_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:31:59Z",
+      "source_update_max": "2026-10-16T02:33:10Z",
+      "receipt_times": [
+        "2026-10-16T02:33:30.109699+00:00"
+      ]
+    },
+    "MLB": {
+      "quotes": 24,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "betrivers_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:32:45Z",
+      "source_update_max": "2026-10-16T02:33:15Z",
+      "receipt_times": [
+        "2026-10-16T02:33:31.011748+00:00"
+      ]
+    },
+    "Premier League": {
+      "quotes": 300,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:31:03Z",
+      "source_update_max": "2026-10-16T02:33:23Z",
+      "receipt_times": [
+        "2026-10-16T02:33:30.459655+00:00"
+      ]
+    },
+    "La Liga": {
+      "quotes": 312,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:46:14Z",
+      "source_update_max": "2026-10-16T02:47:11Z",
+      "receipt_times": [
+        "2026-10-16T02:47:14.371151+00:00"
+      ]
+    },
+    "Bundesliga": {
+      "quotes": 321,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:45:17Z",
+      "source_update_max": "2026-10-16T02:46:44Z",
+      "receipt_times": [
+        "2026-10-16T02:47:14.652244+00:00"
+      ]
+    },
+    "Serie A": {
+      "quotes": 300,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:45:20Z",
+      "source_update_max": "2026-10-16T02:47:13Z",
+      "receipt_times": [
+        "2026-10-16T02:47:15.140442+00:00"
+      ]
+    },
+    "Ligue 1": {
+      "quotes": 270,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:46:01Z",
+      "source_update_max": "2026-10-16T02:46:57Z",
+      "receipt_times": [
+        "2026-10-16T02:47:15.681182+00:00"
+      ]
+    },
+    "MLS": {
+      "quotes": 276,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:46:14Z",
+      "source_update_max": "2026-10-16T02:47:10Z",
+      "receipt_times": [
+        "2026-10-16T02:47:16.100663+00:00"
+      ]
+    },
+    "Champions League": {
+      "quotes": 324,
+      "ontario_book_keys": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "source_update_min": "2026-10-16T02:46:30Z",
+      "source_update_max": "2026-10-16T02:47:10Z",
+      "receipt_times": [
+        "2026-10-16T02:47:16.630828+00:00"
+      ]
+    }
+  },
+  "qualifying": 0,
+  "errors": [],
+  "exclusions": {
+    "Invalid/ambiguous provider records": 0,
+    "stale": 528,
+    "Ontario feed not established": 327,
+    "Historical statistics unavailable": 1476
+  },
+  "note": "Provider retrieval, not verification of execution, statistics, predictive accuracy, or live models."
+}

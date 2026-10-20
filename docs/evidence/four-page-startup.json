@@ -1,0 +1,19 @@
+{
+  "health_http": 200,
+  "body": "ok",
+  "port": 8508,
+  "paid_ai_enabled": false,
+  "odds_key_passed": false,
+  "tests_passed": 269,
+  "model_version": "epl-goal-strength-1",
+  "artifact_still_matches_code": true,
+  "existing_odds_budget": {
+    "used": 9,
+    "limit": 9
+  },
+  "model_files_unchanged": true,
+  "test_transport_policy": "External Requests and HTTPX transports blocked in tests",
+  "hosted_preview_verified": false,
+  "main_modified": false,
+  "production_modified": false
+}

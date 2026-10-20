@@ -1,0 +1,115 @@
+# Install ONLY in the private recovery repository, not the app's production main.
+# All jobs are disabled until the owner reviews included Actions minutes/billing.
+name: Development research worker
+run-name: ${{ inputs.operation == 'manual-research' && format('Manual research {0}', inputs.request_id) || 'Development state verification' }}
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: State verification or explicitly owner-requested research
+        type: choice
+        default: verify
+        options: [verify, storage-check, hold-review, manual-research]
+      request_id:
+        description: Unique request identity supplied by the authenticated Home control
+        type: string
+        default: ''
+      expected_app_commit:
+        description: Deployed app revision; must equal the reviewed worker pin
+        type: string
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: development-research-authority
+  cancel-in-progress: false
+jobs:
+  research:
+    if: >-
+      vars.RESEARCH_ACTIONS_FREE_TIER_REVIEWED == '1' &&
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Require reviewed immutable application commit
+        env:
+          RESEARCH_APP_COMMIT: ${{ vars.RESEARCH_APP_COMMIT }}
+          RESEARCH_OPERATION: ${{ inputs.operation }}
+          RESEARCH_REQUEST_ID: ${{ inputs.request_id }}
+          EXPECTED_APP_COMMIT: ${{ inputs.expected_app_commit }}
+          RESEARCH_MANUAL_ENABLED: ${{ vars.RESEARCH_MANUAL_ENABLED || '0' }}
+          RESEARCH_DATA_RIGHTS_VERIFIED: ${{ vars.RESEARCH_DATA_RIGHTS_VERIFIED || '0' }}
+          RESEARCH_BUDGET_SCOPE_REVIEWED: ${{ vars.RESEARCH_BUDGET_SCOPE_REVIEWED || '0' }}
+          AUTOMATIC_WORKER: ${{ vars.RESEARCH_WORKER_ENABLED || '0' }}
+          AUTOMATIC_SCHEDULE: ${{ vars.RESEARCH_SCHEDULE_ENABLED || '0' }}
+        run: |
+          if [[ ! "$RESEARCH_APP_COMMIT" =~ ^[a-f0-9]{40}$ ]]; then
+            echo 'A reviewed immutable development commit is required.'
+            exit 1
+          fi
+          if [[ "$RESEARCH_OPERATION" == 'manual-research' ]]; then
+            if [[ ! "$RESEARCH_REQUEST_ID" =~ ^[a-f0-9]{32}$ || "$EXPECTED_APP_COMMIT" != "$RESEARCH_APP_COMMIT" ]]; then
+              echo 'Manual request identity or reviewed revision is invalid.'
+              exit 1
+            fi
+            if [[ "$RESEARCH_MANUAL_ENABLED" != '1' || "$RESEARCH_DATA_RIGHTS_VERIFIED" != '1' || "$RESEARCH_BUDGET_SCOPE_REVIEWED" != '1' || "$AUTOMATIC_WORKER" != '0' || "$AUTOMATIC_SCHEDULE" != '0' ]]; then
+              echo 'Owner-requested research is not authorized or automatic flags are enabled.'
+              exit 1
+            fi
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: jpark14j/Soccer-ev-scanner
+          ref: ${{ vars.RESEARCH_APP_COMMIT }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: State verification or explicitly enabled research
+        env:
+          RESEARCH_OPERATION: ${{ inputs.operation }}
+          RESEARCH_REQUEST_ID: ${{ inputs.request_id }}
+          RESEARCH_EXPECTED_STORE_INSTANCE: ${{ vars.RESEARCH_EXPECTED_STORE_INSTANCE }}
+          RESEARCH_STATE_URL: ${{ vars.RESEARCH_STATE_URL }}
+          RESEARCH_STATE_SERVICE_KEY: ${{ secrets.RESEARCH_STATE_SERVICE_KEY }}
+          RESEARCH_SHARED_STATE_ENABLED: '1'
+          RESEARCH_STATE_USE_REVIEWED: '1'
+          PAID_ANALYST_APPROVED: '0'
+          ODDS_DAILY_CREDITS: '9'
+          SLATE_WINDOW_HOURS: ${{ vars.SLATE_WINDOW_HOURS || '48' }}
+          RESEARCH_WORKER_ENABLED: '0'
+          RESEARCH_SCHEDULE_ENABLED: '0'
+          RESEARCH_MANUAL_ENABLED: ${{ vars.RESEARCH_MANUAL_ENABLED || '0' }}
+          RESEARCH_ACTIONS_FREE_TIER_REVIEWED: ${{ vars.RESEARCH_ACTIONS_FREE_TIER_REVIEWED || '0' }}
+          RESEARCH_CONFIG_WORKER_ENABLED: ${{ vars.RESEARCH_WORKER_ENABLED || '0' }}
+          RESEARCH_CONFIG_SCHEDULE_ENABLED: ${{ vars.RESEARCH_SCHEDULE_ENABLED || '0' }}
+          RESEARCH_ODDS_KEY_CONFIGURED: ${{ secrets.ODDS_API_KEY != '' }}
+          RESEARCH_RESULTS_TOKEN_CONFIGURED: ${{ secrets.FOOTBALL_DATA_TOKEN != '' }}
+          RESEARCH_RESULTS_ENABLED_CONFIGURED: ${{ vars.FOOTBALL_DATA_ENABLED || '0' }}
+          RESEARCH_RESULTS_USE_REVIEWED: ${{ vars.FOOTBALL_DATA_USE_REVIEWED || '0' }}
+          RESEARCH_DATA_RIGHTS_VERIFIED: ${{ vars.RESEARCH_DATA_RIGHTS_VERIFIED || '0' }}
+          RESEARCH_BUDGET_SCOPE_REVIEWED: ${{ vars.RESEARCH_BUDGET_SCOPE_REVIEWED || '0' }}
+          ODDS_API_KEY: ${{ inputs.operation == 'manual-research' && vars.RESEARCH_MANUAL_ENABLED == '1' && vars.RESEARCH_BUDGET_SCOPE_REVIEWED == '1' && vars.RESEARCH_DATA_RIGHTS_VERIFIED == '1' && secrets.ODDS_API_KEY || '' }}
+          FOOTBALL_DATA_ENABLED: ${{ inputs.operation == 'manual-research' && vars.FOOTBALL_DATA_ENABLED || '0' }}
+          FOOTBALL_DATA_USE_REVIEWED: ${{ vars.FOOTBALL_DATA_USE_REVIEWED || '0' }}
+          FOOTBALL_DATA_TOKEN: ${{ inputs.operation == 'manual-research' && vars.RESEARCH_MANUAL_ENABLED == '1' && vars.RESEARCH_DATA_RIGHTS_VERIFIED == '1' && secrets.FOOTBALL_DATA_TOKEN || '' }}
+          EPL_PUBLIC_REFRESH: '0'
+          MULTI_RESULTS_REFRESH: '0'
+          COLLECT_RESULTS: '0'
+        run: |
+          case "$RESEARCH_OPERATION" in
+            verify)
+              echo 'Selected operation: verify. Two state reads; no remote writes or sports-provider requests.'
+              python -m intelligence.background --verify-shared ;;
+            storage-check)
+              echo 'Selected operation: storage-check. Preservation checkpoint; no sports-provider requests.'
+              python -m intelligence.background --storage-check ;;
+            hold-review)
+              echo 'Selected operation: hold-review. Read-only state and configuration review; no provider requests or hold release.'
+              python -m intelligence.background --review-hold ;;
+            manual-research)
+              python -m intelligence.background --manual "$RESEARCH_REQUEST_ID" ;;
+            *) echo 'Unsupported operation'; exit 1 ;;
+          esac

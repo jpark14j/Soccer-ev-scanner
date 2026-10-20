@@ -1,0 +1,4696 @@
+{
+  "model_version": "venue-goals-1-soccer:fr:ligue1",
+  "league": "Ligue 1",
+  "competition_id": "soccer:fr:ligue1",
+  "target": "totals_2.5",
+  "status": "research_model",
+  "forecast_validated": false,
+  "edge_approved": false,
+  "code_sha256": "eae4ba4a4256c896c1af9a0b8f713d89d8d4d7c541949126a0e91b59cc985f9e",
+  "generated_at": "2026-10-16T22:20:47.781336+00:00",
+  "data_sha256": "1986c5675b0217dbacd9290fb8b64974f5cc95e48cbb6de1b09ae43398d8ecf1",
+  "policy": {
+    "version": "venue-goals-1",
+    "targets": {
+      "Bundesliga": "btts",
+      "Ligue 1": "totals_2.5"
+    },
+    "half_life_days": 365,
+    "prior_venue_games": 12,
+    "minimum_league_games": 300,
+    "minimum_team_games": 16,
+    "minimum_effective_team_games": 10,
+    "maximum_result_age_days": 21,
+    "minimum_calibration_bin": 50,
+    "train_end": "2022-06-30",
+    "calibration_start": "2022-07-01",
+    "calibration_end": "2023-06-30",
+    "validation_start": "2023-07-01",
+    "validation_end": "2024-06-30",
+    "test_start": "2024-07-01",
+    "test_end": "2025-06-30",
+    "bootstrap_resamples": 1000,
+    "bootstrap_seed": 42109,
+    "note": "Frozen before expanded-model scoring. Separate per-competition fits and venue strengths. Validation is diagnostic; no selection or tuning on validation/test metrics. Independent confirmation and market evidence are absent; research only. Existing EPL policy/artifact is untouched."
+  },
+  "sources": [
+    {
+      "season": "2020-21",
+      "fixtures": 380,
+      "completed": 380,
+      "expected_season_games": 380,
+      "observed_teams": 20,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": true,
+      "unresolved_past": 0,
+      "latest_completed": "2021-05-23",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2020-21/fr.1.json",
+      "sha256": "27eceef1ea5b9b3b601074c3bfbb6a80f7e969d73d513f9dba104b688003c4e2",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    },
+    {
+      "season": "2021-22",
+      "fixtures": 380,
+      "completed": 380,
+      "expected_season_games": 380,
+      "observed_teams": 20,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": true,
+      "unresolved_past": 0,
+      "latest_completed": "2022-05-21",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2021-22/fr.1.json",
+      "sha256": "8abb493061d32faaf413c403b440c043723d9743a9e69d6472bf5410e2d4e039",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    },
+    {
+      "season": "2022-23",
+      "fixtures": 380,
+      "completed": 380,
+      "expected_season_games": 380,
+      "observed_teams": 20,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": true,
+      "unresolved_past": 0,
+      "latest_completed": "2023-06-03",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2022-23/fr.1.json",
+      "sha256": "6301ac1ba1fa0f5b72345759711beac3b3be3c989725cc1c6ef9307ffef692c7",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    },
+    {
+      "season": "2023-24",
+      "fixtures": 306,
+      "completed": 306,
+      "expected_season_games": 306,
+      "observed_teams": 18,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": true,
+      "unresolved_past": 0,
+      "latest_completed": "2024-05-19",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2023-24/fr.1.json",
+      "sha256": "fa328cecf4c12232ac77a5d477059eebe16b68b3712ec87800b89efda8ddfb70",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    },
+    {
+      "season": "2024-25",
+      "fixtures": 306,
+      "completed": 306,
+      "expected_season_games": 306,
+      "observed_teams": 18,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": true,
+      "unresolved_past": 0,
+      "latest_completed": "2025-05-17",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2024-25/fr.1.json",
+      "sha256": "90e9974afe6597452622387ad218f6b0011a5f91f1b426f05152f5b9c105e355",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    },
+    {
+      "season": "2025-26",
+      "fixtures": 306,
+      "completed": 282,
+      "expected_season_games": 306,
+      "observed_teams": 18,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": false,
+      "unresolved_past": 24,
+      "latest_completed": "2026-05-17",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2025-26/fr.1.json",
+      "sha256": "3e9403445dd96f4bb7f740de22d4ea7e3ea7d640777a12eab621ae4d4dbf3bc7",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    },
+    {
+      "season": "2026-27",
+      "fixtures": 306,
+      "completed": 41,
+      "expected_season_games": 306,
+      "observed_teams": 18,
+      "complete_fixture_schedule": true,
+      "complete_historical_season": false,
+      "unresolved_past": 13,
+      "latest_completed": "2026-09-20",
+      "date_precision": "calendar date; not a verified kickoff timestamp",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2026-27/fr.1.json",
+      "sha256": "f875275f835e378fc8c4e7d48c7a2f327e7d426237bd057fe652fd47f30b5a4f",
+      "license_reference": "https://github.com/openfootball/football.json/blob/master/LICENSE.md"
+    }
+  ],
+  "history_n": 2075,
+  "calibration_n": 333,
+  "excluded_after_train": {
+    "soccer": 84
+  },
+  "coefficients": [
+    0.14113481568740585,
+    0.7282022520968294
+  ],
+  "calibration_bins": [
+    {
+      "lower": 0.0,
+      "upper": 0.1,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.1,
+      "upper": 0.2,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.2,
+      "upper": 0.3,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.3,
+      "upper": 0.4,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.4,
+      "upper": 0.5,
+      "n": 45,
+      "mean_probability": 0.47588190729289664,
+      "observed_frequency": 0.5333333333333333,
+      "frequency_interval": [
+        0.3907745474012537,
+        0.670648679349887
+      ]
+    },
+    {
+      "lower": 0.5,
+      "upper": 0.6,
+      "n": 224,
+      "mean_probability": 0.5506756549485122,
+      "observed_frequency": 0.5267857142857143,
+      "frequency_interval": [
+        0.461502287589531,
+        0.5911659145107888
+      ]
+    },
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "n": 64,
+      "mean_probability": 0.6264505101197734,
+      "observed_frequency": 0.671875,
+      "frequency_interval": [
+        0.549991058490915,
+        0.7742944209553081
+      ]
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "periods": {
+    "validation": {
+      "start": "2023-08-11",
+      "end": "2024-05-19",
+      "eligible": 290,
+      "model": {
+        "binary_brier": {
+          "value": 0.24869210311962192,
+          "interval": [
+            0.24246191500413367,
+            0.2551129472157757
+          ]
+        },
+        "log_loss": {
+          "value": 0.6904729957708342,
+          "interval": [
+            0.6777451421953706,
+            0.70347367693586
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5206896551724138,
+          "interval": [
+            0.464163500547363,
+            0.5732255837106979
+          ]
+        },
+        "n": 290,
+        "utc_day_blocks": 102
+      },
+      "constant_baseline": {
+        "binary_brier": {
+          "value": 0.2500212856534696,
+          "interval": [
+            0.24360048065693535,
+            0.2558760160720946
+          ]
+        },
+        "log_loss": {
+          "value": 0.6932027563850387,
+          "interval": [
+            0.6803079053220352,
+            0.7049607644234328
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5275862068965518,
+          "interval": [
+            0.47489363312892724,
+            0.5853734518653597
+          ]
+        },
+        "n": 290,
+        "utc_day_blocks": 102
+      },
+      "league_poisson_baseline": {
+        "binary_brier": {
+          "value": 0.24980486757787862,
+          "interval": [
+            0.24769905528998454,
+            0.25198028485709645
+          ]
+        },
+        "log_loss": {
+          "value": 0.6927576313144331,
+          "interval": [
+            0.6885429352921497,
+            0.6971112645245496
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5275862068965518,
+          "interval": [
+            0.47489363312892724,
+            0.5853734518653597
+          ]
+        },
+        "n": 290,
+        "utc_day_blocks": 102
+      },
+      "model_minus_constant": {
+        "binary_brier": {
+          "value": -0.0013291825338476856,
+          "interval": [
+            -0.007155444823094196,
+            0.003909307966182955
+          ]
+        },
+        "log_loss": {
+          "value": -0.0027297606142045044,
+          "interval": [
+            -0.01451425522797914,
+            0.007998915631794277
+          ]
+        },
+        "classification_accuracy": {
+          "value": -0.006896551724137931,
+          "interval": [
+            -0.06666666666666667,
+            0.04687959558823529
+          ]
+        },
+        "n": 290,
+        "utc_day_blocks": 102
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 70,
+          "mean_probability": 0.4759801895831535,
+          "observed_frequency": 0.5142857142857142,
+          "frequency_interval": [
+            0.39954383919009234,
+            0.6275412161696143
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 184,
+          "mean_probability": 0.5444248262303253,
+          "observed_frequency": 0.5271739130434783,
+          "frequency_interval": [
+            0.45521901744990134,
+            0.5980173663749582
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 36,
+          "mean_probability": 0.6271665038501611,
+          "observed_frequency": 0.5555555555555556,
+          "frequency_interval": [
+            0.395810617556973,
+            0.7045873125991978
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.029081203083327244,
+      "high_probability_range": {
+        "minimum": 0.65,
+        "n": 6,
+        "observed_frequency": 0.6666666666666666,
+        "frequency_interval": [
+          0.0,
+          1.0
+        ],
+        "note": "Descriptive frozen range; below 50 outcomes gets a full uncertainty envelope. Not a betting win rate or an independently validated shortlist"
+      }
+    },
+    "final_test": {
+      "start": "2024-08-16",
+      "end": "2025-05-17",
+      "eligible": 306,
+      "model": {
+        "binary_brier": {
+          "value": 0.24214545911870297,
+          "interval": [
+            0.23326485649996195,
+            0.2509182936289687
+          ]
+        },
+        "log_loss": {
+          "value": 0.6770265745094597,
+          "interval": [
+            0.6588518144152091,
+            0.6948978242376803
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5424836601307189,
+          "interval": [
+            0.4829926707525115,
+            0.6030540223135643
+          ]
+        },
+        "n": 306,
+        "utc_day_blocks": 100
+      },
+      "constant_baseline": {
+        "binary_brier": {
+          "value": 0.2469135802469136,
+          "interval": [
+            0.23957242498909181,
+            0.2537661459469001
+          ]
+        },
+        "log_loss": {
+          "value": 0.6869615765973234,
+          "interval": [
+            0.6722183935025093,
+            0.7007235292105036
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5555555555555556,
+          "interval": [
+            0.49388246425567706,
+            0.6216259528759529
+          ]
+        },
+        "n": 306,
+        "utc_day_blocks": 100
+      },
+      "league_poisson_baseline": {
+        "binary_brier": {
+          "value": 0.2474840629216227,
+          "interval": [
+            0.24268819217385676,
+            0.25202287881139185
+          ]
+        },
+        "log_loss": {
+          "value": 0.6881097889316615,
+          "interval": [
+            0.6784977467986871,
+            0.6972050916280519
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5555555555555556,
+          "interval": [
+            0.49388246425567706,
+            0.6216259528759529
+          ]
+        },
+        "n": 306,
+        "utc_day_blocks": 100
+      },
+      "model_minus_constant": {
+        "binary_brier": {
+          "value": -0.004768121128210629,
+          "interval": [
+            -0.010050222112339219,
+            0.00019487241051342982
+          ]
+        },
+        "log_loss": {
+          "value": -0.009935002087863708,
+          "interval": [
+            -0.020854328158006395,
+            0.0003315218205798188
+          ]
+        },
+        "classification_accuracy": {
+          "value": -0.013071895424836602,
+          "interval": [
+            -0.06189374368190498,
+            0.03268241722918676
+          ]
+        },
+        "n": 306,
+        "utc_day_blocks": 100
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 48,
+          "mean_probability": 0.47950863447073194,
+          "observed_frequency": 0.5416666666666666,
+          "frequency_interval": [
+            0.40291074545649797,
+            0.6742475770713254
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 197,
+          "mean_probability": 0.5513685893796405,
+          "observed_frequency": 0.5126903553299492,
+          "frequency_interval": [
+            0.443319602146197,
+            0.5815756561802421
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 60,
+          "mean_probability": 0.6321222419574413,
+          "observed_frequency": 0.7,
+          "frequency_interval": [
+            0.5749129205308552,
+            0.8010183386123089
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 1,
+          "mean_probability": 0.73359415725861,
+          "observed_frequency": 1.0,
+          "frequency_interval": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.04883094437414693,
+      "high_probability_range": {
+        "minimum": 0.65,
+        "n": 13,
+        "observed_frequency": 0.8461538461538461,
+        "frequency_interval": [
+          0.0,
+          1.0
+        ],
+        "note": "Descriptive frozen range; below 50 outcomes gets a full uncertainty envelope. Not a betting win rate or an independently validated shortlist"
+      }
+    },
+    "later_partial_monitoring": {
+      "start": "2025-08-15",
+      "end": "2026-09-20",
+      "eligible": 302,
+      "model": {
+        "binary_brier": {
+          "value": 0.24264709401018386,
+          "interval": [
+            0.23239474086395384,
+            0.25326567533131933
+          ]
+        },
+        "log_loss": {
+          "value": 0.6783275923188531,
+          "interval": [
+            0.6572250767674567,
+            0.7001630313309728
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5695364238410596,
+          "interval": [
+            0.5121909311876625,
+            0.623343220338983
+          ]
+        },
+        "n": 302,
+        "utc_day_blocks": 110
+      },
+      "constant_baseline": {
+        "binary_brier": {
+          "value": 0.2446243152644919,
+          "interval": [
+            0.23893753430396783,
+            0.2504614281148498
+          ]
+        },
+        "log_loss": {
+          "value": 0.6823640641346317,
+          "interval": [
+            0.6709433476429356,
+            0.6940866909522881
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5761589403973509,
+          "interval": [
+            0.5236249247441301,
+            0.6273399690420675
+          ]
+        },
+        "n": 302,
+        "utc_day_blocks": 110
+      },
+      "league_poisson_baseline": {
+        "binary_brier": {
+          "value": 0.24428951246757313,
+          "interval": [
+            0.23827168924281059,
+            0.250520266185161
+          ]
+        },
+        "log_loss": {
+          "value": 0.6816841119304627,
+          "interval": [
+            0.6695876150143842,
+            0.6942150337116729
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5761589403973509,
+          "interval": [
+            0.5236249247441301,
+            0.6273399690420675
+          ]
+        },
+        "n": 302,
+        "utc_day_blocks": 110
+      },
+      "model_minus_constant": {
+        "binary_brier": {
+          "value": -0.0019772212543080012,
+          "interval": [
+            -0.007909607088160596,
+            0.004131571598129621
+          ]
+        },
+        "log_loss": {
+          "value": -0.004036471815778704,
+          "interval": [
+            -0.016319041498610954,
+            0.008653772485270763
+          ]
+        },
+        "classification_accuracy": {
+          "value": -0.006622516556291391,
+          "interval": [
+            -0.03236700752570804,
+            0.01948855599845698
+          ]
+        },
+        "n": 302,
+        "utc_day_blocks": 110
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 16,
+          "mean_probability": 0.4805219267979901,
+          "observed_frequency": 0.5625,
+          "frequency_interval": [
+            0.331785563988119,
+            0.7690134759450765
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 188,
+          "mean_probability": 0.5604259333803006,
+          "observed_frequency": 0.5319148936170213,
+          "frequency_interval": [
+            0.4606638875884161,
+            0.6018877635185318
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 98,
+          "mean_probability": 0.6309014743564741,
+          "observed_frequency": 0.6632653061224489,
+          "frequency_interval": [
+            0.5651152259128324,
+            0.7490986548637616
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.03259397403905362,
+      "high_probability_range": {
+        "minimum": 0.65,
+        "n": 21,
+        "observed_frequency": 0.6190476190476191,
+        "frequency_interval": [
+          0.0,
+          1.0
+        ],
+        "note": "Descriptive frozen range; below 50 outcomes gets a full uncertainty envelope. Not a betting win rate or an independently validated shortlist"
+      }
+    }
+  },
+  "state": {
+    "n": 2075,
+    "w": 406.7244940826792,
+    "hg": 661.8518353111344,
+    "ag": 550.0454515237969,
+    "latest": "2026-09-20",
+    "teams": {
+      "soccer:club:fr:d5b44aff34b5ebd8d44e": {
+        "n": 76,
+        "w": 2.2002054719611754,
+        "w2": 0.07234157628102131,
+        "last": "2022-05-21",
+        "recent": [
+          [
+            "2022-04-24",
+            3,
+            5
+          ],
+          [
+            "2022-05-01",
+            0,
+            1
+          ],
+          [
+            "2022-05-08",
+            1,
+            4
+          ],
+          [
+            "2022-05-14",
+            0,
+            0
+          ],
+          [
+            "2022-05-21",
+            4,
+            2
+          ]
+        ],
+        "home": {
+          "w": 1.0905032202138283,
+          "gf": 1.3131542305608268,
+          "ga": 1.6517261222211983
+        },
+        "away": {
+          "w": 1.1097022517473476,
+          "gf": 1.5055392833295282,
+          "ga": 2.998904888117761
+        }
+      },
+      "soccer:club:fr:b6022913277897fafa12": {
+        "n": 212,
+        "w": 39.194603262860404,
+        "w2": 15.859150821875923,
+        "last": "2026-05-08",
+        "recent": [
+          [
+            "2026-04-19",
+            1,
+            1
+          ],
+          [
+            "2026-04-22",
+            0,
+            3
+          ],
+          [
+            "2026-04-26",
+            1,
+            2
+          ],
+          [
+            "2026-05-02",
+            3,
+            0
+          ],
+          [
+            "2026-05-08",
+            0,
+            1
+          ]
+        ],
+        "home": {
+          "w": 20.2062577681504,
+          "gf": 22.724085492129873,
+          "ga": 29.541043717359276
+        },
+        "away": {
+          "w": 18.988345494709996,
+          "gf": 17.37354133318287,
+          "ga": 33.758385283939774
+        }
+      },
+      "soccer:club:fr:144264ccd235591ab074": {
+        "n": 219,
+        "w": 45.35539330253062,
+        "w2": 21.466149780692287,
+        "last": "2026-09-20",
+        "recent": [
+          [
+            "2026-08-23",
+            2,
+            0
+          ],
+          [
+            "2026-08-28",
+            2,
+            2
+          ],
+          [
+            "2026-09-03",
+            1,
+            0
+          ],
+          [
+            "2026-09-13",
+            2,
+            0
+          ],
+          [
+            "2026-09-20",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 22.19203582261814,
+          "gf": 37.68254208485548,
+          "ga": 23.152591590954426
+        },
+        "away": {
+          "w": 23.16335747991245,
+          "gf": 33.085376592525925,
+          "ga": 24.756488159618502
+        }
+      },
+      "soccer:club:fr:463fb323e94b81f8706f": {
+        "n": 219,
+        "w": 45.53400514252988,
+        "w2": 21.68377757033189,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-08-23",
+            2,
+            2
+          ],
+          [
+            "2026-08-30",
+            3,
+            2
+          ],
+          [
+            "2026-09-06",
+            2,
+            1
+          ],
+          [
+            "2026-09-11",
+            1,
+            0
+          ],
+          [
+            "2026-09-19",
+            0,
+            4
+          ]
+        ],
+        "home": {
+          "w": 22.463958645355476,
+          "gf": 42.1845577542162,
+          "ga": 25.600901866118868
+        },
+        "away": {
+          "w": 23.070046497174417,
+          "gf": 36.466225783898025,
+          "ga": 42.37154979456585
+        }
+      },
+      "soccer:club:fr:958fcf500002c97d57c3": {
+        "n": 38,
+        "w": 0.7416164976144646,
+        "w2": 0.014785873360937266,
+        "last": "2021-05-23",
+        "recent": [
+          [
+            "2021-04-25",
+            1,
+            5
+          ],
+          [
+            "2021-05-02",
+            1,
+            5
+          ],
+          [
+            "2021-05-09",
+            0,
+            3
+          ],
+          [
+            "2021-05-16",
+            0,
+            4
+          ],
+          [
+            "2021-05-23",
+            1,
+            0
+          ]
+        ],
+        "home": {
+          "w": 0.3674847497586338,
+          "gf": 0.15958279383037624,
+          "ga": 0.6356081866721328
+        },
+        "away": {
+          "w": 0.37413174785583087,
+          "gf": 0.33018647233130105,
+          "ga": 0.8314209098152208
+        }
+      },
+      "soccer:club:fr:93586e3e2f740d617a05": {
+        "n": 184,
+        "w": 39.17470585164107,
+        "w2": 19.72209057168969,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-05-17",
+            1,
+            1
+          ],
+          [
+            "2026-08-23",
+            0,
+            2
+          ],
+          [
+            "2026-08-29",
+            3,
+            1
+          ],
+          [
+            "2026-09-06",
+            1,
+            2
+          ],
+          [
+            "2026-09-19",
+            2,
+            0
+          ]
+        ],
+        "home": {
+          "w": 20.51716390295874,
+          "gf": 21.825626313889565,
+          "ga": 30.599972017292302
+        },
+        "away": {
+          "w": 18.657541948682347,
+          "gf": 16.379592513012053,
+          "ga": 30.30900739691059
+        }
+      },
+      "soccer:club:fr:faa5f491d76914ccb83c": {
+        "n": 38,
+        "w": 0.7424334633020825,
+        "w2": 0.014819518017593498,
+        "last": "2021-05-23",
+        "recent": [
+          [
+            "2021-04-25",
+            1,
+            2
+          ],
+          [
+            "2021-05-02",
+            2,
+            2
+          ],
+          [
+            "2021-05-09",
+            3,
+            0
+          ],
+          [
+            "2021-05-16",
+            2,
+            5
+          ],
+          [
+            "2021-05-23",
+            0,
+            2
+          ]
+        ],
+        "home": {
+          "w": 0.3693505795888468,
+          "gf": 0.4274092778249512,
+          "ga": 0.7549304389438538
+        },
+        "away": {
+          "w": 0.37308288371323556,
+          "gf": 0.3696771152362571,
+          "ga": 0.6278633656428461
+        }
+      },
+      "soccer:club:fr:e749e4a61f0de96ad39d": {
+        "n": 219,
+        "w": 45.747193986787366,
+        "w2": 21.955427037749473,
+        "last": "2026-09-20",
+        "recent": [
+          [
+            "2026-08-22",
+            2,
+            2
+          ],
+          [
+            "2026-08-29",
+            2,
+            2
+          ],
+          [
+            "2026-09-05",
+            2,
+            1
+          ],
+          [
+            "2026-09-13",
+            0,
+            1
+          ],
+          [
+            "2026-09-20",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 21.87572198081449,
+          "gf": 36.13373887498357,
+          "ga": 29.50664337758495
+        },
+        "away": {
+          "w": 23.871472005972876,
+          "gf": 27.622568441092394,
+          "ga": 43.60639941339668
+        }
+      },
+      "soccer:club:fr:5b579331b725dc7ed4e6": {
+        "n": 217,
+        "w": 43.63341407286788,
+        "w2": 19.957999306651768,
+        "last": "2026-09-20",
+        "recent": [
+          [
+            "2026-05-10",
+            1,
+            2
+          ],
+          [
+            "2026-08-30",
+            0,
+            3
+          ],
+          [
+            "2026-09-05",
+            1,
+            1
+          ],
+          [
+            "2026-09-12",
+            0,
+            1
+          ],
+          [
+            "2026-09-20",
+            2,
+            1
+          ]
+        ],
+        "home": {
+          "w": 21.46530805979328,
+          "gf": 32.54713200568374,
+          "ga": 28.07046245156164
+        },
+        "away": {
+          "w": 22.168106013074585,
+          "gf": 26.056248856737092,
+          "ga": 37.14290526133382
+        }
+      },
+      "soccer:club:fr:e1ea6c0f6dd59d687884": {
+        "n": 220,
+        "w": 46.26294266094932,
+        "w2": 22.220079175147692,
+        "last": "2026-09-18",
+        "recent": [
+          [
+            "2026-08-22",
+            5,
+            2
+          ],
+          [
+            "2026-08-29",
+            1,
+            2
+          ],
+          [
+            "2026-09-05",
+            0,
+            1
+          ],
+          [
+            "2026-09-13",
+            2,
+            2
+          ],
+          [
+            "2026-09-18",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 22.911482281082883,
+          "gf": 41.63772002011219,
+          "ga": 23.51223706813492
+        },
+        "away": {
+          "w": 23.35146037986642,
+          "gf": 37.37200238818587,
+          "ga": 30.82243100285841
+        }
+      },
+      "soccer:club:fr:7670a6aedefe326bd25b": {
+        "n": 219,
+        "w": 45.42892745051708,
+        "w2": 21.580793329599842,
+        "last": "2026-09-18",
+        "recent": [
+          [
+            "2026-08-23",
+            1,
+            0
+          ],
+          [
+            "2026-08-30",
+            2,
+            0
+          ],
+          [
+            "2026-09-04",
+            2,
+            1
+          ],
+          [
+            "2026-09-12",
+            1,
+            1
+          ],
+          [
+            "2026-09-18",
+            2,
+            1
+          ]
+        ],
+        "home": {
+          "w": 22.62205675448757,
+          "gf": 45.08457203109959,
+          "ga": 24.928009761499002
+        },
+        "away": {
+          "w": 22.806870696029517,
+          "gf": 39.231155898478434,
+          "ga": 37.620462878607405
+        }
+      },
+      "soccer:club:fr:282c176e6c860d718ede": {
+        "n": 182,
+        "w": 20.937193050770567,
+        "w2": 4.486155253876878,
+        "last": "2025-05-17",
+        "recent": [
+          [
+            "2025-04-20",
+            1,
+            0
+          ],
+          [
+            "2025-04-27",
+            0,
+            0
+          ],
+          [
+            "2025-05-02",
+            0,
+            1
+          ],
+          [
+            "2025-05-10",
+            0,
+            2
+          ],
+          [
+            "2025-05-17",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 10.476291216020693,
+          "gf": 11.454964927053112,
+          "ga": 13.454850669300905
+        },
+        "away": {
+          "w": 10.460901834749874,
+          "gf": 10.384119374790187,
+          "ga": 14.387489837945546
+        }
+      },
+      "soccer:club:fr:2f87bb318c00906694bd": {
+        "n": 185,
+        "w": 34.68353730392424,
+        "w2": 17.856470289179708,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-05-17",
+            0,
+            2
+          ],
+          [
+            "2026-08-29",
+            1,
+            2
+          ],
+          [
+            "2026-09-05",
+            1,
+            0
+          ],
+          [
+            "2026-09-12",
+            2,
+            2
+          ],
+          [
+            "2026-09-19",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 17.676198834553293,
+          "gf": 28.857441920485094,
+          "ga": 26.53230524445484
+        },
+        "away": {
+          "w": 17.007338469370957,
+          "gf": 18.95375427661109,
+          "ga": 27.922163883107313
+        }
+      },
+      "soccer:club:fr:c2d9d8f8d4ef65236301": {
+        "n": 218,
+        "w": 44.83552590918395,
+        "w2": 21.21293761381421,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-08-21",
+            0,
+            4
+          ],
+          [
+            "2026-08-29",
+            2,
+            1
+          ],
+          [
+            "2026-09-06",
+            6,
+            2
+          ],
+          [
+            "2026-09-12",
+            1,
+            1
+          ],
+          [
+            "2026-09-19",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 21.70979222536222,
+          "gf": 39.36383060282191,
+          "ga": 28.212888595354336
+        },
+        "away": {
+          "w": 23.125733683821725,
+          "gf": 37.04113880829892,
+          "ga": 39.36128081143651
+        }
+      },
+      "soccer:club:fr:bc038f8a1fc5599b9e3d": {
+        "n": 216,
+        "w": 43.26236589074992,
+        "w2": 19.862296336602455,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-05-17",
+            0,
+            4
+          ],
+          [
+            "2026-08-22",
+            2,
+            0
+          ],
+          [
+            "2026-08-29",
+            1,
+            1
+          ],
+          [
+            "2026-09-04",
+            3,
+            1
+          ],
+          [
+            "2026-09-19",
+            4,
+            0
+          ]
+        ],
+        "home": {
+          "w": 23.952756611067322,
+          "gf": 47.55319584412959,
+          "ga": 27.659989813485183
+        },
+        "away": {
+          "w": 19.309609279682597,
+          "gf": 32.964033569960336,
+          "ga": 29.10871310650619
+        }
+      },
+      "soccer:club:fr:0d7f4e03a51e852b218e": {
+        "n": 182,
+        "w": 20.95151351250903,
+        "w2": 4.491502673217028,
+        "last": "2025-05-17",
+        "recent": [
+          [
+            "2025-04-19",
+            1,
+            5
+          ],
+          [
+            "2025-04-27",
+            0,
+            0
+          ],
+          [
+            "2025-05-04",
+            0,
+            1
+          ],
+          [
+            "2025-05-10",
+            1,
+            4
+          ],
+          [
+            "2025-05-17",
+            0,
+            3
+          ]
+        ],
+        "home": {
+          "w": 10.351180787504761,
+          "gf": 11.79937681065673,
+          "ga": 20.02914483105389
+        },
+        "away": {
+          "w": 10.600332725004263,
+          "gf": 9.617548882140158,
+          "ga": 19.924139143354196
+        }
+      },
+      "soccer:club:fr:908301eb625b180c4fdd": {
+        "n": 139,
+        "w": 25.03260666885838,
+        "w2": 11.828537995660826,
+        "last": "2026-05-10",
+        "recent": [
+          [
+            "2026-04-10",
+            1,
+            3
+          ],
+          [
+            "2026-04-19",
+            1,
+            3
+          ],
+          [
+            "2026-04-26",
+            4,
+            4
+          ],
+          [
+            "2026-05-02",
+            1,
+            2
+          ],
+          [
+            "2026-05-10",
+            0,
+            4
+          ]
+        ],
+        "home": {
+          "w": 12.42934099931474,
+          "gf": 13.203300603547314,
+          "ga": 26.93481845163915
+        },
+        "away": {
+          "w": 12.603265669543648,
+          "gf": 14.105131505970627,
+          "ga": 32.487071270488926
+        }
+      },
+      "soccer:club:fr:8e4be8ef39a957f9c193": {
+        "n": 110,
+        "w": 12.741251324256911,
+        "w2": 3.418694878662267,
+        "last": "2025-05-17",
+        "recent": [
+          [
+            "2025-04-20",
+            2,
+            1
+          ],
+          [
+            "2025-04-26",
+            1,
+            3
+          ],
+          [
+            "2025-05-03",
+            1,
+            3
+          ],
+          [
+            "2025-05-10",
+            2,
+            0
+          ],
+          [
+            "2025-05-17",
+            2,
+            3
+          ]
+        ],
+        "home": {
+          "w": 6.435496015494245,
+          "gf": 9.117827141927073,
+          "ga": 13.118074290540525
+        },
+        "away": {
+          "w": 6.305755308762674,
+          "gf": 5.95772697344833,
+          "ga": 14.760908432673308
+        }
+      },
+      "soccer:club:fr:182ec6a640bb71a4b8f1": {
+        "n": 221,
+        "w": 46.7685229502003,
+        "w2": 22.431068225545417,
+        "last": "2026-09-20",
+        "recent": [
+          [
+            "2026-08-21",
+            4,
+            0
+          ],
+          [
+            "2026-08-30",
+            0,
+            2
+          ],
+          [
+            "2026-09-06",
+            2,
+            3
+          ],
+          [
+            "2026-09-11",
+            0,
+            1
+          ],
+          [
+            "2026-09-20",
+            1,
+            2
+          ]
+        ],
+        "home": {
+          "w": 23.913042311509468,
+          "gf": 54.12805418945528,
+          "ga": 29.88065242331109
+        },
+        "away": {
+          "w": 22.855480638690832,
+          "gf": 29.795516242737662,
+          "ga": 33.32871063030382
+        }
+      },
+      "soccer:club:fr:dfd601a8c8dcc63f8d8d": {
+        "n": 221,
+        "w": 46.826806236267615,
+        "w2": 22.56526324659101,
+        "last": "2026-09-20",
+        "recent": [
+          [
+            "2026-08-23",
+            2,
+            2
+          ],
+          [
+            "2026-08-28",
+            2,
+            2
+          ],
+          [
+            "2026-09-04",
+            1,
+            2
+          ],
+          [
+            "2026-09-13",
+            1,
+            0
+          ],
+          [
+            "2026-09-20",
+            2,
+            1
+          ]
+        ],
+        "home": {
+          "w": 22.113936075769324,
+          "gf": 52.82221764489295,
+          "ga": 21.4327341109513
+        },
+        "away": {
+          "w": 24.712870160498294,
+          "gf": 53.33618317049193,
+          "ga": 24.912315961441724
+        }
+      },
+      "soccer:club:fr:09f9ff53eabf771c5568": {
+        "n": 80,
+        "w": 8.321875041907525,
+        "w2": 4.117633562874008,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2023-06-03",
+            1,
+            1
+          ],
+          [
+            "2026-08-29",
+            2,
+            1
+          ],
+          [
+            "2026-09-06",
+            2,
+            6
+          ],
+          [
+            "2026-09-13",
+            0,
+            2
+          ],
+          [
+            "2026-09-19",
+            0,
+            2
+          ]
+        ],
+        "home": {
+          "w": 3.1952525062813786,
+          "gf": 4.113142375020102,
+          "ga": 8.90218610759197
+        },
+        "away": {
+          "w": 5.126622535626147,
+          "gf": 4.4686168652192215,
+          "ga": 10.14381098363788
+        }
+      },
+      "soccer:club:fr:5b742cca4392e52b2010": {
+        "n": 110,
+        "w": 9.66616633816417,
+        "w2": 1.1265836061163512,
+        "last": "2024-05-19",
+        "recent": [
+          [
+            "2024-04-20",
+            0,
+            1
+          ],
+          [
+            "2024-04-28",
+            4,
+            1
+          ],
+          [
+            "2024-05-04",
+            1,
+            4
+          ],
+          [
+            "2024-05-12",
+            0,
+            1
+          ],
+          [
+            "2024-05-19",
+            0,
+            5
+          ]
+        ],
+        "home": {
+          "w": 4.8225527849330305,
+          "gf": 4.758046133671189,
+          "ga": 7.568149425502392
+        },
+        "away": {
+          "w": 4.8436135532311395,
+          "gf": 4.303185133117758,
+          "ga": 8.275065781596556
+        }
+      },
+      "soccer:club:fr:23be3420c8b9de7d03a6": {
+        "n": 38,
+        "w": 2.9512534055854553,
+        "w2": 0.23645190452436132,
+        "last": "2023-06-03",
+        "recent": [
+          [
+            "2023-05-07",
+            0,
+            0
+          ],
+          [
+            "2023-05-13",
+            0,
+            5
+          ],
+          [
+            "2023-05-21",
+            0,
+            5
+          ],
+          [
+            "2023-05-27",
+            0,
+            3
+          ],
+          [
+            "2023-06-03",
+            1,
+            0
+          ]
+        ],
+        "home": {
+          "w": 1.4891656441720738,
+          "gf": 0.7396657271269245,
+          "ga": 2.336976849443601
+        },
+        "away": {
+          "w": 1.4620877614133818,
+          "gf": 0.9309266806888736,
+          "ga": 3.5699336781183124
+        }
+      },
+      "soccer:club:fr:40f09245974aa4eca9c8": {
+        "n": 106,
+        "w": 36.0286460531765,
+        "w2": 19.369840602046832,
+        "last": "2026-09-20",
+        "recent": [
+          [
+            "2026-08-22",
+            2,
+            5
+          ],
+          [
+            "2026-08-29",
+            1,
+            3
+          ],
+          [
+            "2026-09-04",
+            1,
+            3
+          ],
+          [
+            "2026-09-12",
+            1,
+            0
+          ],
+          [
+            "2026-09-20",
+            2,
+            1
+          ]
+        ],
+        "home": {
+          "w": 17.44834326806544,
+          "gf": 23.96262000006447,
+          "ga": 21.644958798644407
+        },
+        "away": {
+          "w": 18.58030278511108,
+          "gf": 22.547655846998538,
+          "ga": 36.658810246118506
+        }
+      },
+      "soccer:club:fr:a3be74b7c5c609a7f5b1": {
+        "n": 142,
+        "w": 42.57337648798721,
+        "w2": 21.029206304217645,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-08-22",
+            0,
+            2
+          ],
+          [
+            "2026-08-29",
+            2,
+            2
+          ],
+          [
+            "2026-09-03",
+            0,
+            1
+          ],
+          [
+            "2026-09-12",
+            2,
+            2
+          ],
+          [
+            "2026-09-19",
+            3,
+            2
+          ]
+        ],
+        "home": {
+          "w": 21.46295231801923,
+          "gf": 29.116794425888294,
+          "ga": 32.4483319166237
+        },
+        "away": {
+          "w": 21.110424169967978,
+          "gf": 30.87036338341911,
+          "ga": 29.93190840473639
+        }
+      },
+      "soccer:club:fr:1e3c52c428b69263a7bf": {
+        "n": 101,
+        "w": 37.66951115315348,
+        "w2": 19.406250453460476,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-05-17",
+            2,
+            0
+          ],
+          [
+            "2026-08-23",
+            0,
+            1
+          ],
+          [
+            "2026-08-29",
+            1,
+            1
+          ],
+          [
+            "2026-09-05",
+            1,
+            2
+          ],
+          [
+            "2026-09-19",
+            2,
+            3
+          ]
+        ],
+        "home": {
+          "w": 18.296433455432204,
+          "gf": 20.596737648889434,
+          "ga": 29.803560197582144
+        },
+        "away": {
+          "w": 19.37307769772128,
+          "gf": 21.582447839322622,
+          "ga": 33.07470370958848
+        }
+      },
+      "soccer:club:fr:ef3ee5baf9332650683c": {
+        "n": 33,
+        "w": 21.328488117874034,
+        "w2": 14.453733171249088,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-05-10",
+            1,
+            2
+          ],
+          [
+            "2026-05-17",
+            2,
+            1
+          ],
+          [
+            "2026-08-30",
+            3,
+            0
+          ],
+          [
+            "2026-09-06",
+            3,
+            2
+          ],
+          [
+            "2026-09-19",
+            2,
+            1
+          ]
+        ],
+        "home": {
+          "w": 11.94468211233372,
+          "gf": 22.692992132269335,
+          "ga": 17.276406032716253
+        },
+        "away": {
+          "w": 9.383806005540317,
+          "gf": 14.506751918203276,
+          "ga": 15.311672731740936
+        }
+      },
+      "soccer:club:fr:0b3238062ce9ad3d1e36": {
+        "n": 5,
+        "w": 4.8549075572285485,
+        "w2": 4.715693541312032,
+        "last": "2026-09-19",
+        "recent": [
+          [
+            "2026-08-22",
+            2,
+            2
+          ],
+          [
+            "2026-08-30",
+            2,
+            3
+          ],
+          [
+            "2026-09-05",
+            1,
+            1
+          ],
+          [
+            "2026-09-13",
+            2,
+            2
+          ],
+          [
+            "2026-09-19",
+            2,
+            1
+          ]
+        ],
+        "home": {
+          "w": 2.9257531520241553,
+          "gf": 5.851506304048311,
+          "ga": 4.855297167258332
+        },
+        "away": {
+          "w": 1.9291544052043936,
+          "gf": 2.888236374368209,
+          "ga": 3.847318343532024
+        }
+      }
+    },
+    "as_of": "2026-09-21"
+  },
+  "current_rows": [
+    {
+      "date": "2026-08-21",
+      "home": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "hg": 4,
+      "ag": 0,
+      "fixture_id": "001c7f5f25ae4f91961a3c4029d59680ba7f0aeb477677d532518308fe34f2fe",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-22",
+      "home": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "hg": 2,
+      "ag": 2,
+      "fixture_id": "127dadf3ed11be85dbd9b2810836f79948c8cb91d54b1e967828ce7a155033f9",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-22",
+      "home": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away": "soccer:club:fr:40f09245974aa4eca9c8",
+      "hg": 5,
+      "ag": 2,
+      "fixture_id": "b2d0e955d5705eae2088bf7a7c7eddf55f2b34bb4ae739e04d793e77c895c2ce",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-22",
+      "home": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "hg": 0,
+      "ag": 2,
+      "fixture_id": "e5c3844edc56ac59aacf1e30b7f21e971c6d76dd4e9847d21b37e7ded865cfee",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-23",
+      "home": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away": "soccer:club:fr:7670a6aedefe326bd25b",
+      "hg": 0,
+      "ag": 1,
+      "fixture_id": "0e4b7587fed518b71e47f76b0f11a03da7242da3eb8150dce0ad772a79b2a63c",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-23",
+      "home": "soccer:club:fr:463fb323e94b81f8706f",
+      "away": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "hg": 2,
+      "ag": 2,
+      "fixture_id": "491bab9ea0bf4226f233f8ab97882d7f875328dab21779b5be397bc8903fbd1f",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-23",
+      "home": "soccer:club:fr:93586e3e2f740d617a05",
+      "away": "soccer:club:fr:144264ccd235591ab074",
+      "hg": 0,
+      "ag": 2,
+      "fixture_id": "f5563c6b6f2cf00c16aa742fbd09730b5a4829a75b0c23674c0d992adc23c6ce",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-28",
+      "home": "soccer:club:fr:144264ccd235591ab074",
+      "away": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "hg": 2,
+      "ag": 2,
+      "fixture_id": "6fe1eb4b12d6391d03b899b7d96c4caa62f61184fe6789e04f2866d974bfac6b",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-29",
+      "home": "soccer:club:fr:2f87bb318c00906694bd",
+      "away": "soccer:club:fr:09f9ff53eabf771c5568",
+      "hg": 1,
+      "ag": 2,
+      "fixture_id": "32662a89ce197e00fab8bdd6f5359fd3f1561cbd26a5a04017d9894af7dd4502",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-29",
+      "home": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away": "soccer:club:fr:93586e3e2f740d617a05",
+      "hg": 1,
+      "ag": 3,
+      "fixture_id": "614905ad09bd30af40902046bb9fa6557da50957cbc86c0f55055ef55bdfacfa",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-29",
+      "home": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "hg": 2,
+      "ag": 2,
+      "fixture_id": "7853843120240c3dad9fa83e43d2ca05f374dcf732a1fc3ac81cce9a05bdf0ac",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-29",
+      "home": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "hg": 1,
+      "ag": 1,
+      "fixture_id": "eaea49ed7e12d232adde61626463c2b7f3fa9a6002e73592b1c26c42b2e5eae3",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-29",
+      "home": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "hg": 2,
+      "ag": 1,
+      "fixture_id": "f1d7beaa46563ed1eebeec8dc6e0aa7fe7d545791b9aa17fc91af71a1cfc0595",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-30",
+      "home": "soccer:club:fr:463fb323e94b81f8706f",
+      "away": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "hg": 3,
+      "ag": 2,
+      "fixture_id": "0a293784c7e6e1d08b8cb7a5a1a77134fde191a19861333836c273a4276796ba",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-30",
+      "home": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "hg": 2,
+      "ag": 0,
+      "fixture_id": "39a9c90713c32a11f5075f698d7cc13cc99fa9c3db3a0b987d2954b3bf8ec874",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-08-30",
+      "home": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "hg": 3,
+      "ag": 0,
+      "fixture_id": "6de45d93351133af14bd61f165ca70a641550ed9b74607acfefccef07f9ae833",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-03",
+      "home": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away": "soccer:club:fr:144264ccd235591ab074",
+      "hg": 0,
+      "ag": 1,
+      "fixture_id": "c5bb1d5d63db1668ab5abd081fe4ee3fa930a9f41eed7393933e47d0ca5f50c9",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away": "soccer:club:fr:40f09245974aa4eca9c8",
+      "hg": 3,
+      "ag": 1,
+      "fixture_id": "44d481b27d210e78c0b50c1a6661e5dddb6527c3577dd8dc6b06497afc0a24b2",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-04",
+      "home": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away": "soccer:club:fr:7670a6aedefe326bd25b",
+      "hg": 1,
+      "ag": 2,
+      "fixture_id": "58fe07689ddbb8770e4dae8c65d6f73a138b9bd0d5249a5c6a1921a7201db58b",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away": "soccer:club:fr:2f87bb318c00906694bd",
+      "hg": 0,
+      "ag": 1,
+      "fixture_id": "3e9082415453bbafbb5ce8721b3c411430c7e79048540326d9734b895918ee63",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "hg": 1,
+      "ag": 2,
+      "fixture_id": "59bcff3c99e072fa25147abef50e6b6d009cb1c5d4ae13c3c2e9d669f6dcfb12",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-05",
+      "home": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "hg": 1,
+      "ag": 1,
+      "fixture_id": "f38470caaf88b0c06a43f28435c021b9b6f8781fbddb4b35a33b7266f127b375",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "soccer:club:fr:93586e3e2f740d617a05",
+      "away": "soccer:club:fr:463fb323e94b81f8706f",
+      "hg": 1,
+      "ag": 2,
+      "fixture_id": "5a79d64b652a4ee97474a471e6cfa5f07fe0a4b388600d0217a8eee599ba68ff",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "hg": 2,
+      "ag": 6,
+      "fixture_id": "5ae87f3365e0b753d319949a698aafab5d486210e3d28c9eea8e683a761811a3",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-06",
+      "home": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away": "soccer:club:fr:ef3ee5baf9332650683c",
+      "hg": 2,
+      "ag": 3,
+      "fixture_id": "d6e429cafda605c58a2acc0a2654d5db92b3df7e3093958f8f6d45d764c5b9f8",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-11",
+      "home": "soccer:club:fr:463fb323e94b81f8706f",
+      "away": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "hg": 1,
+      "ag": 0,
+      "fixture_id": "452ec7c20d62d0ae563e361c4b57cdee1ee5c8c9f3f1fcf2fd170c94337f0867",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-12",
+      "home": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "hg": 1,
+      "ag": 0,
+      "fixture_id": "1b73d61c22b363b7a9039c522e48d401e57e0d3a1730c7b0c50eb0e575c7f977",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-12",
+      "home": "soccer:club:fr:2f87bb318c00906694bd",
+      "away": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "hg": 2,
+      "ag": 2,
+      "fixture_id": "cfe8e0aca53a080a79b19427f063125c110cd082ce838724baee9d7e4d5f44a2",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-12",
+      "home": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away": "soccer:club:fr:7670a6aedefe326bd25b",
+      "hg": 1,
+      "ag": 1,
+      "fixture_id": "df8205739c11cc095a76be08ea1427502997c73c44aa97f0144a8e7fbafdc51b",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-13",
+      "home": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "hg": 2,
+      "ag": 2,
+      "fixture_id": "82b5652712325040c6b695881e01ead04b4d6851e47a2fe2681fee50f2520c79",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-13",
+      "home": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "hg": 0,
+      "ag": 1,
+      "fixture_id": "8f105e8968b73a6d89cc3f9bce507b5fc8d7924fed52377a3400b688aba1a9b9",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-13",
+      "home": "soccer:club:fr:144264ccd235591ab074",
+      "away": "soccer:club:fr:09f9ff53eabf771c5568",
+      "hg": 2,
+      "ag": 0,
+      "fixture_id": "cd2babcadd6388737ac2efc47b5ce2d647dcfaf16146a0f9da7e12de12de7d4d",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-18",
+      "home": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "hg": 2,
+      "ag": 1,
+      "fixture_id": "5a4d041a6eca217f36eaa314a17d521f2e8b3cc2bb2e8e24c2dd525b19cdeb0b",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-19",
+      "home": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away": "soccer:club:fr:2f87bb318c00906694bd",
+      "hg": 2,
+      "ag": 1,
+      "fixture_id": "09a834b1990fde15256d5beae8fb0121077e718069cd53d142d159c445f58b7d",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-19",
+      "home": "soccer:club:fr:93586e3e2f740d617a05",
+      "away": "soccer:club:fr:09f9ff53eabf771c5568",
+      "hg": 2,
+      "ag": 0,
+      "fixture_id": "0b07c0ca073bd9412721eb37f345f26321678440f42d1ac780b48e50646dd2ab",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-19",
+      "home": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away": "soccer:club:fr:463fb323e94b81f8706f",
+      "hg": 4,
+      "ag": 0,
+      "fixture_id": "26cf2a01a6a2cd8648c191f38c9d7ffa0fe324f08f7a8f3defcd2d8e5bd15bd6",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-19",
+      "home": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "hg": 2,
+      "ag": 1,
+      "fixture_id": "5527b4a04089cb429b31d8c28307580ea054bd37a4833e4362fffdcaa1d8f734",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-19",
+      "home": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "hg": 3,
+      "ag": 2,
+      "fixture_id": "c21c4dc874e2c24994fa69f940875dd37fe1f641178bcac66ac482e6d38eec14",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-20",
+      "home": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "hg": 1,
+      "ag": 2,
+      "fixture_id": "664bcb413d405f742738ce2ce88ac6c6e4f8ff1292b454b86a1a5a5df2509948",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-20",
+      "home": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away": "soccer:club:fr:144264ccd235591ab074",
+      "hg": 2,
+      "ag": 1,
+      "fixture_id": "7b1cd77c537f2014bd49238d39a80cfc322d84a5f57bd4542626908ec101ffb3",
+      "season": "2026-27"
+    },
+    {
+      "date": "2026-09-20",
+      "home": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "hg": 2,
+      "ag": 1,
+      "fixture_id": "8f6dc4a10a17ea087028dae689584af067b1346b028fa17d93c27154fcf036cc",
+      "season": "2026-27"
+    }
+  ],
+  "fixtures": [
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-08-21",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-08-22",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-08-22",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-08-22",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-08-22",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-08-22",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-08-23",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-08-23",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-08-23",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-08-28",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-08-29",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-08-29",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2026-08-29",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2026-08-29",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-08-29",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2026-08-30",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-08-30",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-08-30",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-09-03",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-09-04",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-09-04",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-09-05",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-09-05",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-09-05",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-09-06",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2026-09-06",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-09-06",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-09-11",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-09-12",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-09-12",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2026-09-12",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2026-09-12",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-09-12",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-09-13",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-09-13",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-09-13",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-09-18",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-09-19",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-09-19",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2026-09-19",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-09-19",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2026-09-19",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-09-20",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-09-20",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-09-20",
+      "status": "completed"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-10-09",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2026-10-10",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2026-10-10",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-10-10",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-10-10",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-10-10",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-10-11",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-10-11",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-10-11",
+      "status": "unresolved"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-10-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-10-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-10-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-10-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-10-18",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-10-18",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2026-10-18",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-10-18",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2026-10-18",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2026-10-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-10-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-10-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-10-25",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2026-10-25",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-10-25",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-10-25",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-10-25",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-10-25",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-10-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-10-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2026-10-31",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2026-10-31",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-10-31",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-10-31",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-11-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-11-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-11-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-11-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-11-07",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-11-07",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-11-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-11-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-11-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-11-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2026-11-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-11-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2026-11-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-11-21",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-11-21",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-11-21",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-11-21",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-11-21",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2026-11-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2026-11-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-11-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-11-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-11-28",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-11-28",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-11-28",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-11-28",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-11-28",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-11-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2026-11-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-11-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-12-05",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2026-12-12",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2026-12-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-01-02",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-01-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-01-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-01-23",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-01-30",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-02-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-02-07",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-02-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-02-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-02-27",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-02-28",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-03-06",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-03-13",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-03-20",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-03-21",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-04-03",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-04-10",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-04-17",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-04-24",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-05-01",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-05-08",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-05-09",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-05-16",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "away_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "away_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "away_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "away_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "away_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "away_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "away_id": "soccer:club:fr:144264ccd235591ab074",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "away_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "away_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "event_date": "2027-05-22",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:7670a6aedefe326bd25b",
+      "away_id": "soccer:club:fr:09f9ff53eabf771c5568",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:dfd601a8c8dcc63f8d8d",
+      "away_id": "soccer:club:fr:a3be74b7c5c609a7f5b1",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:144264ccd235591ab074",
+      "away_id": "soccer:club:fr:0b3238062ce9ad3d1e36",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:e749e4a61f0de96ad39d",
+      "away_id": "soccer:club:fr:e1ea6c0f6dd59d687884",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:182ec6a640bb71a4b8f1",
+      "away_id": "soccer:club:fr:2f87bb318c00906694bd",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:463fb323e94b81f8706f",
+      "away_id": "soccer:club:fr:93586e3e2f740d617a05",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:bc038f8a1fc5599b9e3d",
+      "away_id": "soccer:club:fr:ef3ee5baf9332650683c",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:40f09245974aa4eca9c8",
+      "away_id": "soccer:club:fr:1e3c52c428b69263a7bf",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    },
+    {
+      "season": "2026-27",
+      "home_id": "soccer:club:fr:c2d9d8f8d4ef65236301",
+      "away_id": "soccer:club:fr:5b579331b725dc7ed4e6",
+      "event_date": "2027-05-29",
+      "status": "scheduled"
+    }
+  ],
+  "limitations": [
+    "Per-competition venue scoring counts; no xG, injuries, roster, lineup or player context",
+    "Only prior calendar dates enter features; archive publication/correction timing is unverified",
+    "Separate fitted parameters and calibration; no cross-league strength transfer",
+    "Independent-Poisson score assumption is not a calibrated parlay dependency model",
+    "Day-block bootstrap assumes exchangeable independent days; cross-day dependence is unverified",
+    "Calibration-bin Wilson envelopes are frequency diagnostics, not event-specific confidence guarantees",
+    "Missing/promoted-team exclusions and partial later coverage can bias outcomes",
+    "No timestamped historical market prices, independent prospective confirmation or reviewed activation"
+  ],
+  "betting_roi": null,
+  "model_approval_blockers": [
+    "Independent forecasting review/confirmation absent",
+    "Historical market baseline absent",
+    "No reviewed champion activation"
+  ],
+  "artifact_sha256": "764e7e675a37c1a612978fae726c9f65a588560d3be25526aaaadee3dfc0aac6"
+}

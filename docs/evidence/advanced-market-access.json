@@ -1,0 +1,124 @@
+{
+  "checked_at": "2026-10-16T16:57:59.233569+00:00",
+  "local_cap_used": 9,
+  "before_used": 3,
+  "after_used": 9,
+  "queries": [
+    {
+      "league": "NBA",
+      "markets_requested": [
+        "spreads",
+        "totals"
+      ],
+      "endpoint": "featured odds",
+      "received_at": "2026-10-16T16:57:57.275022+00:00",
+      "normalized_quotes": 372,
+      "rejected_records": 0,
+      "ontario_quotes": 372,
+      "current_ontario_quotes": 372,
+      "observed_ontario_books": [
+        "betmgm_ca_on",
+        "betrivers_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "observed_markets": {
+        "spreads": 204,
+        "totals": 168
+      },
+      "provider_last_cost": "2",
+      "provider_remaining": "391",
+      "error": null
+    },
+    {
+      "league": "MLB",
+      "markets_requested": [
+        "spreads"
+      ],
+      "endpoint": "featured odds",
+      "received_at": "2026-10-16T16:57:57.849649+00:00",
+      "normalized_quotes": 12,
+      "rejected_records": 0,
+      "ontario_quotes": 10,
+      "current_ontario_quotes": 10,
+      "observed_ontario_books": [
+        "betano_ca_on",
+        "betmgm_ca_on",
+        "pointsbetca",
+        "proline_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "observed_markets": {
+        "spreads": 10
+      },
+      "provider_last_cost": "1",
+      "provider_remaining": "390",
+      "error": null
+    },
+    {
+      "league": "NBA",
+      "markets_requested": [
+        "player_points"
+      ],
+      "endpoint": "event odds",
+      "received_at": "2026-10-16T16:57:58.297990+00:00",
+      "normalized_quotes": 0,
+      "rejected_records": 0,
+      "ontario_quotes": 0,
+      "current_ontario_quotes": 0,
+      "observed_ontario_books": [],
+      "observed_markets": {},
+      "provider_last_cost": "0",
+      "provider_remaining": "390",
+      "error": null
+    },
+    {
+      "league": "MLB",
+      "markets_requested": [
+        "pitcher_strikeouts"
+      ],
+      "endpoint": "event odds",
+      "received_at": "2026-10-16T16:57:58.826683+00:00",
+      "normalized_quotes": 6,
+      "rejected_records": 0,
+      "ontario_quotes": 6,
+      "current_ontario_quotes": 6,
+      "observed_ontario_books": [
+        "betmgm_ca_on",
+        "pointsbetca",
+        "sportsinteraction_ca_on"
+      ],
+      "observed_markets": {
+        "pitcher_strikeouts": 6
+      },
+      "provider_last_cost": "1",
+      "provider_remaining": "389",
+      "error": null
+    },
+    {
+      "league": "Premier League",
+      "markets_requested": [
+        "btts"
+      ],
+      "endpoint": "event odds",
+      "received_at": "2026-10-16T16:57:59.225728+00:00",
+      "normalized_quotes": 4,
+      "rejected_records": 0,
+      "ontario_quotes": 4,
+      "current_ontario_quotes": 4,
+      "observed_ontario_books": [
+        "betmgm_ca_on",
+        "sportsinteraction_ca_on"
+      ],
+      "observed_markets": {
+        "btts": 4
+      },
+      "provider_last_cost": "1",
+      "provider_remaining": "388",
+      "error": null
+    }
+  ],
+  "account_billing_plan_verified": false,
+  "note": "Only documented current featured/event endpoints advertised in free-tier market access; no historical/paid AI endpoint or subscription action"
+}

@@ -1,0 +1,485 @@
+{
+  "schema": 1,
+  "sport": "NBA",
+  "league": "NBA",
+  "model_version": "nba-recent-season-elo-research-1",
+  "generated_at": "2026-10-18T06:37:38.139200+00:00",
+  "source": [
+    {
+      "file": "nba-2022-23.csv",
+      "url": "https://boxscorelab.com/downloads/2022-23-team-game-results.csv",
+      "observed_at": "2026-10-18T06:17:47.177232+00:00",
+      "http": 200,
+      "size": 316882,
+      "sha256": "40b9a2c4f50d040396c53a45e86d174dcfcb0af3d8105a1c53f33432cf088a86"
+    },
+    {
+      "file": "nba-2023-24.csv",
+      "url": "https://boxscorelab.com/downloads/2023-24-team-game-results.csv",
+      "observed_at": "2026-10-18T06:17:47.891614+00:00",
+      "http": 200,
+      "size": 316978,
+      "sha256": "3f181cbcc8bda22aa878e59e34f638fc10961a9af9b6aaf2d622cccb8028afce"
+    },
+    {
+      "file": "nba-2024-25.csv",
+      "url": "https://boxscorelab.com/downloads/2024-25-team-game-results.csv",
+      "observed_at": "2026-10-18T06:17:48.503563+00:00",
+      "http": 200,
+      "size": 317495,
+      "sha256": "61d696baa530a865f06169be4cfc0992de731c400317e484f9fa146cd6c2321b"
+    },
+    {
+      "file": "nba-2025-26.csv",
+      "url": "https://boxscorelab.com/downloads/2025-26-team-game-results.csv",
+      "observed_at": "2026-10-18T06:17:49.137745+00:00",
+      "http": 200,
+      "size": 317827,
+      "sha256": "f2872cc98025595469847db9da3210521d7ea52ab5d43ce39ffd4f1e6ffbacf1"
+    }
+  ],
+  "license_reference": "https://boxscorelab.com/downloads/",
+  "attribution": "BoxScoreLab (boxscorelab.com), NBA team game results, CC BY 4.0. Modified: reconcile reciprocal rows and retain regular-season final scores. Publisher permission; underlying third-party rights and league endorsement are not established.",
+  "data_end": "2026-04-12",
+  "history_n": 4910,
+  "data_sha256": "826905fcc54db1b1d9cc663c376c20b1b25235ce4af4ad69f07c3d66bc669f7f",
+  "code_sha256": "a75badcd07c00da5fac3ae3b10b76af8247326bf9d3c7fbc6ff7893f5979467d",
+  "training_end": "2024-06-30",
+  "calibration_start": "2024-07-01",
+  "calibration_end": "2025-06-30",
+  "test_start": "2025-07-01",
+  "test_end": "2026-04-12",
+  "excluded_neutral_games": {
+    "2022-23": 0,
+    "2023-24": 0,
+    "2024-25": 5,
+    "2025-26": 5
+  },
+  "calibration_n": 1225,
+  "test_n": 1225,
+  "coefficients": [
+    -0.07418694056484319,
+    0.7404260297674193
+  ],
+  "metrics": {
+    "binary_brier": {
+      "value": 0.2085540799362459,
+      "interval": [
+        0.19838708914625616,
+        0.21840840437158415
+      ]
+    },
+    "log_loss": {
+      "value": 0.6049305119550289,
+      "interval": [
+        0.5820527239953907,
+        0.6274134567227236
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.6906122448979591,
+      "interval": [
+        0.6618074748425763,
+        0.7194097681398398
+      ]
+    },
+    "n": 1225,
+    "utc_day_blocks": 163
+  },
+  "baseline": {
+    "binary_brier": {
+      "value": 0.2471086041072533,
+      "interval": [
+        0.24396335734954241,
+        0.2503680047605795
+      ]
+    },
+    "log_loss": {
+      "value": 0.687354338392307,
+      "interval": [
+        0.6810315797965983,
+        0.6939065758112483
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.5542857142857143,
+      "interval": [
+        0.5278888576788419,
+        0.5797580745405954
+      ]
+    },
+    "n": 1225,
+    "utc_day_blocks": 163
+  },
+  "minus_baseline": {
+    "binary_brier": {
+      "value": -0.03855452417100739,
+      "interval": [
+        -0.04901530340297228,
+        -0.028500385362604904
+      ]
+    },
+    "log_loss": {
+      "value": -0.08242382643727812,
+      "interval": [
+        -0.10587462280109775,
+        -0.06014431027670966
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.1363265306122449,
+      "interval": [
+        0.1024041347190225,
+        0.1737938806522877
+      ]
+    },
+    "n": 1225,
+    "utc_day_blocks": 163
+  },
+  "paired_test_n": 1225,
+  "incumbent_temperature": 0.7,
+  "incumbent_metrics": {
+    "binary_brier": {
+      "value": 0.20991482803868555,
+      "interval": [
+        0.1997240370011716,
+        0.22035208082500352
+      ]
+    },
+    "log_loss": {
+      "value": 0.6082516727434842,
+      "interval": [
+        0.5850719492421984,
+        0.6321852270908599
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.6914285714285714,
+      "interval": [
+        0.6647785074797403,
+        0.7184471944196481
+      ]
+    },
+    "n": 1225,
+    "utc_day_blocks": 163
+  },
+  "minus_incumbent": {
+    "binary_brier": {
+      "value": -0.0013607481024396966,
+      "interval": [
+        -0.0045894493272792035,
+        0.0017663043499403781
+      ]
+    },
+    "log_loss": {
+      "value": -0.0033211607884552083,
+      "interval": [
+        -0.010471304476866481,
+        0.0036237633856463255
+      ]
+    },
+    "classification_accuracy": {
+      "value": -0.0008163265306122449,
+      "interval": [
+        -0.016668410041841004,
+        0.01731035951388573
+      ]
+    },
+    "n": 1225,
+    "utc_day_blocks": 163
+  },
+  "opening_14_days": {
+    "binary_brier": {
+      "value": 0.22409546048712037,
+      "interval": [
+        0.1939501664028307,
+        0.2500766362172949
+      ]
+    },
+    "log_loss": {
+      "value": 0.6421736655829532,
+      "interval": [
+        0.5689364746508728,
+        0.7092035269447602
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.6372549019607843,
+      "interval": [
+        0.5463874209477605,
+        0.7528159245387709
+      ]
+    },
+    "n": 102,
+    "utc_day_blocks": 14
+  },
+  "calibration_bins": [
+    {
+      "lower": 0.0,
+      "upper": 0.1,
+      "n": 4,
+      "mean_probability": 0.08718312795013414,
+      "observed_frequency": 0.0,
+      "frequency_interval": [
+        0.0,
+        0.4898908364545973
+      ]
+    },
+    {
+      "lower": 0.1,
+      "upper": 0.2,
+      "n": 33,
+      "mean_probability": 0.16074267432846664,
+      "observed_frequency": 0.06060606060606061,
+      "frequency_interval": [
+        0.016780883087191875,
+        0.1960624480864781
+      ]
+    },
+    {
+      "lower": 0.2,
+      "upper": 0.3,
+      "n": 109,
+      "mean_probability": 0.2514153283991086,
+      "observed_frequency": 0.3302752293577982,
+      "frequency_interval": [
+        0.24908495766603775,
+        0.4230213728734029
+      ]
+    },
+    {
+      "lower": 0.3,
+      "upper": 0.4,
+      "n": 154,
+      "mean_probability": 0.3507613716538673,
+      "observed_frequency": 0.33766233766233766,
+      "frequency_interval": [
+        0.2677309182760858,
+        0.4154955269584369
+      ]
+    },
+    {
+      "lower": 0.4,
+      "upper": 0.5,
+      "n": 194,
+      "mean_probability": 0.4504217764591048,
+      "observed_frequency": 0.4175257731958763,
+      "frequency_interval": [
+        0.35039067608538677,
+        0.48786365043066493
+      ]
+    },
+    {
+      "lower": 0.5,
+      "upper": 0.6,
+      "n": 221,
+      "mean_probability": 0.5506499251749443,
+      "observed_frequency": 0.5746606334841629,
+      "frequency_interval": [
+        0.5087500059007226,
+        0.6380200789985961
+      ]
+    },
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "n": 216,
+      "mean_probability": 0.6474454446254,
+      "observed_frequency": 0.6435185185185185,
+      "frequency_interval": [
+        0.5776481475051476,
+        0.7043732707140977
+      ]
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "n": 191,
+      "mean_probability": 0.7506128294604905,
+      "observed_frequency": 0.743455497382199,
+      "frequency_interval": [
+        0.6771460135878588,
+        0.8001651324223172
+      ]
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "n": 90,
+      "mean_probability": 0.8423730385275743,
+      "observed_frequency": 0.8444444444444444,
+      "frequency_interval": [
+        0.7556715472270163,
+        0.9050172440508919
+      ]
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "n": 13,
+      "mean_probability": 0.9150097011904385,
+      "observed_frequency": 0.9230769230769231,
+      "frequency_interval": [
+        0.6668604907890041,
+        0.9862895787574435
+      ]
+    }
+  ],
+  "test_reliability": [
+    {
+      "lower": 0.0,
+      "upper": 0.1,
+      "n": 4,
+      "mean_probability": 0.08924172296664558,
+      "observed_frequency": 0.0,
+      "frequency_interval": [
+        0.0,
+        0.4898908364545973
+      ]
+    },
+    {
+      "lower": 0.1,
+      "upper": 0.2,
+      "n": 44,
+      "mean_probability": 0.17454797541864928,
+      "observed_frequency": 0.11363636363636363,
+      "frequency_interval": [
+        0.04952780601092492,
+        0.23979152416608285
+      ]
+    },
+    {
+      "lower": 0.2,
+      "upper": 0.3,
+      "n": 93,
+      "mean_probability": 0.25328267731173926,
+      "observed_frequency": 0.2903225806451613,
+      "frequency_interval": [
+        0.20785401544334214,
+        0.38942590500674046
+      ]
+    },
+    {
+      "lower": 0.3,
+      "upper": 0.4,
+      "n": 163,
+      "mean_probability": 0.3481499935409542,
+      "observed_frequency": 0.3558282208588957,
+      "frequency_interval": [
+        0.2864250093616944,
+        0.4318704291209475
+      ]
+    },
+    {
+      "lower": 0.4,
+      "upper": 0.5,
+      "n": 211,
+      "mean_probability": 0.45232756589643897,
+      "observed_frequency": 0.3981042654028436,
+      "frequency_interval": [
+        0.33444506023505505,
+        0.4654073507658978
+      ]
+    },
+    {
+      "lower": 0.5,
+      "upper": 0.6,
+      "n": 203,
+      "mean_probability": 0.5558323492610938,
+      "observed_frequency": 0.6650246305418719,
+      "frequency_interval": [
+        0.5975655490197497,
+        0.7263540383879211
+      ]
+    },
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "n": 218,
+      "mean_probability": 0.6542665293051072,
+      "observed_frequency": 0.6192660550458715,
+      "frequency_interval": [
+        0.5532710808703529,
+        0.6811305511619605
+      ]
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "n": 169,
+      "mean_probability": 0.744526886062053,
+      "observed_frequency": 0.8047337278106509,
+      "frequency_interval": [
+        0.7384773013184178,
+        0.8574445377054722
+      ]
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "n": 108,
+      "mean_probability": 0.8428380079749119,
+      "observed_frequency": 0.8240740740740741,
+      "frequency_interval": [
+        0.7415045937948218,
+        0.8843813767398171
+      ]
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "n": 12,
+      "mean_probability": 0.9160038188844698,
+      "observed_frequency": 0.8333333333333334,
+      "frequency_interval": [
+        0.5519691377470266,
+        0.9530348578161463
+      ]
+    }
+  ],
+  "ece": 0.05074620384424244,
+  "ratings": {
+    "BOS": 1726.277362721814,
+    "PHI": 1541.6899799796158,
+    "GSW": 1377.405166244613,
+    "LAL": 1651.5058696730496,
+    "UTA": 1227.1555636071464,
+    "DEN": 1711.6320961117578,
+    "TOR": 1525.8374747577468,
+    "CLE": 1641.7623122939858,
+    "SAS": 1776.0081010067695,
+    "CHO": 1634.1689304673496,
+    "PHO": 1527.4079588428212,
+    "DAL": 1332.2314214729702,
+    "MIN": 1568.5476130731404,
+    "OKC": 1767.339173088456,
+    "SAC": 1336.8805184098956,
+    "POR": 1546.081752818925,
+    "MEM": 1217.7015763429931,
+    "NYK": 1637.6144648775637,
+    "IND": 1275.7760305487736,
+    "WAS": 1152.1392658974546,
+    "DET": 1712.025380859262,
+    "ORL": 1566.8858872330397,
+    "BRK": 1237.2709235497857,
+    "NOP": 1383.1044499696307,
+    "ATL": 1603.502668755295,
+    "HOU": 1613.9885045854003,
+    "MIA": 1512.3500858233294,
+    "CHI": 1309.6561438724498,
+    "LAC": 1541.2832073855645,
+    "MIL": 1344.770115729401
+  },
+  "approved": false,
+  "replaces_incumbent": false,
+  "current_forecasts_enabled": false,
+  "limitations": [
+    "Regular season only; playoff games and preseason excluded",
+    "No roster, injury, pace or lineup inputs; offseason roster changes are unmodeled",
+    "Date-only archives cannot prove original score availability; prior dates only",
+    "Day-block uncertainty assumes exchangeable days; longer dependence remains",
+    "No current fixture feed, observed-price baseline, betting edge or prospective confirmation",
+    "Calibration ranges are historical frequency ranges, not event-specific confidence guarantees"
+  ],
+  "evidence_id": "b24ce6fbeebd1e578dce410972901e3b702c3bfa2f2164671375a2c770f8032c"
+}

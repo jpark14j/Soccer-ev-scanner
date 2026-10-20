@@ -1,0 +1,219 @@
+{
+  "reviewed_at": "2026-10-16T00:00:00+00:00",
+  "directory_as_of": "2026-09-01",
+  "review_expires_at": "2026-11-15T00:00:00+00:00",
+  "source": "https://www.igamingontario.ca/en/operator/operators",
+  "provider_source": "https://the-odds-api.com/sports-odds-data/bookmaker-apis.html",
+  "books": [
+    {
+      "name": "BET99",
+      "odds_api_key": "bet99_ca_on",
+      "legal_basis": "iGO directory",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "Betano",
+      "odds_api_key": "betano_ca_on",
+      "legal_basis": "iGO directory",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "BetMGM Sportsbook",
+      "odds_api_key": "betmgm_ca_on",
+      "legal_basis": "iGO directory",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "BetRivers",
+      "odds_api_key": "betrivers_ca_on",
+      "legal_basis": "iGO directory",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "PointsBet",
+      "odds_api_key": "pointsbetca",
+      "legal_basis": "iGO directory",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "Sports Interaction",
+      "odds_api_key": "sportsinteraction_ca_on",
+      "legal_basis": "iGO directory",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "PROLINE+",
+      "odds_api_key": "proline_ca_on",
+      "legal_basis": "OLG",
+      "coverage": "Documented Ontario key; market-specific response required"
+    },
+    {
+      "name": "DraftKings",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "FanDuel",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "bet365",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Pinnacle",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Caesars",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Bally Bet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Monopoly",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "ComeOn!",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "BetVictor",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Betway",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Betinia",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Swiper",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "ToonieBet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "DAZN Bet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Bwin",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Partysports",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "BetNova",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Hard Rock Bet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "TonyBet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Play Fallsview",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "NorthStar Bets",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Neo.bet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "theScore Bet",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Titan Play",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "STX",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "LeoVegas",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "Power Play",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    },
+    {
+      "name": "888 Sport",
+      "odds_api_key": null,
+      "legal_basis": "iGO directory",
+      "coverage": "No documented Ontario key in configured provider; do not substitute US/global price"
+    }
+  ]
+}

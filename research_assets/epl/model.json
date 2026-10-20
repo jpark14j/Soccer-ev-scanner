@@ -1,0 +1,4029 @@
+{
+  "model_version": "epl-goal-strength-1",
+  "code_sha256": "4e53249981c1a52ee599de4ee794703ffdfa80ef3aca2715bdfb2dd71498e76f",
+  "policy": {
+    "model_version": "epl-goal-strength-1",
+    "markets": [
+      "btts",
+      "totals_2.5"
+    ],
+    "half_life_days": 180,
+    "prior_team_games": 15,
+    "minimum_league_games": 200,
+    "minimum_team_games": 12,
+    "minimum_effective_team_games": 8,
+    "maximum_result_age_days": 21,
+    "minimum_calibration_bin": 50,
+    "train_end": "2023-06-30",
+    "calibration_start": "2023-07-01",
+    "calibration_end": "2024-06-30",
+    "test_start": "2024-07-01",
+    "test_end": "2025-06-30",
+    "bootstrap_resamples": 1000,
+    "bootstrap_seed": 74103,
+    "high_probability_minimum": 0.65,
+    "high_probability_lower_minimum": 0.6,
+    "high_probability_maximum_width": 0.25,
+    "note": "Predeclared before this increment's evaluation. Fixed score thresholds, no historical sportsbook prices. No tuning on test outcomes; any later model requires a fresh held-out period. No approval or profit assertion."
+  },
+  "generated_at": "2026-10-16T19:06:04.174818+00:00",
+  "status": "research_only",
+  "approved": false,
+  "data_sha256": "9730e5630111e975214afd5db666402efe07e9d2b4b4629a3de8ada6ff5d0626",
+  "source": "openfootball/football.json; publisher CC0-1.0 public-domain dedication",
+  "license_url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/LICENSE.md",
+  "revision": "e6744429ee395bc86f247348c6184bb08d4eb361",
+  "reviewed_license_sha256": "36ffd9dc085d529a7e60e1276d73ae5a030b020313e6c5408593a6ae2af39673",
+  "sources": [
+    {
+      "season": "2020-21",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2020-21/en.1.json",
+      "sha256": "21ddf26b48469da530c51ccc4857bf1a534bda3aed08766b55185efb142e9a20",
+      "completed": 380,
+      "unscored": 0,
+      "latest_result": "2021-05-23"
+    },
+    {
+      "season": "2021-22",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2021-22/en.1.json",
+      "sha256": "fbdfd426fa18fa2f8630b77de87c082734da495ac4668d6d72f29f76b73b9564",
+      "completed": 380,
+      "unscored": 0,
+      "latest_result": "2022-05-22"
+    },
+    {
+      "season": "2022-23",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2022-23/en.1.json",
+      "sha256": "8d09f0f9846981626cdfec48903e1f21e7c79aabe6f92535c9e092e8e79b808b",
+      "completed": 380,
+      "unscored": 0,
+      "latest_result": "2023-05-28"
+    },
+    {
+      "season": "2023-24",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2023-24/en.1.json",
+      "sha256": "03e13eafbf78dfe00d7e89dd3bf6643986eb6e8fd86c7664aeb8c5bc0bed88d0",
+      "completed": 380,
+      "unscored": 0,
+      "latest_result": "2024-05-19"
+    },
+    {
+      "season": "2024-25",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2024-25/en.1.json",
+      "sha256": "c3d18f552d83382cd4b6b21127adbbfe38e7f8618ddc979fb5404f2df07d0a75",
+      "completed": 380,
+      "unscored": 0,
+      "latest_result": "2025-05-25"
+    },
+    {
+      "season": "2025-26",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2025-26/en.1.json",
+      "sha256": "d6070bdf731546ccf97767f062e8af4bd26dd309dee69f6092025bf9c78f43c1",
+      "completed": 353,
+      "unscored": 27,
+      "latest_result": "2026-05-24"
+    },
+    {
+      "season": "2026-27",
+      "url": "https://raw.githubusercontent.com/openfootball/football.json/e6744429ee395bc86f247348c6184bb08d4eb361/2026-27/en.1.json",
+      "sha256": "bb91f0ab3e8359df163bb9ec98549bfed85e200dd4c32f3bd606b5890d932dd2",
+      "completed": 45,
+      "unscored": 335,
+      "latest_result": "2026-09-20"
+    }
+  ],
+  "state": {
+    "anchor": "2026-09-21",
+    "n": 2298,
+    "w": 226.77802074339607,
+    "hg": 370.47087439288134,
+    "ag": 308.9129778006245,
+    "latest": "2026-09-20",
+    "teams": {
+      "Crystal Palace": {
+        "n": 226,
+        "w": 21.165157245007247,
+        "w2": 9.309127767091828,
+        "gf": 28.36603588087995,
+        "ga": 38.52257693410909,
+        "latest": "2026-09-12"
+      },
+      "Southampton": {
+        "n": 152,
+        "w": 3.924100986644788,
+        "w2": 0.38318831246065216,
+        "gf": 2.751515954374336,
+        "ga": 8.747101788724423,
+        "latest": "2025-05-25"
+      },
+      "Fulham": {
+        "n": 192,
+        "w": 22.123056152131063,
+        "w2": 9.579715725816348,
+        "gf": 28.76205452563236,
+        "ga": 33.323590704475336,
+        "latest": "2026-09-20"
+      },
+      "Arsenal": {
+        "n": 231,
+        "w": 23.36600480550913,
+        "w2": 10.699661787580967,
+        "gf": 43.47019122171149,
+        "ga": 18.7770948187362,
+        "latest": "2026-09-19"
+      },
+      "Liverpool": {
+        "n": 230,
+        "w": 22.48740277533716,
+        "w2": 9.822781060414691,
+        "gf": 41.69001945173112,
+        "ga": 29.997306239472532,
+        "latest": "2026-09-20"
+      },
+      "Leeds United": {
+        "n": 152,
+        "w": 17.09448506496333,
+        "w2": 8.98879516478638,
+        "gf": 26.143643331614694,
+        "ga": 23.784752724511907,
+        "latest": "2026-09-14"
+      },
+      "West Ham United": {
+        "n": 226,
+        "w": 18.461497917772647,
+        "w2": 6.083799637523224,
+        "gf": 24.3386175103596,
+        "ga": 31.426697329958294,
+        "latest": "2026-05-24"
+      },
+      "Newcastle United": {
+        "n": 229,
+        "w": 23.126213088649006,
+        "w2": 10.737399891202184,
+        "gf": 38.38924390412085,
+        "ga": 36.631751567571364,
+        "latest": "2026-09-19"
+      },
+      "Tottenham": {
+        "n": 230,
+        "w": 21.922891430682416,
+        "w2": 9.090421185582308,
+        "gf": 27.2200586980125,
+        "ga": 38.708253354734396,
+        "latest": "2026-09-19"
+      },
+      "Everton": {
+        "n": 230,
+        "w": 22.639392867814305,
+        "w2": 9.921697573269658,
+        "gf": 29.752425311441016,
+        "ga": 28.913710113066273,
+        "latest": "2026-09-19"
+      },
+      "West Brom": {
+        "n": 38,
+        "w": 0.013721450270448354,
+        "w2": 5.343377265325919e-06,
+        "gf": 0.013430763802483356,
+        "ga": 0.026954895483830288,
+        "latest": "2021-05-23"
+      },
+      "Leicester City": {
+        "n": 152,
+        "w": 3.9288417961866626,
+        "w2": 0.38381958754781664,
+        "gf": 3.340567026209074,
+        "ga": 8.01016400524546,
+        "latest": "2025-05-25"
+      },
+      "Brighton": {
+        "n": 231,
+        "w": 23.532887350477353,
+        "w2": 10.818783478859935,
+        "gf": 43.07158549958243,
+        "ga": 29.611991282205466,
+        "latest": "2026-09-19"
+      },
+      "Chelsea": {
+        "n": 231,
+        "w": 23.64173752047964,
+        "w2": 10.879839641485503,
+        "gf": 38.08354207739631,
+        "ga": 38.68368632307477,
+        "latest": "2026-09-18"
+      },
+      "Sheffield United": {
+        "n": 76,
+        "w": 0.8994535570375153,
+        "w2": 0.022731707460494792,
+        "gf": 0.8469382691324032,
+        "ga": 2.509289244567461,
+        "latest": "2024-05-19"
+      },
+      "Wolves": {
+        "n": 226,
+        "w": 18.582992829168706,
+        "w2": 6.19606387682023,
+        "gf": 17.05309675440586,
+        "ga": 33.371134285072124,
+        "latest": "2026-05-24"
+      },
+      "Manchester United": {
+        "n": 232,
+        "w": 23.613738884391864,
+        "w2": 10.710037687910923,
+        "gf": 40.72445370994412,
+        "ga": 32.81438921961429,
+        "latest": "2026-09-20"
+      },
+      "Burnley": {
+        "n": 150,
+        "w": 14.751039854385665,
+        "w2": 5.834551670134031,
+        "gf": 15.154458286622015,
+        "ga": 30.685437443912175,
+        "latest": "2026-05-24"
+      },
+      "Aston Villa": {
+        "n": 229,
+        "w": 22.400068909639135,
+        "w2": 9.915073058128598,
+        "gf": 34.147770715963865,
+        "ga": 34.90982830399265,
+        "latest": "2026-09-19"
+      },
+      "Manchester City": {
+        "n": 232,
+        "w": 23.93501798079403,
+        "w2": 11.029990240888319,
+        "gf": 51.7373464735016,
+        "ga": 23.30183735522819,
+        "latest": "2026-09-20"
+      },
+      "Brentford": {
+        "n": 191,
+        "w": 22.296727499346545,
+        "w2": 10.138339382945254,
+        "gf": 38.23721314903387,
+        "ga": 30.644657356762078,
+        "latest": "2026-09-18"
+      },
+      "Norwich City": {
+        "n": 38,
+        "w": 0.05360062594845303,
+        "w2": 8.321523524221213e-05,
+        "gf": 0.0333390125994638,
+        "ga": 0.12074845247431518,
+        "latest": "2022-05-22"
+      },
+      "Watford": {
+        "n": 38,
+        "w": 0.054140797313883895,
+        "w2": 8.472079240314554e-05,
+        "gf": 0.044223409214685275,
+        "ga": 0.11300406795642377,
+        "latest": "2022-05-22"
+      },
+      "Bournemouth": {
+        "n": 152,
+        "w": 22.146019967036995,
+        "w2": 10.218737868365704,
+        "gf": 34.69729515511539,
+        "ga": 33.020530362140775,
+        "latest": "2026-09-20"
+      },
+      "Nottingham Forest": {
+        "n": 153,
+        "w": 21.874662797362177,
+        "w2": 9.585786273559744,
+        "gf": 31.244825187067015,
+        "ga": 29.836748013007757,
+        "latest": "2026-09-19"
+      },
+      "Luton Town": {
+        "n": 38,
+        "w": 0.88992960565898,
+        "w2": 0.022811664967310474,
+        "gf": 1.2522637352219688,
+        "ga": 2.0839030187201963,
+        "latest": "2024-05-19"
+      },
+      "Ipswich Town": {
+        "n": 43,
+        "w": 8.342822973840827,
+        "w2": 4.814916526817396,
+        "gf": 9.933791277421697,
+        "ga": 18.355745449873385,
+        "latest": "2026-09-19"
+      },
+      "Sunderland": {
+        "n": 39,
+        "w": 17.819079159624188,
+        "w2": 9.966054326091198,
+        "gf": 22.27033978055175,
+        "ga": 29.168212637068066,
+        "latest": "2026-09-20"
+      },
+      "Coventry City": {
+        "n": 5,
+        "w": 4.7049524658038795,
+        "w2": 4.434300778443861,
+        "gf": 0.9923279462629435,
+        "ga": 9.36622635137154,
+        "latest": "2026-09-19"
+      },
+      "Hull": {
+        "n": 4,
+        "w": 3.764403127514319,
+        "w2": 3.549112773680495,
+        "gf": 5.621238174579505,
+        "ga": 3.9165285503755785,
+        "latest": "2026-09-19"
+      }
+    }
+  },
+  "fixtures": [
+    {
+      "season": "2025-26",
+      "date": "2025-08-16",
+      "home": "Aston Villa",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-08-17",
+      "home": "Chelsea",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-08-30",
+      "home": "Leeds United",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-09-13",
+      "home": "Crystal Palace",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-09-13",
+      "home": "Everton",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-09-21",
+      "home": "Bournemouth",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-11-09",
+      "home": "Crystal Palace",
+      "away": "Brighton"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-12-06",
+      "home": "Bournemouth",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-12-20",
+      "home": "Brighton",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2025-26",
+      "date": "2025-12-27",
+      "home": "Burnley",
+      "away": "Everton"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-01",
+      "home": "Liverpool",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-01",
+      "home": "Sunderland",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-01",
+      "home": "Brentford",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-07",
+      "home": "Crystal Palace",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-08",
+      "home": "Arsenal",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-17",
+      "home": "Nottingham Forest",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-01-18",
+      "home": "Wolves",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-02-11",
+      "home": "Nottingham Forest",
+      "away": "Wolves"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-02-21",
+      "home": "West Ham United",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-03-03",
+      "home": "Bournemouth",
+      "away": "Brentford"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-03-14",
+      "home": "Burnley",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-03-15",
+      "home": "Crystal Palace",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-03-15",
+      "home": "Nottingham Forest",
+      "away": "Fulham"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-03-21",
+      "home": "Leeds United",
+      "away": "Brentford"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-04-18",
+      "home": "Brentford",
+      "away": "Fulham"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-04-20",
+      "home": "Crystal Palace",
+      "away": "West Ham United"
+    },
+    {
+      "season": "2025-26",
+      "date": "2026-05-09",
+      "home": "Sunderland",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Nottingham Forest",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Hull",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Liverpool",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Tottenham",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-20",
+      "home": "Leeds United",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-10",
+      "home": "Arsenal",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-10",
+      "home": "Sunderland",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-10",
+      "home": "Chelsea",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-10",
+      "home": "Ipswich Town",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-10",
+      "home": "Aston Villa",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-10",
+      "home": "Manchester United",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-11",
+      "home": "Hull",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-11",
+      "home": "Crystal Palace",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-11",
+      "home": "Liverpool",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-12",
+      "home": "Coventry City",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-17",
+      "home": "Everton",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-17",
+      "home": "Fulham",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-17",
+      "home": "Manchester City",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-17",
+      "home": "Brentford",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-17",
+      "home": "Newcastle United",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-18",
+      "home": "Bournemouth",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-18",
+      "home": "Leeds United",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-18",
+      "home": "Brighton",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-18",
+      "home": "Nottingham Forest",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-19",
+      "home": "Tottenham",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-23",
+      "home": "Ipswich Town",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-24",
+      "home": "Aston Villa",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-24",
+      "home": "Arsenal",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-24",
+      "home": "Coventry City",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-24",
+      "home": "Chelsea",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-25",
+      "home": "Liverpool",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-25",
+      "home": "Crystal Palace",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-25",
+      "home": "Manchester United",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-25",
+      "home": "Hull",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-25",
+      "home": "Sunderland",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Chelsea",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Manchester City",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Bournemouth",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Coventry City",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Hull",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Brentford",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Tottenham",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-10-31",
+      "home": "Aston Villa",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-01",
+      "home": "Liverpool",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-02",
+      "home": "Newcastle United",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Arsenal",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Nottingham Forest",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Leeds United",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Fulham",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Everton",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Crystal Palace",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Sunderland",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Ipswich Town",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Brighton",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-07",
+      "home": "Manchester United",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Chelsea",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Manchester City",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Aston Villa",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Liverpool",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Hull",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Bournemouth",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Tottenham",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Brentford",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Coventry City",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-21",
+      "home": "Newcastle United",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Leeds United",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Ipswich Town",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Arsenal",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Manchester United",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Everton",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Fulham",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Nottingham Forest",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Brighton",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Sunderland",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-11-28",
+      "home": "Crystal Palace",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Tottenham",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Liverpool",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Hull",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Chelsea",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Aston Villa",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Brentford",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Coventry City",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Manchester City",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Newcastle United",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-02",
+      "home": "Bournemouth",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Tottenham",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Manchester United",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Leeds United",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Newcastle United",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Chelsea",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Brentford",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Bournemouth",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Aston Villa",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Nottingham Forest",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-05",
+      "home": "Everton",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Sunderland",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Crystal Palace",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Hull",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Brighton",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Ipswich Town",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Coventry City",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Arsenal",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Manchester City",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Liverpool",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-12",
+      "home": "Fulham",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Leeds United",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Brighton",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Nottingham Forest",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Brentford",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Manchester City",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Sunderland",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Bournemouth",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Arsenal",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Liverpool",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-19",
+      "home": "Chelsea",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Aston Villa",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Everton",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Fulham",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Tottenham",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Ipswich Town",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Hull",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-26",
+      "home": "Newcastle United",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-27",
+      "home": "Coventry City",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-27",
+      "home": "Manchester United",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-27",
+      "home": "Crystal Palace",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-29",
+      "home": "Hull",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-29",
+      "home": "Tottenham",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-29",
+      "home": "Everton",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Fulham",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Coventry City",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Newcastle United",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Manchester United",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Crystal Palace",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Aston Villa",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-12-30",
+      "home": "Ipswich Town",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-01",
+      "home": "Leeds United",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Brighton",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Brentford",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Arsenal",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Sunderland",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Liverpool",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Nottingham Forest",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-02",
+      "home": "Bournemouth",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-03",
+      "home": "Chelsea",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-03",
+      "home": "Manchester City",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-05",
+      "home": "Arsenal",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-05",
+      "home": "Brighton",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-05",
+      "home": "Nottingham Forest",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-05",
+      "home": "Everton",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-05",
+      "home": "Sunderland",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-06",
+      "home": "Fulham",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-06",
+      "home": "Crystal Palace",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-06",
+      "home": "Ipswich Town",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-06",
+      "home": "Leeds United",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-07",
+      "home": "Manchester United",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Bournemouth",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Manchester City",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Chelsea",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Brentford",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Aston Villa",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Tottenham",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Coventry City",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Liverpool",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Hull",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-16",
+      "home": "Newcastle United",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Ipswich Town",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Everton",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Sunderland",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Nottingham Forest",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Arsenal",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Leeds United",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Fulham",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Manchester United",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Brighton",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-23",
+      "home": "Crystal Palace",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Tottenham",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Brentford",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Newcastle United",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Hull",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Coventry City",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Bournemouth",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Chelsea",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Liverpool",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Manchester City",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-01-30",
+      "home": "Aston Villa",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Arsenal",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Brighton",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Sunderland",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Crystal Palace",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Ipswich Town",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Everton",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Fulham",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Leeds United",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Manchester United",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-06",
+      "home": "Nottingham Forest",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Everton",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Coventry City",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Hull",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Aston Villa",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Crystal Palace",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Newcastle United",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Fulham",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Tottenham",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Manchester United",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-10",
+      "home": "Ipswich Town",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Manchester City",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Bournemouth",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Brentford",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Chelsea",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Liverpool",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Arsenal",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Nottingham Forest",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Brighton",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Sunderland",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-20",
+      "home": "Leeds United",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Crystal Palace",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Manchester United",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Ipswich Town",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Coventry City",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Everton",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Fulham",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Aston Villa",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Tottenham",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Newcastle United",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-02-27",
+      "home": "Hull",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Nottingham Forest",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Bournemouth",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Manchester City",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Arsenal",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Leeds United",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Sunderland",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Liverpool",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Brighton",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Brentford",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-03",
+      "home": "Chelsea",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Leeds United",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Tottenham",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Crystal Palace",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Liverpool",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Coventry City",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Bournemouth",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Chelsea",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Aston Villa",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Manchester United",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-13",
+      "home": "Sunderland",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Brentford",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Brighton",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Manchester City",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Ipswich Town",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Arsenal",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Fulham",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Hull",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Nottingham Forest",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Everton",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-03-20",
+      "home": "Newcastle United",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Sunderland",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Leeds United",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Manchester United",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Chelsea",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Liverpool",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Coventry City",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Bournemouth",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Crystal Palace",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Tottenham",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-10",
+      "home": "Aston Villa",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Brighton",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Fulham",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Brentford",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Nottingham Forest",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Hull",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Arsenal",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Ipswich Town",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Manchester City",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Newcastle United",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-17",
+      "home": "Everton",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Chelsea",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Bournemouth",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Tottenham",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Manchester United",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Everton",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Nottingham Forest",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Newcastle United",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Aston Villa",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Brentford",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-04-24",
+      "home": "Leeds United",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Sunderland",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Brighton",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Coventry City",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Hull",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Manchester City",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Fulham",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Liverpool",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Arsenal",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Crystal Palace",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-01",
+      "home": "Ipswich Town",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Manchester City",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Leeds United",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Fulham",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Nottingham Forest",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Brentford",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Newcastle United",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Brighton",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Tottenham",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Everton",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-08",
+      "home": "Bournemouth",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Hull",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Manchester United",
+      "away": "Leeds United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Crystal Palace",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Aston Villa",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Chelsea",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Coventry City",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Sunderland",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Liverpool",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Ipswich Town",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-15",
+      "home": "Arsenal",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Brentford",
+      "away": "Hull"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Newcastle United",
+      "away": "Crystal Palace"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Tottenham",
+      "away": "Manchester United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Leeds United",
+      "away": "Sunderland"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Brighton",
+      "away": "Liverpool"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Nottingham Forest",
+      "away": "Ipswich Town"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Bournemouth",
+      "away": "Chelsea"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Fulham",
+      "away": "Coventry City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Everton",
+      "away": "Arsenal"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-23",
+      "home": "Manchester City",
+      "away": "Aston Villa"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Ipswich Town",
+      "away": "Everton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Arsenal",
+      "away": "Brighton"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Liverpool",
+      "away": "Bournemouth"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Coventry City",
+      "away": "Nottingham Forest"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Aston Villa",
+      "away": "Tottenham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Hull",
+      "away": "Newcastle United"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Manchester United",
+      "away": "Fulham"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Sunderland",
+      "away": "Manchester City"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Chelsea",
+      "away": "Brentford"
+    },
+    {
+      "season": "2026-27",
+      "date": "2027-05-30",
+      "home": "Crystal Palace",
+      "away": "Leeds United"
+    }
+  ],
+  "current_rows": [
+    {
+      "season": "2026-27",
+      "date": "2026-08-21",
+      "home": "Arsenal",
+      "away": "Coventry City",
+      "hg": 3,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-22",
+      "home": "Brentford",
+      "away": "Tottenham",
+      "hg": 3,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-22",
+      "home": "Everton",
+      "away": "Crystal Palace",
+      "hg": 2,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-22",
+      "home": "Hull",
+      "away": "Manchester United",
+      "hg": 2,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-22",
+      "home": "Ipswich Town",
+      "away": "Sunderland",
+      "hg": 2,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-22",
+      "home": "Nottingham Forest",
+      "away": "Leeds United",
+      "hg": 0,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-23",
+      "home": "Brighton",
+      "away": "Aston Villa",
+      "hg": 4,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-23",
+      "home": "Manchester City",
+      "away": "Bournemouth",
+      "hg": 2,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-23",
+      "home": "Newcastle United",
+      "away": "Liverpool",
+      "hg": 2,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-24",
+      "home": "Fulham",
+      "away": "Chelsea",
+      "hg": 2,
+      "ag": 3
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-28",
+      "home": "Crystal Palace",
+      "away": "Manchester City",
+      "hg": 1,
+      "ag": 4
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-29",
+      "home": "Bournemouth",
+      "away": "Everton",
+      "hg": 1,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-29",
+      "home": "Coventry City",
+      "away": "Hull",
+      "hg": 0,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-29",
+      "home": "Liverpool",
+      "away": "Nottingham Forest",
+      "hg": 2,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-29",
+      "home": "Tottenham",
+      "away": "Newcastle United",
+      "hg": 0,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-30",
+      "home": "Chelsea",
+      "away": "Brighton",
+      "hg": 4,
+      "ag": 3
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-30",
+      "home": "Leeds United",
+      "away": "Brentford",
+      "hg": 1,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-30",
+      "home": "Manchester United",
+      "away": "Ipswich Town",
+      "hg": 5,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-30",
+      "home": "Sunderland",
+      "away": "Fulham",
+      "hg": 1,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-08-31",
+      "home": "Aston Villa",
+      "away": "Arsenal",
+      "hg": 0,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-04",
+      "home": "Ipswich Town",
+      "away": "Liverpool",
+      "hg": 0,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Brentford",
+      "away": "Sunderland",
+      "hg": 1,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Brighton",
+      "away": "Leeds United",
+      "hg": 1,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Fulham",
+      "away": "Crystal Palace",
+      "hg": 2,
+      "ag": 3
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Manchester City",
+      "away": "Coventry City",
+      "hg": 1,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-05",
+      "home": "Newcastle United",
+      "away": "Bournemouth",
+      "hg": 2,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-06",
+      "home": "Arsenal",
+      "away": "Chelsea",
+      "hg": 2,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-06",
+      "home": "Everton",
+      "away": "Manchester United",
+      "hg": 2,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Aston Villa",
+      "away": "Nottingham Forest",
+      "hg": 1,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Bournemouth",
+      "away": "Brentford",
+      "hg": 2,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Chelsea",
+      "away": "Hull",
+      "hg": 2,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Crystal Palace",
+      "away": "Ipswich Town",
+      "hg": 2,
+      "ag": 3
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-12",
+      "home": "Sunderland",
+      "away": "Arsenal",
+      "hg": 0,
+      "ag": 2
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-13",
+      "home": "Coventry City",
+      "away": "Brighton",
+      "hg": 0,
+      "ag": 5
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-13",
+      "home": "Manchester United",
+      "away": "Manchester City",
+      "hg": 0,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-14",
+      "home": "Leeds United",
+      "away": "Newcastle United",
+      "hg": 4,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-18",
+      "home": "Brentford",
+      "away": "Chelsea",
+      "hg": 3,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-19",
+      "home": "Brighton",
+      "away": "Arsenal",
+      "hg": 3,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-19",
+      "home": "Everton",
+      "away": "Ipswich Town",
+      "hg": 1,
+      "ag": 0
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-19",
+      "home": "Newcastle United",
+      "away": "Hull",
+      "hg": 2,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-19",
+      "home": "Nottingham Forest",
+      "away": "Coventry City",
+      "hg": 0,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-19",
+      "home": "Tottenham",
+      "away": "Aston Villa",
+      "hg": 2,
+      "ag": 3
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-20",
+      "home": "Bournemouth",
+      "away": "Liverpool",
+      "hg": 0,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-20",
+      "home": "Fulham",
+      "away": "Manchester United",
+      "hg": 1,
+      "ag": 1
+    },
+    {
+      "season": "2026-27",
+      "date": "2026-09-20",
+      "home": "Manchester City",
+      "away": "Sunderland",
+      "hg": 5,
+      "ag": 3
+    }
+  ],
+  "current_rows_sha256": "6293e6034f466c0ef9f475d2c4abe17d7b79c3a64e427e8f1b922c36f9d8f429",
+  "tasks": {
+    "btts": {
+      "calibration_n": 363,
+      "coefficients": [
+        0.13611696510354143,
+        1.0189063034750558
+      ],
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 3,
+          "mean_probability": 0.4848587329545199,
+          "observed_frequency": 1.0,
+          "frequency_interval": [
+            0.4385029682449546,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 142,
+          "mean_probability": 0.5660902590161013,
+          "observed_frequency": 0.5422535211267606,
+          "frequency_interval": [
+            0.46027522354900896,
+            0.6220059062273567
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 209,
+          "mean_probability": 0.6392032524592643,
+          "observed_frequency": 0.6507177033492823,
+          "frequency_interval": [
+            0.5838918889985267,
+            0.7121030752770829
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 9,
+          "mean_probability": 0.714556699084476,
+          "observed_frequency": 0.6666666666666666,
+          "frequency_interval": [
+            0.3542021355803963,
+            0.879416181613089
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "constant_baseline_probability": 0.6115702479338843,
+      "periods": {
+        "held_out": {
+          "start": "2024-08-16",
+          "end": "2025-05-25",
+          "model": {
+            "binary_brier": {
+              "value": 0.24881624088017998,
+              "interval": [
+                0.23429860855180545,
+                0.26420680842973665
+              ]
+            },
+            "log_loss": {
+              "value": 0.691345274959299,
+              "interval": [
+                0.6612204757764061,
+                0.723080643814302
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5679347826086957,
+              "interval": [
+                0.5127322087732852,
+                0.6189383890268683
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "constant_baseline": {
+            "binary_brier": {
+              "value": 0.24728891914605497,
+              "interval": [
+                0.23549565978329473,
+                0.2598141696658463
+              ]
+            },
+            "log_loss": {
+              "value": 0.68784741203269,
+              "interval": [
+                0.6638572945703,
+                0.7133265626197179
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5679347826086957,
+              "interval": [
+                0.5118031043533351,
+                0.6207860560492139
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "league_poisson_baseline": {
+            "binary_brier": {
+              "value": 0.24786749570789993,
+              "interval": [
+                0.23566504313656297,
+                0.2610559794862607
+              ]
+            },
+            "log_loss": {
+              "value": 0.6890767503664436,
+              "interval": [
+                0.6641645755733477,
+                0.7159617918851401
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5679347826086957,
+              "interval": [
+                0.5118031043533351,
+                0.6207860560492139
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "model_minus_constant": {
+            "binary_brier": {
+              "value": 0.0015273217341249881,
+              "interval": [
+                -0.002759759359429602,
+                0.006530398610772104
+              ]
+            },
+            "log_loss": {
+              "value": 0.003497862926608982,
+              "interval": [
+                -0.005943726630908306,
+                0.014398465682738762
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.0,
+              "interval": [
+                -0.007936507936507936,
+                0.008219742586180941
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "upper": 0.1,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "n": 2,
+              "mean_probability": 0.4975785356076363,
+              "observed_frequency": 0.5,
+              "frequency_interval": [
+                0.09453120573423074,
+                0.9054687942657693
+              ]
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "n": 98,
+              "mean_probability": 0.5706421454927957,
+              "observed_frequency": 0.5306122448979592,
+              "frequency_interval": [
+                0.43252467204457545,
+                0.6263904306010359
+              ]
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "n": 257,
+              "mean_probability": 0.6417617268931073,
+              "observed_frequency": 0.5797665369649806,
+              "frequency_interval": [
+                0.5186796143750927,
+                0.6385039874394638
+              ]
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "n": 11,
+              "mean_probability": 0.7091236142836078,
+              "observed_frequency": 0.6363636363636364,
+              "frequency_interval": [
+                0.35380117450784887,
+                0.8483352890463243
+              ]
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.9,
+              "upper": 1.0,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            }
+          ],
+          "ece": 0.05614374118404061,
+          "positive_rate": 0.5679347826086957
+        },
+        "later_partial_coverage": {
+          "start": "2025-08-15",
+          "end": "2026-09-20",
+          "model": {
+            "binary_brier": {
+              "value": 0.23633244086313454,
+              "interval": [
+                0.22434702698946798,
+                0.24810650931531503
+              ]
+            },
+            "log_loss": {
+              "value": 0.6654962761637995,
+              "interval": [
+                0.6408120244421089,
+                0.6895576153157718
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.6085790884718498,
+              "interval": [
+                0.5614553335121081,
+                0.6594372704655845
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "constant_baseline": {
+            "binary_brier": {
+              "value": 0.23821952858154952,
+              "interval": [
+                0.2268563355489862,
+                0.2488287294973998
+              ]
+            },
+            "log_loss": {
+              "value": 0.6693982506717676,
+              "interval": [
+                0.6462829839576467,
+                0.6909797294067318
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.6085790884718498,
+              "interval": [
+                0.561034151034151,
+                0.6595030276177817
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "league_poisson_baseline": {
+            "binary_brier": {
+              "value": 0.23866159788958846,
+              "interval": [
+                0.2289186133558181,
+                0.24776664761045447
+              ]
+            },
+            "log_loss": {
+              "value": 0.6703172002356012,
+              "interval": [
+                0.6505862203991525,
+                0.6887650840967254
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.6085790884718498,
+              "interval": [
+                0.561034151034151,
+                0.6595030276177817
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "model_minus_constant": {
+            "binary_brier": {
+              "value": -0.0018870877184149874,
+              "interval": [
+                -0.005283221613914648,
+                0.0019658330421170453
+              ]
+            },
+            "log_loss": {
+              "value": -0.0039019745079680646,
+              "interval": [
+                -0.011076643838234458,
+                0.004156734719768585
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.0,
+              "interval": [
+                -0.007853918456528013,
+                0.0076928020565552695
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "upper": 0.1,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "n": 2,
+              "mean_probability": 0.4988626984208431,
+              "observed_frequency": 0.5,
+              "frequency_interval": [
+                0.09453120573423074,
+                0.9054687942657693
+              ]
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "n": 117,
+              "mean_probability": 0.5733925064322676,
+              "observed_frequency": 0.5811965811965812,
+              "frequency_interval": [
+                0.49061318121808556,
+                0.6666176250418127
+              ]
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "n": 254,
+              "mean_probability": 0.6359219214705955,
+              "observed_frequency": 0.6220472440944882,
+              "frequency_interval": [
+                0.5610172871417178,
+                0.6794405518868594
+              ]
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.9,
+              "upper": 1.0,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            }
+          ],
+          "ece": 0.011902196793872001,
+          "positive_rate": 0.6085790884718498
+        }
+      }
+    },
+    "totals_2.5": {
+      "calibration_n": 363,
+      "coefficients": [
+        0.3321697691314055,
+        0.8349703064462006
+      ],
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 1,
+          "mean_probability": 0.4964450414487216,
+          "observed_frequency": 1.0,
+          "frequency_interval": [
+            0.20654931437723745,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 74,
+          "mean_probability": 0.5691205728080244,
+          "observed_frequency": 0.527027027027027,
+          "frequency_interval": [
+            0.4147735676194863,
+            0.6366129307915197
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 235,
+          "mean_probability": 0.6496881428349669,
+          "observed_frequency": 0.6595744680851063,
+          "frequency_interval": [
+            0.5968584296723135,
+            0.7171574048076829
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 53,
+          "mean_probability": 0.7241462119888461,
+          "observed_frequency": 0.7358490566037735,
+          "frequency_interval": [
+            0.6041933558938148,
+            0.8356264608153632
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "constant_baseline_probability": 0.6446280991735537,
+      "periods": {
+        "held_out": {
+          "start": "2024-08-16",
+          "end": "2025-05-25",
+          "model": {
+            "binary_brier": {
+              "value": 0.2501143546937817,
+              "interval": [
+                0.23557113211189123,
+                0.26492931540983217
+              ]
+            },
+            "log_loss": {
+              "value": 0.6943732869391469,
+              "interval": [
+                0.6638694417519178,
+                0.7253301663031628
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5706521739130435,
+              "interval": [
+                0.5250390079180252,
+                0.6148426870748299
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "constant_baseline": {
+            "binary_brier": {
+              "value": 0.25048070783950965,
+              "interval": [
+                0.23769832799932353,
+                0.2636745988298042
+              ]
+            },
+            "log_loss": {
+              "value": 0.6947620893891403,
+              "interval": [
+                0.6684462538579111,
+                0.7219251270752809
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5706521739130435,
+              "interval": [
+                0.5250390079180252,
+                0.6148426870748299
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "league_poisson_baseline": {
+            "binary_brier": {
+              "value": 0.24551451595142967,
+              "interval": [
+                0.23662834637631006,
+                0.25428742613706296
+              ]
+            },
+            "log_loss": {
+              "value": 0.6841878684041284,
+              "interval": [
+                0.6662143420521806,
+                0.7018893609404929
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5706521739130435,
+              "interval": [
+                0.5250390079180252,
+                0.6148426870748299
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "model_minus_constant": {
+            "binary_brier": {
+              "value": -0.00036635314572798023,
+              "interval": [
+                -0.005266856978562803,
+                0.004997322271393213
+              ]
+            },
+            "log_loss": {
+              "value": -0.0003888024499932175,
+              "interval": [
+                -0.011250429102696614,
+                0.01122564420752015
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.0,
+              "interval": [
+                0.0,
+                0.0
+              ]
+            },
+            "n": 368,
+            "utc_day_blocks": 109
+          },
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "upper": 0.1,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "n": 39,
+              "mean_probability": 0.5682513200192714,
+              "observed_frequency": 0.4358974358974359,
+              "frequency_interval": [
+                0.2930475387568963,
+                0.5902430835133052
+              ]
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "n": 275,
+              "mean_probability": 0.6511267356294483,
+              "observed_frequency": 0.56,
+              "frequency_interval": [
+                0.5009049591618672,
+                0.617441861069124
+              ]
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "n": 54,
+              "mean_probability": 0.7157470751834019,
+              "observed_frequency": 0.7222222222222222,
+              "frequency_interval": [
+                0.5910955707120475,
+                0.8238317234697763
+              ]
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.9,
+              "upper": 1.0,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            }
+          ],
+          "ece": 0.08307421662757108,
+          "positive_rate": 0.5706521739130435
+        },
+        "later_partial_coverage": {
+          "start": "2025-08-15",
+          "end": "2026-09-20",
+          "model": {
+            "binary_brier": {
+              "value": 0.2439384418899177,
+              "interval": [
+                0.2300205632498901,
+                0.2575493027644853
+              ]
+            },
+            "log_loss": {
+              "value": 0.6817790629098366,
+              "interval": [
+                0.6528491278047416,
+                0.7098801732349217
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5951742627345844,
+              "interval": [
+                0.548291276737968,
+                0.6410995665970126
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "constant_baseline": {
+            "binary_brier": {
+              "value": 0.24338754165146062,
+              "interval": [
+                0.23010336284827881,
+                0.25694873594800255
+              ]
+            },
+            "log_loss": {
+              "value": 0.6801589718840942,
+              "interval": [
+                0.652810053378878,
+                0.7080781984425835
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5951742627345844,
+              "interval": [
+                0.548291276737968,
+                0.6410995665970126
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "league_poisson_baseline": {
+            "binary_brier": {
+              "value": 0.24216488261550273,
+              "interval": [
+                0.23562594786721408,
+                0.24887150239966718
+              ]
+            },
+            "log_loss": {
+              "value": 0.6774218666912905,
+              "interval": [
+                0.66425680420143,
+                0.6909248948565179
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.5951742627345844,
+              "interval": [
+                0.548291276737968,
+                0.6410995665970126
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "model_minus_constant": {
+            "binary_brier": {
+              "value": 0.0005509002384570502,
+              "interval": [
+                -0.0035857260445933486,
+                0.004364368475810901
+              ]
+            },
+            "log_loss": {
+              "value": 0.001620091025742353,
+              "interval": [
+                -0.0073041358473743805,
+                0.009850630801821724
+              ]
+            },
+            "classification_accuracy": {
+              "value": 0.0,
+              "interval": [
+                0.0,
+                0.0
+              ]
+            },
+            "n": 373,
+            "utc_day_blocks": 127
+          },
+          "calibration_bins": [
+            {
+              "lower": 0.0,
+              "upper": 0.1,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "n": 58,
+              "mean_probability": 0.5762463899491727,
+              "observed_frequency": 0.5172413793103449,
+              "frequency_interval": [
+                0.3916226178340948,
+                0.6407181457594501
+              ]
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "n": 304,
+              "mean_probability": 0.6461861205587625,
+              "observed_frequency": 0.618421052631579,
+              "frequency_interval": [
+                0.5626583124202309,
+                0.6712283131039072
+              ]
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "n": 11,
+              "mean_probability": 0.7072277599601691,
+              "observed_frequency": 0.36363636363636365,
+              "frequency_interval": [
+                0.15166471095367573,
+                0.6461988254921511
+              ]
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            },
+            {
+              "lower": 0.9,
+              "upper": 1.0,
+              "n": 0,
+              "mean_probability": null,
+              "observed_frequency": null,
+              "frequency_interval": [
+                0.0,
+                1.0
+              ]
+            }
+          ],
+          "ece": 0.04193666655892131,
+          "positive_rate": 0.5951742627345844
+        }
+      }
+    }
+  },
+  "coverage": {
+    "completed_total": 2298,
+    "calibration_eligible": 363,
+    "test_eligible": 368,
+    "calibration_available": 380,
+    "test_available": 380,
+    "excluded_after_train": {
+      "Luton Town: fewer than 12 prior team results": 12,
+      "Sheffield United: insufficient effective weighted sample": 5,
+      "Ipswich Town: fewer than 12 prior team results": 12,
+      "Sunderland: fewer than 12 prior team results": 12,
+      "Leeds United: insufficient effective weighted sample": 5,
+      "Coventry City: fewer than 12 prior team results": 5,
+      "Hull: fewer than 12 prior team results": 3
+    }
+  },
+  "limitations": [
+    "Goals-only independent-Poisson score assumption; no injuries, lineups, player statistics or xG",
+    "Preceding UTC dates only; archive does not prove historical publication/revision timing",
+    "Exploratory held-out diagnostics: overlapping archive periods were examined by earlier project models",
+    "No historical sportsbook lines or odds; no market baseline, ROI, profitability or tradable edge established",
+    "95% UTC-day block bootstrap assumes exchangeable independent day blocks; cross-day dependence is unverified",
+    "Wilson calibration-bin frequency envelopes are not event-specific uncertainty guarantees",
+    "Later periods are partial coverage; missing scores and excluded promoted teams can bias diagnostics",
+    "Manual independent model review, prospective confirmation and all existing promotion gates remain required"
+  ],
+  "betting_roi": null,
+  "actual_wagers": null,
+  "artifact_sha256": "619f931210080a3093a09a57290a62faaeba40c24b243789cbdc424ace8a78f3"
+}

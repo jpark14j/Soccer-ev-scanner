@@ -1,0 +1,502 @@
+{
+  "schema": 1,
+  "reports": {
+    "NBA": {
+      "sport": "NBA",
+      "model_version": "date-block-elo-challenger-1-nba",
+      "status": "unapproved historical challenger",
+      "generated_at": "2026-10-18T05:20:58.428156+00:00",
+      "data_source": "FiveThirtyEight, Historical NBA Elo dataset, CC BY 4.0. Game information credited by publisher to Basketball-Reference. Modified: retain home games and final scores from last three archived seasons; omit Elo forecasts.",
+      "data_end": "2015-06-16",
+      "data_sha256": "b59d921fc8f3965407f9c7751969afe2e4ee301edd832358765f53b04b8f085e",
+      "code_sha256": "38e4daa6a50d0cb87496b5e2cdc324b5a94d543e7d554ce01ce5a24cf4272800",
+      "settings": {
+        "k": 20.0,
+        "home": 65.0,
+        "margin": true
+      },
+      "calibration_start": "2014-04-20",
+      "test_start": "2015-01-19",
+      "calibration_n": 693,
+      "test_n": 701,
+      "temperature": 1.5,
+      "metrics": {
+        "binary_brier": {
+          "value": 0.20602451915311837,
+          "interval": [
+            0.1965859971358375,
+            0.21663142869357363
+          ]
+        },
+        "log_loss": {
+          "value": 0.5985335226096132,
+          "interval": [
+            0.5778377239033323,
+            0.6214620881416328
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.6690442225392297,
+          "interval": [
+            0.6307881872904294,
+            0.7045605233300242
+          ]
+        },
+        "n": 701,
+        "utc_day_blocks": 124
+      },
+      "training_prevalence_baseline": {
+        "binary_brier": {
+          "value": 0.2368414271629619,
+          "interval": [
+            0.22864074739333135,
+            0.24436821985338988
+          ]
+        },
+        "log_loss": {
+          "value": 0.666613251328706,
+          "interval": [
+            0.6499998820237075,
+            0.6818614246705453
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.6162624821683309,
+          "interval": [
+            0.5775966197183099,
+            0.6583901677590941
+          ]
+        },
+        "n": 701,
+        "utc_day_blocks": 124
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 8,
+          "mean_probability": 0.18116549916369185,
+          "observed_frequency": 0.25,
+          "frequency_interval": [
+            0.071479212752109,
+            0.5907245696898311
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 45,
+          "mean_probability": 0.2592691204888257,
+          "observed_frequency": 0.3333333333333333,
+          "frequency_interval": [
+            0.21358874934330035,
+            0.47929511690099585
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 81,
+          "mean_probability": 0.35226646494954367,
+          "observed_frequency": 0.41975308641975306,
+          "frequency_interval": [
+            0.3183096274829863,
+            0.5284633985740679
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 123,
+          "mean_probability": 0.45221632677496176,
+          "observed_frequency": 0.4796747967479675,
+          "frequency_interval": [
+            0.39334643076101994,
+            0.5672342812042366
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 144,
+          "mean_probability": 0.5502986723292511,
+          "observed_frequency": 0.5625,
+          "frequency_interval": [
+            0.4808944747721227,
+            0.6408575705849976
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 157,
+          "mean_probability": 0.650526116755161,
+          "observed_frequency": 0.732484076433121,
+          "frequency_interval": [
+            0.6582960372126164,
+            0.7955670434585201
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 96,
+          "mean_probability": 0.7438791722657875,
+          "observed_frequency": 0.84375,
+          "frequency_interval": [
+            0.7580851332547138,
+            0.9029629000931343
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 44,
+          "mean_probability": 0.8352054285791971,
+          "observed_frequency": 0.9545454545454546,
+          "frequency_interval": [
+            0.8486500156237035,
+            0.987444890050405
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 3,
+          "mean_probability": 0.9168062881393086,
+          "observed_frequency": 1.0,
+          "frequency_interval": [
+            0.4385029682449546,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.06054194910851544,
+      "paired_test_n": 701,
+      "incumbent_metrics": {
+        "binary_brier": {
+          "value": 0.2046136074331143,
+          "interval": [
+            0.19504332466424648,
+            0.21391609058828506
+          ]
+        },
+        "log_loss": {
+          "value": 0.5957517547798186,
+          "interval": [
+            0.574809729433543,
+            0.615800736496473
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.68188302425107,
+          "interval": [
+            0.6511164976502598,
+            0.7136567045922733
+          ]
+        },
+        "n": 701,
+        "utc_day_blocks": 124
+      },
+      "paired_minus_incumbent": {
+        "binary_brier": {
+          "value": 0.0014109117200040593,
+          "interval": [
+            -0.0035722818051040065,
+            0.006894450221514984
+          ]
+        },
+        "log_loss": {
+          "value": 0.0027817678297946,
+          "interval": [
+            -0.008241805814605267,
+            0.015117584906460224
+          ]
+        },
+        "classification_accuracy": {
+          "value": -0.012838801711840228,
+          "interval": [
+            -0.043153303534659467,
+            0.01471817450384408
+          ]
+        },
+        "n": 701,
+        "utc_day_blocks": 124
+      },
+      "approved": false,
+      "replaces_incumbent": false,
+      "current_forecasts_enabled": false,
+      "uncertainty": "Day-block bootstrap score intervals and calibration-bin frequency intervals; not event-specific confidence guarantees",
+      "limitations": [
+        "Test dates were previously inspected in this project; independent prospective confirmation is absent",
+        "Date-only archive availability/correction timing is unverified; all same-day outcomes withheld",
+        "Bootstrap assumes exchangeable independent days; shared-team and temporal dependence remain",
+        "No historical observed market baseline, starter/player context, betting returns or parlay validation",
+        "Stale archives cannot authorize current inference; no model is promoted automatically"
+      ],
+      "evidence_id": "f7abd6caf02385e6ec208a617a743717ed0be68742ad991e998fd5885b395fda"
+    },
+    "MLB": {
+      "sport": "MLB",
+      "model_version": "date-block-elo-challenger-1-mlb",
+      "status": "unapproved historical challenger",
+      "generated_at": "2026-10-18T05:21:44.734770+00:00",
+      "data_source": "The information used here was obtained free of charge from and is copyrighted by Retrosheet. Interested parties may contact Retrosheet at \"www.retrosheet.org\".",
+      "data_end": "2025-09-28",
+      "data_sha256": "e525f302a5cc09e37502b75dc49d691ddd2159b9b4cfce2319ac5adb210d78a6",
+      "code_sha256": "38e4daa6a50d0cb87496b5e2cdc324b5a94d543e7d554ce01ce5a24cf4272800",
+      "settings": {
+        "k": 8.0,
+        "home": 30.0,
+        "margin": false
+      },
+      "calibration_start": "2024-08-25",
+      "test_start": "2025-06-06",
+      "calibration_n": 1414,
+      "test_n": 1494,
+      "temperature": 1.15,
+      "metrics": {
+        "binary_brier": {
+          "value": 0.24662337993867767,
+          "interval": [
+            0.24244896898580584,
+            0.2505734008881107
+          ]
+        },
+        "log_loss": {
+          "value": 0.6862103479584197,
+          "interval": [
+            0.6776647889611603,
+            0.6943627853847283
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5461847389558233,
+          "interval": [
+            0.5229809529388951,
+            0.5698798236859614
+          ]
+        },
+        "n": 1494,
+        "utc_day_blocks": 111
+      },
+      "training_prevalence_baseline": {
+        "binary_brier": {
+          "value": 0.24890006468315054,
+          "interval": [
+            0.2478384458100253,
+            0.25014406612585394
+          ]
+        },
+        "log_loss": {
+          "value": 0.6909461382768659,
+          "interval": [
+            0.6888214162337776,
+            0.693435880456339
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.535475234270415,
+          "interval": [
+            0.5082938027473465,
+            0.5586716066481994
+          ]
+        },
+        "n": 1494,
+        "utc_day_blocks": 111
+      },
+      "calibration_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 3,
+          "mean_probability": 0.2942966608264938,
+          "observed_frequency": 0.0,
+          "frequency_interval": [
+            5.551115123125783e-17,
+            0.5614970317550454
+          ]
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 84,
+          "mean_probability": 0.36185507607259093,
+          "observed_frequency": 0.36904761904761907,
+          "frequency_interval": [
+            0.2737011850902025,
+            0.47584760092316086
+          ]
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 389,
+          "mean_probability": 0.4623373090616149,
+          "observed_frequency": 0.5115681233933161,
+          "frequency_interval": [
+            0.4620245819236119,
+            0.5608854236216733
+          ]
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 708,
+          "mean_probability": 0.5504301307487338,
+          "observed_frequency": 0.5480225988700564,
+          "frequency_interval": [
+            0.5112018644115047,
+            0.5843250245570802
+          ]
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 276,
+          "mean_probability": 0.6376541449994253,
+          "observed_frequency": 0.572463768115942,
+          "frequency_interval": [
+            0.5134972804169731,
+            0.6294407966233901
+          ]
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 34,
+          "mean_probability": 0.7233352799605948,
+          "observed_frequency": 0.7058823529411765,
+          "frequency_interval": [
+            0.5383109020528557,
+            0.8316536932957758
+          ]
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 0,
+          "mean_probability": null,
+          "observed_frequency": null,
+          "frequency_interval": [
+            0.0,
+            1.0
+          ]
+        }
+      ],
+      "ece": 0.02739513151005275,
+      "paired_test_n": 1494,
+      "incumbent_metrics": {
+        "binary_brier": {
+          "value": 0.24844431299046082,
+          "interval": [
+            0.24409362210825206,
+            0.2526415019546752
+          ]
+        },
+        "log_loss": {
+          "value": 0.6900194099576267,
+          "interval": [
+            0.6811611867051969,
+            0.6985121402925676
+          ]
+        },
+        "classification_accuracy": {
+          "value": 0.5508701472556894,
+          "interval": [
+            0.5286180916187483,
+            0.5753041339758297
+          ]
+        },
+        "n": 1494,
+        "utc_day_blocks": 111
+      },
+      "paired_minus_incumbent": {
+        "binary_brier": {
+          "value": -0.0018209330517831937,
+          "interval": [
+            -0.005343937862661957,
+            0.0020137023715455825
+          ]
+        },
+        "log_loss": {
+          "value": -0.0038090619992068877,
+          "interval": [
+            -0.010957681363879083,
+            0.003938659630879447
+          ]
+        },
+        "classification_accuracy": {
+          "value": -0.004685408299866131,
+          "interval": [
+            -0.02962585080439688,
+            0.018905496155212524
+          ]
+        },
+        "n": 1494,
+        "utc_day_blocks": 111
+      },
+      "approved": false,
+      "replaces_incumbent": false,
+      "current_forecasts_enabled": false,
+      "uncertainty": "Day-block bootstrap score intervals and calibration-bin frequency intervals; not event-specific confidence guarantees",
+      "limitations": [
+        "Test dates were previously inspected in this project; independent prospective confirmation is absent",
+        "Date-only archive availability/correction timing is unverified; all same-day outcomes withheld",
+        "Bootstrap assumes exchangeable independent days; shared-team and temporal dependence remain",
+        "No historical observed market baseline, starter/player context, betting returns or parlay validation",
+        "Stale archives cannot authorize current inference; no model is promoted automatically"
+      ],
+      "evidence_id": "20a6094f31ab68e37d776bc0d6f96559cf19d85a340a24ff229964f8e6fc4a9a"
+    }
+  },
+  "provider_requests": 0,
+  "paid_ai_requests": 0,
+  "models_promoted": 0,
+  "forward_records_created": 0,
+  "sha256": "06f9e6a306c724d63544b4838eda4d174c0fd6170afe9ac55f3850de14ed2f6d"
+}

@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-10-16T04:19:22.263369+00:00",
+  "development_base": "36e3863b0037821b1a38856c9032310c482636fd",
+  "python": "3.12.14",
+  "openai_sdk": "2.54.0",
+  "pytest": {
+    "command": "python -m pytest -q",
+    "passed": 119,
+    "failed": 0,
+    "real_network_transports_blocked": true
+  },
+  "streamlit": {
+    "isolated_server_port": 8503,
+    "health_status": 200,
+    "health_body": "ok",
+    "apptest": "all ten sections; chat/follow-ups, secret rejection, consent, clear and expiry",
+    "production_or_existing_preview_process_replaced": false
+  },
+  "paid_openai": {
+    "default_approval": "0",
+    "real_requests_made": 0,
+    "live_access_verified": false,
+    "sdk_protocol_test": "Responses API with in-memory HTTPX MockTransport"
+  },
+  "limitations": [
+    "No provider billing or retention verification",
+    "No external Codespaces/Streamlit preview browser verification",
+    "Evidence selection and server-rendered facts, not unrestricted generated prose",
+    "Existing sports/model/prop/live/parlay limitations remain"
+  ],
+  "main_unchanged_at_remote_check": "8e78990fd300222c75c5668f8e0fe0a08f2f1f8f"
+}

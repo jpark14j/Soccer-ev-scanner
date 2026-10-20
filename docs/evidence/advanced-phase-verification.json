@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-10-16T17:29:49.438073+00:00",
+  "branch": "development/verified-sports-intelligence",
+  "tests": {
+    "passed": 203,
+    "real_network_transports_blocked": true,
+    "compile_passed": true,
+    "dependencies_consistent": true,
+    "configured_secret_scan_passed": true
+  },
+  "streamlit": {
+    "isolated_port": 8505,
+    "health_status": 200,
+    "health_body": "ok",
+    "odds_cap": 0,
+    "paid_ai_approved": false
+  },
+  "provider_access_evidence": "advanced-market-access.json",
+  "advanced_models_reproduced_with_cli": [
+    "NBA",
+    "MLB"
+  ],
+  "historical_capture_replay": {
+    "replay_as_of": "2026-10-16T16:58:00.233569+00:00",
+    "mode": "Historical replay of genuine captured responses; not current odds",
+    "quotes_restored": 394,
+    "current_at_capture": 392,
+    "advanced_forecasts_at_capture": 332,
+    "candidates_at_capture": 3,
+    "markets_observed": {
+      "spreads": 216,
+      "totals": 168,
+      "pitcher_strikeouts": 6,
+      "btts": 4
+    },
+    "paid_ai_requests": 0,
+    "new_provider_requests": 0,
+    "preview_external_browser_verified": false,
+    "market_page_exceptions": 0,
+    "inspection_rows": 372,
+    "research_page_exceptions": 0,
+    "research_tables": 3,
+    "same_game_exceptions": 0,
+    "same_game_scenario_displayed": true,
+    "performance_exceptions": 0,
+    "assistant_exceptions": 0,
+    "assistant_mode": "Local \u00b7 rule-based"
+  },
+  "external_preview": {
+    "url": "https://soccer-ev-scanner-preview-jp.streamlit.app/",
+    "browser_verified": false,
+    "access_error": "ProxyError",
+    "note": "Cloud build/browser unverified; not evidence of downtime"
+  },
+  "model_promotions": 0,
+  "real_openai_requests": 0,
+  "subscriptions_purchased": 0,
+  "main_modified_by_this_work": false,
+  "pr_merged": false
+}

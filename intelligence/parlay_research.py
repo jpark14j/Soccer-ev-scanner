@@ -1,0 +1,371 @@
+"""Bounded daily parlay research from current Ontario observations, never picks.
+
+No joint probability, executable price or parlay EV is inferred from singles.
+The existing evidence-gated parlay analyzer remains separate and unchanged.
+"""
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from itertools import combinations, zip_longest
+import math
+from intelligence.domain import Estimate, Quote, digest, finite, parse_time, utcnow
+from intelligence.ev import expected_value
+from intelligence.parlays import CATEGORIES, joint_bounds
+from intelligence.registry import eligible_book
+from intelligence.soccer import canonical
+from intelligence.markets import CATALOG,market_problem,is_half_line
+from intelligence.advanced_models import research_joint
+
+SPORTS = ('NBA','Soccer','MLB')
+MARKETS = tuple(CATALOG)
+
+
+@dataclass(frozen=True)
+class ResearchLeg:
+    quote: Quote
+    implied_probability: float
+    estimate: Estimate | None = None
+    model_status: str = 'missing'
+    model_details: dict = field(default_factory=dict)
+    blockers: tuple[str,...] = ()
+    estimated_ev: float | None = None
+
+
+@dataclass(frozen=True)
+class ResearchCandidate:
+    id: str
+    legs: tuple[ResearchLeg,...]
+    category: str
+    theoretical_odds: float
+    probability_bounds: tuple[float,float] | None
+    uncertainty_bounds: tuple[float,float] | None
+    warnings: tuple[str,...]
+    blockers: tuple[str,...]
+    rank_key: tuple
+    rank_explanation: str
+    # The configured feed has no actual combined-price or joint-model adapter.
+    status: str = 'research only'
+    combined_price_status: str = 'theoretical product; not an available sportsbook offer'
+    executable: bool = False
+    combined_odds: float | None = None
+    joint_probability: float | None = None
+    parlay_ev: float | None = None
+    scenario_joint: dict | None = None
+    leg_comparison: dict = field(default_factory=dict)
+
+
+@dataclass
+class ResearchSelection:
+    candidates: list[ResearchCandidate] = field(default_factory=list)
+    exclusions: dict = field(default_factory=dict)
+    eligible_quotes: int = 0
+    searched_quotes: int = 0
+    examined_combinations: int = 0
+    candidate_count: int = 0
+    checked_at: str = ''
+
+
+def event_identity(q):
+    """Catch a duplicated physical game even if a feed assigns another event ID.
+
+    Exact scheduled times distinguish MLB doubleheaders; shared teams at different
+    times are warned about instead of silently assumed independent.
+    """
+    return (q.sport,tuple(sorted((canonical(q.home),canonical(q.away)))),parse_time(q.commence_time))
+
+
+def same_event(a,b):
+    return (a.provider,a.event_id)==(b.provider,b.event_id) or event_identity(a)==event_identity(b)
+
+
+def pair_review(a,b):
+    """Return a rejection reason and explicit dependence warnings."""
+    warnings=[]
+    shared = bool({canonical(a.home),canonical(a.away)} & {canonical(b.home),canonical(b.away)})
+    if same_event(a,b):
+        warnings.append('Same event: outcomes are dependent; sportsbook same-game restrictions are unknown.')
+        if a.market==b.market=='h2h':
+            if canonical(a.selection)==canonical(b.selection):
+                return 'Duplicate or shared match-winner outcome',warnings
+            return 'Contradictory match winners in the same event',warnings
+        if a.market==b.market and canonical(a.participant)==canonical(b.participant):
+            if canonical(a.selection)==canonical(b.selection):
+                return 'Repeated or nested outcome in the same event and market',warnings
+            kind=CATALOG[a.market].kind if a.market in CATALOG else ''
+            if kind in ('total','player','corners'):
+                over = a if a.selection.lower()=='over' else b
+                under = b if over is a else a
+                if math.floor(over.point)+1 >= under.point:
+                    return 'Contradictory totals: both legs cannot win',warnings
+            elif a.market=='btts':
+                return 'Contradictory both-teams-to-score outcomes',warnings
+            elif a.market=='spreads' and a.point+b.point<=0:
+                return 'Contradictory spreads: both legs cannot win',warnings
+        # Winner plus opponent spread cannot both win when the opponent must win.
+        if {a.market,b.market}=={'h2h','spreads'}:
+            winner = a if a.market=='h2h' else b
+            spread = b if winner is a else a
+            if winner.selection!='Draw' and canonical(winner.selection)!=canonical(spread.selection) and spread.point<=0:
+                return 'Contradictory winner and opponent spread',warnings
+    elif a.sport==b.sport and shared:
+        warnings.append('Shared team across events: fatigue, lineups and common form may create dependence (including doubleheaders).')
+    if a.participant and canonical(a.participant)==canonical(b.participant) and a.sport==b.sport:
+        if same_event(a,b) and {a.market,b.market}=={'player_threes','player_points'}:
+            threes=a if a.market=='player_threes' else b
+            points=b if threes is a else a
+            if threes.selection.lower()=='over' and points.selection.lower()=='under' and 3*(math.floor(threes.point)+1)>math.ceil(points.point)-1:
+                return 'Contradictory player threes and points constraints',warnings
+        warnings.append('Shared player: selections may depend on the same player availability or performance.')
+    return '',warnings
+
+
+def contradictory_scores(quotes):
+    """Check integer-score feasibility, including contradictions across 3 legs.
+
+    Full-game featured markets constrain score difference D and total T. Scores
+    are nonnegative integers, so T >= abs(D) and T/D have the same parity. No
+    predictive distribution or independence assumption enters this check.
+    """
+    for anchor in quotes:
+        group=[q for q in quotes if q.market in ('h2h','spreads','totals','btts') and same_event(anchor,q)]
+        if len(group)<2:
+            continue
+        low,high,tmin,tmax=-math.inf,math.inf,0,math.inf
+        btts=None
+        for q in group:
+            home=canonical(q.selection)==canonical(anchor.home)
+            if q.market=='btts':
+                yes=q.selection.lower()=='yes'
+                if btts is not None and btts!=yes:
+                    return True
+                btts=yes
+            elif q.market=='h2h':
+                if q.selection=='Draw':
+                    low,high=max(low,0),min(high,0)
+                elif home:
+                    low=max(low,1)
+                else:
+                    high=min(high,-1)
+            elif q.market=='spreads':
+                if home:
+                    full_win_line=math.floor(q.point*2)/2
+                    low=max(low,math.floor(-full_win_line)+1)
+                else:
+                    full_win_line=math.floor(q.point*2)/2
+                    high=min(high,math.ceil(full_win_line)-1)
+            elif q.selection.lower()=='over':
+                tmin=max(tmin,math.floor(math.ceil(q.point*2)/2)+1)
+            else:
+                tmax=min(tmax,math.ceil(math.floor(q.point*2)/2)-1)
+        if btts is False:
+            feasible=any(max(tmin,0,lo)<=min(tmax,hi) for lo,hi in ((low,high),(-high,-low)))
+            if not feasible:
+                return True
+            continue
+        closest=0 if low<=0<=high else low if low>0 else high
+        feasible=False
+        for difference in (closest,closest-1,closest+1,-2,-1,0,1,2):
+            if not low<=difference<=high or (anchor.sport!='Soccer' and difference==0):
+                continue
+            total=max(tmin,abs(difference)+(2 if btts else 0))
+            total += (total-difference)%2
+            if total<=tmax:
+                feasible=True
+                break
+        if not feasible:
+            return True
+    return False
+
+
+def quote_problem(q,now):
+    if q.sport not in SPORTS:
+        return 'Unsupported sport'
+    if q.status(now)!='current':
+        return q.status(now)
+    if q.provider!='the-odds-api' or q.jurisdiction!='CA-ON' or not eligible_book(q.bookmaker,now):
+        return 'Ontario provider provenance unavailable or registry expired'
+    return market_problem(q)
+
+
+def leg_evidence(q,analysis,now):
+    rows=[r for r in analysis.research if r.get('quote_id')==q.id]
+    details=rows[0] if len(rows)==1 else {}
+    estimate=getattr(analysis,'estimates',{}).get(q.id)
+    advanced=getattr(analysis,'advanced_estimates',{}).get(q.id)
+    if advanced is not None and (estimate is None or not estimate.validated):
+        estimate=advanced
+        details=getattr(analysis,'advanced_details',{}).get(q.id,{})
+    if estimate is None:
+        estimate=next((o.estimate for o in analysis.opportunities if o.quote==q),None)
+    usable=False
+    if estimate is not None:
+        try:
+            usable=(estimate.valid() and (estimate.sport,estimate.league,estimate.market)==(q.sport,q.league,q.market)
+                    and parse_time(estimate.training_end)<min(now,parse_time(q.commence_time)))
+        except (ValueError,TypeError):
+            pass
+    if not usable:
+        estimate=None
+    blockers=list(details.get('blockers',[]))
+    if estimate is None:
+        blockers.append('No source-backed, market-specific model estimate is available for this leg.')
+    elif not estimate.validated or not estimate.evidence_id:
+        blockers.append('The leg model has not passed publication validation against a timestamped market baseline.')
+    if estimate is not None and (now-parse_time(estimate.training_end)).days>90:
+        blockers.append('Model history is more than 90 days old; it cannot establish current predictive reliability.')
+    status=('validated' if estimate and estimate.validated and estimate.evidence_id and not blockers else
+            'research' if estimate else 'missing')
+    ev=expected_value(estimate.probability,q.odds) if status=='validated' and q.market=='h2h' else None
+    return ResearchLeg(q,1/q.odds,estimate,status,details,tuple(dict.fromkeys(blockers)),ev)
+
+
+def research_category(quotes,product):
+    # Price/leg-count proxies, never empirical or probability-based risk ratings.
+    if len(quotes)==2 and max(q.odds for q in quotes)<=1.8:
+        return CATEGORIES[0]
+    if product<=6:
+        return CATEGORIES[1]
+    return CATEGORIES[2]
+
+
+def balanced_pool(legs,limit,now=None):
+    """Round-robin sports/events before alternate sides; bounded, deterministic."""
+    sports=defaultdict(lambda:defaultdict(list))
+    from intelligence.research_ranking import evidence_key
+    now=now or utcnow()
+    for leg in legs:
+        sports[leg.quote.sport][event_identity(leg.quote)].append(leg)
+    ordered=[]
+    queues=[]
+    for sport in SPORTS:
+        events=sports[sport]
+        groups=[]
+        for _,group in sorted(events.items(),key=lambda item:item[0][2]):
+            groups.append(sorted(group,key=lambda l:(l.model_status!='validated',*evidence_key(l,now))))
+        queue=[leg for batch in zip_longest(*groups) for leg in batch if leg is not None]
+        queues.append(queue)
+    for batch in zip_longest(*queues):
+        ordered.extend(leg for leg in batch if leg is not None)
+    return ordered[:limit]
+
+
+def select_candidates(analysis, *, sports=SPORTS, bookmakers=None, leg_counts=(2,3),
+                      categories=CATEGORIES, max_results=3, pool_per_book=24, now=None,markets=None,event_ids=None):
+    now=now or utcnow()
+    if not set(sports)<=set(SPORTS) or not set(leg_counts)<={2,3} or not set(categories)<=set(CATEGORIES):
+        raise ValueError('Unsupported parlay research filter')
+    if not 0<=max_results<=3 or not 3<=pool_per_book<=30:
+        raise ValueError('Research search limits are outside the supported range')
+    result=ResearchSelection(checked_at=now.isoformat())
+    exclusions=Counter()
+    counts=Counter()
+    for q in analysis.quotes:
+        try:
+            counts[q.id]+=1
+        except (ValueError,TypeError):
+            # Nonfinite/invalid line identities are rejected below, rather than
+            # making the whole page fail while forming provenance IDs.
+            continue
+    by_book=defaultdict(list)
+    for q in analysis.quotes:
+        if q.sport not in sports or (event_ids is not None and q.event_id not in event_ids) or (markets is not None and q.market not in markets) or (bookmakers is not None and q.bookmaker not in bookmakers):
+            continue
+        problem=quote_problem(q,now)
+        if not problem and counts[q.id]>1:
+            problem='Ambiguous duplicate provider quote'
+        if problem:
+            exclusions[problem]+=1
+            continue
+        by_book[(q.provider,q.bookmaker)].append(leg_evidence(q,analysis,now))
+        result.eligible_quotes+=1
+    candidates=[]
+    for (_,book),legs in sorted(by_book.items()):
+        pool=balanced_pool(legs,pool_per_book,now)
+        result.searched_quotes+=len(pool)
+        for n in sorted(set(leg_counts)):
+            for combo in combinations(pool,n):
+                result.examined_combinations+=1
+                candidate,reason=build_candidate(combo,analysis,now,categories)
+                if candidate is not None:
+                    candidates.append(candidate)
+                elif reason:
+                    exclusions[reason]+=1
+    candidates.sort(key=lambda c:c.rank_key)
+    result.candidate_count=len(candidates)
+    # At most one candidate per physical event set, even across books. This
+    # avoids presenting alternate sides/book prices as three distinct ideas.
+    seen=set()
+    for candidate in candidates:
+        identity=tuple(sorted(event_identity(leg.quote) for leg in candidate.legs))
+        if identity in seen:
+            continue
+        seen.add(identity)
+        if len(result.candidates)<max_results:
+            result.candidates.append(candidate)
+        else:
+            break
+    result.exclusions=dict(exclusions)
+    return result
+
+
+def build_candidate(combo,analysis,now=None,categories=CATEGORIES):
+    """Shared compatibility and evidence gates for legacy and full-slate research."""
+    now=now or utcnow()
+    n=len(combo)
+    book=combo[0].quote.bookmaker
+    quotes=[leg.quote for leg in combo]
+    warnings=[]
+    rejected=''
+    for a,b in combinations(quotes,2):
+        reason,notes=pair_review(a,b)
+        warnings.extend(notes)
+        if reason:
+            rejected=reason
+            break
+    if rejected:
+        return None,rejected
+    if contradictory_scores(quotes):
+        return None,'Contradictory score constraints across parlay legs'
+    product=math.prod(q.odds for q in quotes)
+    if not math.isfinite(product):
+        return None,'Invalid theoretical price product'
+    category=research_category(quotes,product)
+    if category not in categories:
+        return None,'Category filter'
+    if any(q.market in ('totals','spreads') and q.point%1==0 for q in quotes):
+        warnings.append('Integer line: pushes/voids can change settlement and the payout; the product assumes every leg wins.')
+    if any(q.market=='spreads' and q.point%0.5!=0 for q in quotes):
+        warnings.append('Quarter/Asian line: partial-win/loss settlement and operator scope are unverified; the product assumes full wins only.')
+    warnings.append('Dependence is unmeasured, including across different games or sports. No independence assumption or multiplied win probability is used.')
+    blockers=[f'Leg {i+1}: {reason}' for i,leg in enumerate(combo) for reason in leg.blockers]
+    blockers.extend(['No validated joint probability model covers these exact legs.',
+        'The configured provider supplies no actual combined parlay price for these legs.',
+        'Sportsbook-specific parlay acceptance, combination restrictions and settlement rules are unverified.'])
+    estimates=[leg.estimate for leg in combo]
+    context=getattr(analysis,'score_contexts',{}).get((quotes[0].league,quotes[0].event_id))
+    scenario=research_joint(context,quotes) if context is not None and all(same_event(quotes[0],q) for q in quotes) and all(e and e.model_version==context.version for e in estimates) else None
+    bounds=joint_bounds([e.probability for e in estimates]) if all(estimates) else None
+    interval_bounds=(max(0.,sum(e.lower for e in estimates)-n+1),min(e.upper for e in estimates)) if all(estimates) else None
+    validated=sum(leg.model_status=='validated' for leg in combo)
+    researched=sum(leg.estimate is not None for leg in combo)
+    width=sum((e.upper-e.lower) if e else 1. for e in estimates)/n
+    age=max((now-parse_time(q.source_updated_at)).total_seconds() for q in quotes)
+    from intelligence.research_ranking import evidence_problem,comparison
+    supported=sum(leg.estimate is not None and evidence_problem(leg,now) is None for leg in combo)
+    minimum_probability=min((e.probability for e in estimates if e),default=0.) if all(estimates) else 0.
+    minimum_lower=min((e.lower for e in estimates if e),default=0.) if all(estimates) else 0.
+    # No odds/payout/EV optimization or sportsbook preference. Leg
+    # fractions avoid rewarding three legs just for adding a model.
+    rank=(-validated/n,-researched/n,-supported/n,len(set(warnings))-1,width,-minimum_lower,-minimum_probability,age,n,
+          tuple(sorted(q.id for q in quotes)))
+    explanation=(f'{n}/{n} individual prices are current at the same Ontario sportsbook; '
+        f'{validated}/{n} validated leg models, {researched}/{n} model estimates; '
+        f'mean supplied interval width {width:.3f} (missing models count as 1); '
+        f'oldest source observation {age:.0f} seconds old; '
+        f'{supported}/{n} legs meet the research-display calibration/uncertainty requirements; '
+        'rank uses model-evidence fractions, supported calibration, explicit dependence flags, interval width, individual lower bounds/probabilities, freshness and fewer legs. Individual probability comparisons are not a joint win estimate. '
+        'Price availability is an entry gate; combined prices are unavailable. Ranking is research priority, not estimated profit.')
+    return ResearchCandidate(digest((book,tuple(sorted(q.id for q in quotes)))),combo,
+        category,product,bounds,interval_bounds,tuple(dict.fromkeys(warnings)),tuple(dict.fromkeys(blockers)),rank,explanation,scenario_joint=scenario,
+        leg_comparison={'supported_calibration_legs':supported,'minimum_individual_probability':minimum_probability if all(estimates) else None,
+            'minimum_individual_lower_envelope':minimum_lower if all(estimates) else None,
+            'legs':[comparison(leg) for leg in combo],'joint_probability':None,'parlay_ev':None}),''

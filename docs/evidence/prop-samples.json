@@ -1,0 +1,20 @@
+[
+  {
+    "sport": "NBA",
+    "market": "player_points",
+    "received_at": "2026-10-16T02:44:36.028414+00:00",
+    "quote_count": 0,
+    "ontario_books": [],
+    "rejected": 0,
+    "remaining": "437"
+  },
+  {
+    "sport": "MLB",
+    "market": "pitcher_strikeouts",
+    "received_at": "2026-10-16T02:44:36.481492+00:00",
+    "quote_count": 0,
+    "ontario_books": [],
+    "rejected": 0,
+    "remaining": "437"
+  }
+]

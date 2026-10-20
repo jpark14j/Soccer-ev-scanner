@@ -1,0 +1,374 @@
+{
+  "schema": 1,
+  "sport": "MLB",
+  "model_version": "mlb-full-season-elo-research-1",
+  "generated_at": "2026-10-18T21:23:24.872824+00:00",
+  "source": {
+    "source": [
+      "https://raw.githubusercontent.com/chadwickbureau/retrosheet/118094bb3fc2ca292c25fccf54e7541762887bf6/seasons/2023/GL2023.TXT",
+      "https://raw.githubusercontent.com/chadwickbureau/retrosheet/118094bb3fc2ca292c25fccf54e7541762887bf6/seasons/2024/gl2024.txt",
+      "https://raw.githubusercontent.com/chadwickbureau/retrosheet/118094bb3fc2ca292c25fccf54e7541762887bf6/seasons/2025/GL2025.TXT"
+    ],
+    "license_reference": "https://www.retrosheet.org/notice.txt",
+    "commercial_use": true,
+    "license_scope": "Publisher permission only; no league endorsement or third-party rights clearance",
+    "attribution": "The information used here was obtained free of charge from and is copyrighted by Retrosheet. Interested parties may contact Retrosheet at \"www.retrosheet.org\".",
+    "snapshot_only": true,
+    "imported_at": "2026-10-16T02:57:43.017864+00:00",
+    "data_through": "2025-09-28T00:00:00",
+    "normalized_sha256": "e91521ad29ee0cbdd1c009234eddf2b86aeb4559ff5af9dc57bc27258b4f80c5"
+  },
+  "data_sha256": "e525f302a5cc09e37502b75dc49d691ddd2159b9b4cfce2319ac5adb210d78a6",
+  "code_sha256": "fa318ade38997b5ffdbfa8f212cfcaf88032d52666e5d21ab2770cda9ae2a4b6",
+  "data_end": "2025-09-28",
+  "history_n": 7276,
+  "training_end": "2023-12-31",
+  "calibration_start": "2024-01-01",
+  "calibration_end": "2024-12-31",
+  "test_start": "2025-01-01",
+  "test_end": "2025-09-28",
+  "calibration_n": 2426,
+  "test_n": 2426,
+  "coefficients": [
+    -0.040861310555704765,
+    0.7477618340389707
+  ],
+  "metrics": {
+    "binary_brier": {
+      "value": 0.24372712514999403,
+      "interval": [
+        0.24067330050409785,
+        0.2465998373075837
+      ]
+    },
+    "log_loss": {
+      "value": 0.6802895780752705,
+      "interval": [
+        0.6740813432910253,
+        0.6861936994766139
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.5531739488870568,
+      "interval": [
+        0.5338070732084816,
+        0.5726876719976238
+      ]
+    },
+    "n": 2426,
+    "utc_day_blocks": 184
+  },
+  "baseline": {
+    "binary_brier": {
+      "value": 0.24863936238972,
+      "interval": [
+        0.2478222889437626,
+        0.2494374079711801
+      ]
+    },
+    "log_loss": {
+      "value": 0.6904245183525725,
+      "interval": [
+        0.6887893693073557,
+        0.6920215883308212
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.5424567188788129,
+      "interval": [
+        0.5238407709882207,
+        0.5615165283008612
+      ]
+    },
+    "n": 2426,
+    "utc_day_blocks": 184
+  },
+  "calibration_bins": [
+    {
+      "lower": 0.0,
+      "upper": 0.1,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.1,
+      "upper": 0.2,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.2,
+      "upper": 0.3,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.3,
+      "upper": 0.4,
+      "n": 129,
+      "mean_probability": 0.36677316141194416,
+      "observed_frequency": 0.37209302325581395,
+      "frequency_interval": [
+        0.2935118520317434,
+        0.4580717251665278
+      ]
+    },
+    {
+      "lower": 0.4,
+      "upper": 0.5,
+      "n": 758,
+      "mean_probability": 0.45963967257533056,
+      "observed_frequency": 0.46965699208443273,
+      "frequency_interval": [
+        0.4343704042807016,
+        0.505249579027628
+      ]
+    },
+    {
+      "lower": 0.5,
+      "upper": 0.6,
+      "n": 1212,
+      "mean_probability": 0.545046580649227,
+      "observed_frequency": 0.5338283828382838,
+      "frequency_interval": [
+        0.5056809525978381,
+        0.5617620510973442
+      ]
+    },
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "n": 305,
+      "mean_probability": 0.6351410192077759,
+      "observed_frequency": 0.6524590163934426,
+      "frequency_interval": [
+        0.5974208446246754,
+        0.7037045300420515
+      ]
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "n": 22,
+      "mean_probability": 0.7275356850490694,
+      "observed_frequency": 0.7272727272727273,
+      "frequency_interval": [
+        0.5184826598759762,
+        0.8684923971201053
+      ]
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "test_reliability": [
+    {
+      "lower": 0.0,
+      "upper": 0.1,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.1,
+      "upper": 0.2,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.2,
+      "upper": 0.3,
+      "n": 2,
+      "mean_probability": 0.29599317832640326,
+      "observed_frequency": 0.5,
+      "frequency_interval": [
+        0.09453120573423074,
+        0.9054687942657693
+      ]
+    },
+    {
+      "lower": 0.3,
+      "upper": 0.4,
+      "n": 144,
+      "mean_probability": 0.36190496862764654,
+      "observed_frequency": 0.3611111111111111,
+      "frequency_interval": [
+        0.28721056028374,
+        0.4422293389226591
+      ]
+    },
+    {
+      "lower": 0.4,
+      "upper": 0.5,
+      "n": 768,
+      "mean_probability": 0.4622614784399845,
+      "observed_frequency": 0.5091145833333334,
+      "frequency_interval": [
+        0.4738011062661176,
+        0.5443373337464088
+      ]
+    },
+    {
+      "lower": 0.5,
+      "upper": 0.6,
+      "n": 1187,
+      "mean_probability": 0.5466416027761097,
+      "observed_frequency": 0.5492839090143218,
+      "frequency_interval": [
+        0.5208645496366381,
+        0.577385304811549
+      ]
+    },
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "n": 293,
+      "mean_probability": 0.6362651847729554,
+      "observed_frequency": 0.6552901023890785,
+      "frequency_interval": [
+        0.599176486213584,
+        0.7073844650818621
+      ]
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "n": 32,
+      "mean_probability": 0.7137810897925438,
+      "observed_frequency": 0.875,
+      "frequency_interval": [
+        0.7193169451834978,
+        0.9502986561251991
+      ]
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "n": 0,
+      "mean_probability": null,
+      "observed_frequency": null,
+      "frequency_interval": [
+        0.0,
+        1.0
+      ]
+    }
+  ],
+  "ece": 0.02076473090549901,
+  "paired_test_n": 2414,
+  "incumbent_metrics": {
+    "binary_brier": {
+      "value": 0.2469217991723938,
+      "interval": [
+        0.24369776730519394,
+        0.25052588892802574
+      ]
+    },
+    "log_loss": {
+      "value": 0.6867982413116284,
+      "interval": [
+        0.6802471412521038,
+        0.6942041106235685
+      ]
+    },
+    "classification_accuracy": {
+      "value": 0.5546810273405137,
+      "interval": [
+        0.5346376871885956,
+        0.5741533489088159
+      ]
+    },
+    "n": 2414,
+    "utc_day_blocks": 184
+  },
+  "minus_incumbent": {
+    "binary_brier": {
+      "value": -0.0032369418326864846,
+      "interval": [
+        -0.0058823836615491945,
+        -0.00034398076441909863
+      ]
+    },
+    "log_loss": {
+      "value": -0.006595163974463704,
+      "interval": [
+        -0.012072808676275519,
+        -0.0006537089413794
+      ]
+    },
+    "classification_accuracy": {
+      "value": -0.0012427506213753107,
+      "interval": [
+        -0.019790308330928544,
+        0.01625568270467152
+      ]
+    },
+    "n": 2414,
+    "utc_day_blocks": 184
+  },
+  "approved": false,
+  "replaces_incumbent": false,
+  "current_forecasts_enabled": false,
+  "limitations": [
+    "2026 results and verified current fixtures are unavailable; no current MLB forecast is enabled",
+    "Regular-season source only; ties and suspended/resumed games were excluded by the preserved importer",
+    "No starting-pitcher, bullpen, park, lineup or weather adjustments",
+    "Complete season split is a new diagnostic on archive data already examined in this project",
+    "Same-date outcomes are withheld from all predictions on that date; calibration uses 2024 only",
+    "No timestamped sportsbook baseline, independently confirmed advantage or betting return"
+  ],
+  "evidence_id": "d047f6daa6b8eeafffdd2e1996175fea7ccbb4722183c034b993f8cc126421d3"
+}
