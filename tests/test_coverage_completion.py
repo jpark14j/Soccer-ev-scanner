@@ -165,7 +165,7 @@ def test_disappearing_nba_fixture_is_not_silently_rebound_or_predicted(store):
     class C:
         now=NOW
         def __init__(self):self.store=store
-        def get(self,*args):return receipt(data)
+        def get(self,*args,**kwargs):return receipt(data)
         def day(self,*args):raise AssertionError('Season has not started')
     save(C());current=__import__('intelligence.nba_current',fromlist=['current']).current(store,NOW)[0]
     old=es[0];new=next(e for e in current if e.fixture_id==old.fixture_id)
@@ -222,7 +222,7 @@ def test_nba_fresh_fixture_receipt_does_not_extend_older_result_receipt_lifetime
     data=schedule();data['generated']=now.isoformat()
     class C:
         def __init__(self):self.store=store;self.now=now
-        def get(self,*args):return receipt(data,now)
+        def get(self,*args,**kwargs):return receipt(data,now)
         def day(self,league,day):return [],receipt(day_response('NBA',day),older)
     meta=save(C())
     assert meta['checked_at']==older.isoformat()

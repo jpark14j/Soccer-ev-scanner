@@ -17,6 +17,15 @@ from intelligence.event_data import EventObservation, coverage, ingest
 TERMS='https://sportscore.com/developers/terms/'
 NBA_URL='https://sporting-events.org/data/nba.json'
 TTL=21600
+
+
+class PublicSourceUnavailable(ValueError):
+    """A temporary transport/cooldown failure, distinct from conflicting data."""
+    def __init__(self,message,http_status=None):
+        super().__init__(message)
+        self.http_status=http_status if type(http_status) is int and 100<=http_status<=599 else None
+
+
 SCOPES={'Premier League':('english-premier-league','English Premier League'),
         'Ligue 1':('french-ligue-1','French Ligue 1'),
         'NBA':('national-basketball-association','National Basketball Association')}
@@ -48,7 +57,7 @@ def download(url):
         for league in ('Premier League','Ligue 1') for season in ('2025-26','2026-27')}
     daily=(parts.scheme=='https' and parts.netloc=='sportscore.com' and parts.path=='/api/v1/fixtures/'
         and not parts.fragment and set(query)=={'sport','date','competition','limit'} and query['limit']==['20']
-        and len(query['date'])==1 and re.fullmatch(r'202[56]-\d{2}-\d{2}',query['date'][0])
+        and len(query['date'])==1 and re.fullmatch(r'202[567]-\d{2}-\d{2}',query['date'][0])
         and any(query['competition']==[slug] and query['sport']==['basketball' if league=='NBA' else 'football']
             for league,(slug,_) in SCOPES.items()))
     if url not in archives and url!=NBA_URL and not daily:raise ValueError('Unreviewed public source URL')
@@ -58,7 +67,7 @@ def download(url):
         try:
             if response.status_code!=200:
                 source='Sporting Events NBA fixtures' if url==NBA_URL else 'SportScore daily results' if daily else 'Pinned OpenFootball archive'
-                raise ValueError(f'Public results HTTP response unavailable ({source}; HTTP {int(response.status_code)})')
+                raise PublicSourceUnavailable(f'Public results HTTP response unavailable ({source}; HTTP {int(response.status_code)})',response.status_code)
             chunks=[];size=0
             for chunk in response.iter_content(65536):
                 size+=len(chunk)
@@ -73,7 +82,7 @@ class Collector:
         self.store,self.now,self.fetch=store,now,fetch;self.requests=0;self.network_requests=0
         self.real_time=fetch is download
 
-    def get(self,key,url,age=10800):
+    def get(self,key,url,age=10800,validate=None):
         value=self.store.cached('public-source-'+key,age,self.now)
         # A newer already-obtained private receipt requires no network retry.
         # Prefer it to an older cached success/failure without changing HTTP
@@ -84,7 +93,7 @@ class Collector:
             if sha256(value['raw'].encode()).hexdigest()!=value['sha256']:raise ValueError('Cached public source checksum differs')
             return value
         if not prepared and self.store.cached('public-attempt-'+key,10800,self.now):
-            raise ValueError('Public source retry interval has not elapsed')
+            raise PublicSourceUnavailable('Public source retry interval has not elapsed')
         if self.requests>=200:raise ValueError('Public-data per-run request bound reached; continue next scheduled update')
         self.requests+=1
         if not getattr(self.fetch,'prepared_receipts',False):self.network_requests+=1
@@ -97,6 +106,7 @@ class Collector:
             raise ValueError('Invalid public source receipt')
         json.loads(raw)
         value={'raw':raw.decode('utf-8'),'checked_at':at,'sha256':sha256(raw).hexdigest(),'source_url':url}
+        if validate is not None:validate(value)
         self.store.cache('public-source-'+key,value,parse_time(at))
         return value
 
@@ -127,8 +137,13 @@ def parse_day(value,league,day,now):
     for r in data['matches']:
         if r['competition']!=SCOPES[league][1]:raise ValueError('Public result competition mismatch')
         h,hn=identity(league,r['home']);a,an=identity(league,r['away']);start=parse_time(r['time'])
-        if start.date().isoformat()!=day or not r['url'].startswith('/'+sport+'/match/'):
+        if not r['url'].startswith('/'+sport+'/match/'):
             raise ValueError('Public fixture date or source identifier mismatch')
+        # Verified provider responses include the next date's exact 00:00 UTC
+        # boundary in both NBA day queries. Keep it only in its own UTC date;
+        # never move a kickoff or use an uncorroborated spillover as a fixture.
+        if league=='NBA' and start==parse_time(day+'T00:00:00+00:00')+timedelta(days=1):continue
+        if start.date().isoformat()!=day:raise ValueError('Public fixture date or source identifier mismatch')
         finished=r['status']=='finished'
         if r['status'] not in ('finished','upcoming','live','postponed','cancelled','suspended'):
             raise ValueError('Unreviewed public fixture status')
@@ -283,6 +298,7 @@ def refresh(store,now=None,fetch=download):
         *[(league,lambda league=league:save_soccer(collector,league)) for league in ('Premier League','Ligue 1')]]:
         try:
             meta=operation();status[league]={'ok':True,'coverage':meta['coverage']}
+            if league=='NBA':status[league].update(fixture_verification=meta.get('fixture_verification'),primary_calendar_http_status=meta.get('primary_calendar_http_status'))
         except (ValueError,KeyError,TypeError,requests.RequestException):
             # A safe specific failure is produced by the parser, never a URL,
             # credential, response dump, traceback or provider exception text.

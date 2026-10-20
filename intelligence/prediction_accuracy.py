@@ -33,7 +33,8 @@ def rows(store):
                     for leg in p['legs']:
                         q=leg['quote'];f=leg['source_fixture']
                         fid=digest(tuple(f[k] for k in ('competition_id','season','home_id','away_id')))
-                        legs.append({k:q.get(k) for k in ('market','selection','point','participant')}|{'fixture_id':fid,'kickoff':q['commence_time']})
+                        sport=q.get('sport') or {'soccer':'Soccer','basketball':'NBA','baseball':'MLB'}.get(f['competition_id'].split(':')[0])
+                        legs.append({k:q.get(k) for k in ('market','selection','point','participant')}|{'fixture_id':fid,'kickoff':q['commence_time'],'sport':sport})
                         versions.append(leg['estimate']['model_version']);starts.append(q['commence_time'])
                     if not 1<=len(legs)<=3:continue
                     ids=sorted({l['fixture_id'] for l in legs})
@@ -93,7 +94,19 @@ def saved_for_display(store,current,now=None):
     return found
 
 
-def summary(store,now=None):
+def sport_classification(r):
+    """Use every leg's sport; mixed or unknown records never enter a sport total."""
+    parent=r.get('sport')
+    values=[leg.get('sport',parent) for leg in r.get('legs') or [r]]
+    if any(not isinstance(value,str) for value in values):return 'Unclassified'
+    sports=set(values)
+    if not sports or not sports<={'Soccer','NBA','MLB'}:return 'Unclassified'
+    return next(iter(sports)) if len(sports)==1 else 'Mixed sports'
+
+
+def summary(store,now=None,sport=None):
+    if sport not in (None,'Soccer','NBA','MLB','Mixed sports','Unclassified'):
+        raise ValueError('Unsupported accuracy sport classification')
     now=now or utcnow();first={};ignored=0
     for row in rows(store):
         r=row['payload']
@@ -106,7 +119,8 @@ def summary(store,now=None):
         except (ValueError,KeyError,TypeError):ignored+=1
     report={n:{'correct':0,'settled':0,'pending':0,'excluded':0,
         'Experimental':{'correct':0,'settled':0},'Validated':{'correct':0,'settled':0}} for n in (1,2,3)}
-    for row in first.values():
+    selected=[row for row in first.values() if sport is None or sport_classification(row['payload'])==sport]
+    for row in selected:
         r=row['payload'];item=report[len(contracts(r))];o=row['outcome']
         if not o:item['pending']+=1;continue
         try:
@@ -121,7 +135,7 @@ def summary(store,now=None):
     for item in report.values():
         for bucket in (item,item['Experimental'],item['Validated']):
             bucket['accuracy']=100*bucket['correct']/bucket['settled'] if bucket['settled'] else None
-    return {'formats':report,'unique_predictions':len(first),'ignored':ignored,
+    return {'formats':report,'unique_predictions':len(selected),'ignored':ignored,'sport':sport,
         'scope':'First genuine pregame statistics forecast per fixture, model and exact selection; backtests excluded. Pending, void and unverified outcomes are excluded from accuracy.'}
 
 

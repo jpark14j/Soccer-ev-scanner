@@ -264,7 +264,8 @@ def render_picks(w):
 
 def render_performance(w):
     from intelligence.prediction_accuracy import summary
-    try:report=summary(w.store)
+    sport=st.radio('Sport',['Soccer','NBA','MLB','Mixed sports'],horizontal=True,key='accuracy_sport')
+    try:report=summary(w.store,sport=sport)
     except (sqlite3.Error,OSError,ValueError,KeyError,TypeError):
         st.info('Saved accuracy is unavailable right now. No results are estimated.');return
     for column,n,label in zip(st.columns(3),(1,2,3),('Singles Accuracy (%)','2-Leg Parlay Accuracy (%)','3-Leg Parlay Accuracy (%)')):
@@ -272,6 +273,7 @@ def render_performance(w):
         column.metric(label,f"{item['accuracy']:.1f}%" if item['accuracy'] is not None else 'Not enough results yet')
         column.caption(f"{item['correct']}/{item['settled']} correct · {item['pending']} pending")
     st.caption('Only the first saved pregame prediction for each model and selection is counted. Pending, void and unresolved results are excluded. Historical backtests are separate.')
+    st.caption('Mixed-sport parlays are tracked separately and never enter Soccer, NBA or MLB accuracy.')
     with st.expander('Experimental and validated predictions'):
         for category in ('Experimental','Validated'):
             st.write('**'+category+'**')

@@ -41,7 +41,9 @@ def test_refresh_preserves_hold_budgets_and_successful_cache_after_failure(store
     def blocked():raise AssertionError('No repeated collection inside interval')
     assert update(store,now+timedelta(hours=1),blocked)[0]['public_results_requests']==0
     later=now+timedelta(hours=4)
-    with pytest.raises(ValueError):update(store,later,lambda:(b'[]',later.isoformat()))
+    failed,rows=update(store,later,lambda:(b'[]',later.isoformat()))
+    assert failed['state']=='Partial free-statistics update' and failed['source_observed_at']==first[1]['checked_at']
+    assert not rows and failed['bundesliga_source_status']['problem']
     assert current(store,'Bundesliga',later)[0]==first[0]
     assert protected_counts(store)==before
 
@@ -60,7 +62,10 @@ def test_source_is_refreshed_across_utc_midnight_even_inside_cache_interval(stor
 
 def test_failed_transport_cannot_overwrite_results_or_mark_refresh_success(store):
     def unavailable():raise ValueError('No response')
-    with pytest.raises(ValueError):update(store,fetch=unavailable)
+    report,rows=update(store,fetch=unavailable)
+    assert report['state']=='Partial free-statistics update' and not rows
+    assert report['source_observed_at'] is None and not report['bundesliga_source_status']['cached_inputs_valid']
+    assert report['new_pregame_records']==0 and report['new_verified_outcomes']==0
     assert store.cached('free-statistics-last-success',86400) is None
 
 

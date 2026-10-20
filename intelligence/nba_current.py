@@ -7,6 +7,7 @@ from dataclasses import asdict
 from datetime import date, timedelta
 from math import log
 import json
+import requests
 from intelligence.domain import utcnow, parse_time, digest
 from intelligence.event_data import EventObservation, ingest
 from intelligence.competitions import COMPETITIONS
@@ -56,16 +57,34 @@ def missing_final(event,now):
 
 
 def save(collector):
-    from intelligence.free_results import NBA_URL, TERMS
+    from intelligence.free_results import NBA_URL, TERMS,PublicSourceUnavailable
+    from hashlib import sha256
     now=collector.now;store=collector.store
-    source=collector.get('nba-fixtures',NBA_URL)
-    now=collector.now
-    events=fixtures(source,now);by_key={(e.event_date,e.home_id,e.away_id):e for e in events}
     previous=store.cached('nba-current',10*366*86400,now)
+    daily_window=False;primary_http_status=None
+    try:source=collector.get('nba-fixtures',NBA_URL,validate=lambda value:fixtures(value,collector.now))
+    except (PublicSourceUnavailable,requests.RequestException) as error:
+        # Old calendar data is an identity registry, never a fresh fixture feed.
+        # Every fixture in the supported window must be independently verified
+        # by the already reviewed daily API before any fallback is accepted.
+        source=store.cached('public-source-nba-fixtures',10*366*86400,now)
+        if not source or sha256(source['raw'].encode()).hexdigest()!=source['sha256']:
+            raise ValueError('NBA fixture feed unavailable and no verified identity registry retained')
+        daily_window=True
+        primary_http_status=error.http_status if isinstance(error,PublicSourceUnavailable) else None
+    # A successful calendar download alone cannot erase a known disagreement
+    # with independently observed future fixtures. Reconcile the window again.
+    daily_window=daily_window or bool(previous and previous['meta'].get('unverified_future_fixtures'))
+    now=collector.now
+    through=min(END,now.date()+timedelta(days=7))
+    events=fixtures(source,now)
+    if daily_window:events=[e for e in events if e.event_date<=through.isoformat()]
+    by_key={(e.event_date,e.home_id,e.away_id):e for e in events}
     removed=[]
     if previous:
         for row in previous['events']:
             old=EventObservation(**row);key=(old.event_date,old.home_id,old.away_id)
+            if daily_window and old.event_date>through.isoformat():continue
             if key not in by_key:
                 # Repeated NBA pairings cannot be rebound by team names alone.
                 # Preserve the original for final reconciliation, but never
@@ -75,10 +94,25 @@ def save(collector):
                     removed.append(old.fixture_id)
                     old=replace(old,status='unresolved',score_scope='fixture_removed_pending_reconciliation')
                 by_key[key]=old
-    receipts=[source]
+    receipts=[source];unverified_future=set()
     day=START
-    while day<=now.date():
+    while day<=(through if daily_window else now.date()):
         finals,receipt=collector.day('NBA',day.isoformat());receipts.append(receipt)
+        if daily_window:
+            matched=[];confirmed=set()
+            for e in finals:
+                key=(e.event_date,e.home_id,e.away_id);old=by_key.get(key)
+                if old is None or parse_time(old.kickoff)!=parse_time(e.kickoff):
+                    if parse_time(e.kickoff)>now and (old is None or parse_time(old.kickoff)>now):
+                        unverified_future.add(old.fixture_id if old else e.fixture_id);continue
+                    raise NBAReconciliationError('NBA past result does not reconcile to exact scheduled teams and tipoff')
+                matched.append(e);confirmed.add(key)
+            for key,old in list(by_key.items()):
+                if key[0]!=day.isoformat() or key in confirmed:continue
+                if parse_time(old.kickoff)<=now and old.score_scope not in ('source_postponed','source_cancelled'):
+                    raise ValueError('Daily NBA fixture window is incomplete for an earlier scheduled game')
+                unverified_future.add(old.fixture_id);del by_key[key]
+            finals=matched
         for e in finals:
             key=(e.event_date,e.home_id,e.away_id);old=by_key.get(key)
             if old is None or parse_time(old.kickoff)!=parse_time(e.kickoff):
@@ -90,6 +124,7 @@ def save(collector):
             by_key[key]=replace(e,source_event_id=old.source_event_id,source=old.source)
         day+=timedelta(days=1)
     now=collector.now;events=list(by_key.values())
+    if not events:raise ValueError('Daily NBA fixture window is incomplete; no independently verified games')
     if previous:
         by_id={e.fixture_id:e for e in events}
         for row in previous['events']:
@@ -99,14 +134,19 @@ def save(collector):
             if (not new or new.status!='completed' or new.kickoff!=old.kickoff
                 or (new.home_score,new.away_score)!=(old.home_score,old.away_score)):
                 raise NBAReconciliationError('NBA refresh withdrew or revised a previously verified final')
-    recent=[source['checked_at']]+[r['checked_at'] for r in receipts[1:]
+    recent=([source['checked_at']] if not daily_window else [])+[r['checked_at'] for r in receipts[1:]
         if date.fromisoformat(json.loads(r['raw'])['date'])>=now.date()-timedelta(days=3)]
+    if not recent:raise ValueError('No fresh verified NBA fixture window')
     checked=min(recent,key=parse_time)
     if not 0<=(now-parse_time(checked)).total_seconds()<21600:
         raise ValueError('NBA recent result verification expired')
     meta={'ok':True,'provider':'sporting-events + sportscore','checked_at':checked,
         'sha256':digest([r['sha256'] for r in receipts]),'license_reference':LICENSE,'results_license_reference':TERMS,
         'source_url':NBA_URL,'source_receipts':[{k:r[k] for k in ('source_url','sha256','checked_at')} for r in receipts],
+        'fixture_verification':'Daily verified window; retained calendar used only for identities' if daily_window else 'Verified full-season calendar',
+        'primary_calendar_http_status':primary_http_status,
+        'verified_fixture_window_end':through.isoformat() if daily_window else END.isoformat(),
+        'unverified_future_fixtures':sorted(unverified_future),
         'removed_unreconciled_fixtures':removed,
         'coverage':{'fixtures':len(events),'completed':sum(e.status=='completed' for e in events),
             'unresolved_past':sum(missing_final(e,now) for e in events)},

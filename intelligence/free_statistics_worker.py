@@ -42,28 +42,43 @@ def download(session=None):
 
 
 def update(store,now=None,fetch=download,extra_fetch=None):
-    from intelligence.openliga import save
+    from intelligence.openliga import save,current
     from intelligence.fixture_research import collect
     from intelligence.current_score_research import candidates
     from intelligence.statistics_forward import record,reconcile,monitoring
     fixed_now=now;now=now or utcnow()
-    cached=store.cached('free-statistics-last-success',MIN_INTERVAL,now)
-    cached=bool(cached and parse_time(cached['source_observed_at']).date()==now.date())
+    _,meta=current(store,'Bundesliga',now)
+    cached=bool(meta.get('ok') and
+        0<=(now-parse_time(meta['checked_at'])).total_seconds()<MIN_INTERVAL
+        and parse_time(meta['checked_at']).date()==now.date())
     extra_due=extra_fetch is not None and (getattr(extra_fetch,'prepared_receipts',False)
         or not store.cached('public-results-last-attempt',MIN_INTERVAL,now))
     # Re-evaluate and record newly supported research from verified cached
     # inputs even inside the network cooldown. This never refreshes receipts
     # or reserves provider credits; browsing remains read-only.
-    before=protected_counts(store);base_requests=0
-    if cached:
-        from intelligence.openliga import current
-        _,meta=current(store,'Bundesliga',now)
-        if not meta['ok']:raise ValueError('Cached Bundesliga verification unavailable')
-        at=meta['checked_at']
-    else:
-        raw,at=fetch();base_requests=1;now=utcnow() if fixed_now is None else fixed_now
-        if not 0<=(now-parse_time(at)).total_seconds()<60:raise ValueError('Public source receipt must be current')
-        meta=save(store,raw,'Bundesliga',at,now)
+    before=protected_counts(store);base_requests=0;base_problem=None
+    attempt=store.cached('free-statistics-last-attempt',MIN_INTERVAL,now)
+    # Preserve the existing next-date recheck for withheld same-day scores.
+    # A failed attempt never gets another exception at the date boundary.
+    new_date=bool(meta.get('ok') and parse_time(meta['checked_at']).date()!=now.date()
+        and attempt and attempt.get('successful') is True)
+    if not cached and (not attempt or new_date):
+        # Persist a failed attempt along with the other sports' successful work.
+        # Failure never resets the original accepted observation/expiry clock.
+        attempted_at=now
+        store.cache('free-statistics-last-attempt',{'attempted_at':now.isoformat(),'successful':False},now)
+        base_requests=1
+        try:
+            raw,at=fetch();now=utcnow() if fixed_now is None else fixed_now
+            if not 0<=(now-parse_time(at)).total_seconds()<60:raise ValueError('Public source receipt must be current')
+            meta=save(store,raw,'Bundesliga',at,now)
+            store.cache('free-statistics-last-attempt',{'attempted_at':attempted_at.isoformat(),'successful':True},attempted_at)
+        except (ValueError,KeyError,TypeError,requests.RequestException):
+            base_problem='Bundesliga public-source refresh failed; cached inputs retain their original expiry'
+            _,meta=current(store,'Bundesliga',now)
+    elif not cached:
+        base_problem='Bundesliga retry interval has not elapsed; cached inputs retain their original expiry'
+    at=meta.get('checked_at') if meta.get('ok') else None
     from intelligence.statistics_learning import lock,update as update_learning
     lock(store,now)
     extra={}
@@ -89,8 +104,10 @@ def update(store,now=None,fetch=download,extra_fetch=None):
     from intelligence.cross_game_study import summary as cross_game_summary
     from intelligence.dependence_study import load_report as dependence_report
     dependence=dependence_report()
-    summary={'state':'Key-free statistics refreshed' if base_requests+extra.get('public_results_requests',0) else 'Verified cached statistics re-evaluated','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
-        'source_sha256':meta['sha256'],'coverage':meta['coverage'],'public_results_requests':base_requests+extra.get('public_results_requests',0),
+    summary={'state':'Partial free-statistics update' if base_problem or any(not v.get('ok') for v in extra.get('sources',{}).values()) else
+        'Key-free statistics refreshed' if base_requests+extra.get('public_results_requests',0) else 'Verified cached statistics re-evaluated','source':'OpenLigaDB, ODbL 1.0','source_observed_at':at,
+        'source_sha256':meta.get('sha256'),'coverage':meta.get('coverage',{}),'public_results_requests':base_requests+extra.get('public_results_requests',0),
+        'bundesliga_source_status':{'cached_inputs_valid':bool(meta.get('ok')),'problem':base_problem},
         'additional_public_sources':extra.get('sources',{}),
         'prepared_receipts_reused':extra.get('prepared_receipts_reused',0),
         'odds_api_requests':0,'odds_api_credits':0,'paid_ai_requests':0,
@@ -105,7 +122,8 @@ def update(store,now=None,fetch=download,extra_fetch=None):
         'approved_models':0,'approved_joint_models':0,'automatic_model_promotion':False,
         'forecasts_by_league':{league:sum(r['league']==league and r.get('kind')!='bounded_cross_game' for r in rows) for league in ('Bundesliga','Premier League','Ligue 1','NBA','MLB')},
         'remaining_blockers':result.get('blockers',{})}
-    store.cache('free-statistics-last-success',summary,parse_time(at))
+    if at:store.cache('free-statistics-last-success',summary,parse_time(at))
+    store.cache('free-statistics-last-run',summary,now)
     store.cache('statistics-forward-monitoring',monitor,now)
     return summary,rows
 
